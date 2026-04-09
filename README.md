@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Unimaxx Site - Site Corporativo com Painel Administrativo
 
 Site corporativo completo para a Unimaxx com painel administrativo para gerenciamento de conteúdo.
@@ -139,3 +140,6 @@ O projeto usa SQLite, o arquivo `database.sqlite` será criado automaticamente n
 ## Licença
 
 MIT
+=======
+# UNIMAXX-ADMIN
+>>>>>>> 1786f96100a6256824f02366a2911322e4cb011c
