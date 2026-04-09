@@ -1,0 +1,33 @@
+/* Apple + Orange Design System */
+
+/* Legacy class aliases for compatibility */
+.linx-gradient-text {
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus styles - orange ring */
+*:focus-visible {
+  outline: 2px solid #ff6b00;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Selection */
+::selection {
+  background: #ff6b0030;
+  color: #ff6b00;
+}
