@@ -27,6 +27,7 @@ export const THEME: Record<string, typeof DEFAULT_T> = {
 };
 
 import type { PageBlock } from '@/types';
+import { AnimatedBgLayer } from '@/components/AnimatedBgLayer';
 import { BannerSlide } from '@/components/PageBanner';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -254,7 +255,23 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
   const isBrand = block.colorTheme === 'brand';
   const textCol = (isDark || isBrand) ? 'white' : '#1d1d1f';
   const subCol = (isDark || isBrand) ? 'rgba(255,255,255,.6)' : '#6e6e73';
+  const hasAnim = block.animatedBg && block.animatedBg !== 'none';
 
+  const inner = renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen });
+
+  if (!hasAnim) return <>{inner}</>;
+  return (
+    <div style={{ position: 'relative', isolation: 'isolate' }}>
+      <AnimatedBgLayer type={block.animatedBg} color={block.animatedBgColor || t.from} />
+      <div style={{ position: 'relative', zIndex: 1 }}>{inner}</div>
+    </div>
+  );
+}
+
+function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }: {
+  block: PageBlock; t: typeof DEFAULT_T; textCol: string; subCol: string;
+  videoOpen: boolean; setVideoOpen: (v: boolean) => void;
+}): React.ReactNode {
   switch (block.type) {
 
     // ── HERO ─────────────────────────────────────────────────────────────────
@@ -282,80 +299,310 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
 
     // ── FEATURES ─────────────────────────────────────────────────────────────
     case 'features': {
-      const layout = block.featuresLayout || 'grid';
+      const layout = block.featuresLayout || 'split_dark';
       const rr = cardRadius(block);
       const iconItems = block.iconItems || [];
       const simpleItems = block.items || [];
       const hasIconItems = iconItems.length > 0;
+      const allItems = hasIconItems ? iconItems : simpleItems.map(s => ({ icon: '✅', label: s, desc: '' }));
+      const ac = block.featuresAccent || t.from;
+      const label = block.featuresLabel || '';
+      const mainTitle = block.title || '';
+      const mainSub = block.subtitle || '';
 
-      const Wrapper = ({ children }: { children: React.ReactNode }) => (
-        <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="bg-white shadow-sm" style={{ borderRadius: rr, border: '1px solid rgba(0,0,0,.06)', padding: '40px' }}>
-            {block.title && <div className="text-center mb-10"><h2 className="font-bold text-[#1d1d1f]" style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.6rem,3vw,2.5rem)' }}>{block.title}</h2></div>}
-            {children}
-          </div>
-        </section>
-      );
-
-      // Checklist minimalista — só texto simples
-      if (layout === 'checklist') {
+      // ── SPLIT DARK (inspiração 1 — painel escuro, título esq, cards col. dir) ──
+      if (layout === 'split_dark') {
+        const cols = allItems.length <= 4 ? 2 : 3;
         return (
-          <Wrapper>
-            <div className="grid sm:grid-cols-2 gap-3 max-w-3xl mx-auto">
-              {simpleItems.map((f, i) => (
-                <div key={i} className="flex items-center gap-3 py-2.5 px-4 rounded-xl" style={{ background: '#f9f9fb', border: '1px solid rgba(0,0,0,.04)' }}>
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${t.from}15` }}>
-                    <Check className="w-3 h-3" style={{ color: t.from }} />
+          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div style={{ background: '#15161a', borderRadius: rr, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1.6fr' }}>
+              {/* Lado esquerdo — título */}
+              <div style={{ padding: '56px 48px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '1px solid rgba(255,255,255,.07)' }}>
+                {label && <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.1em', color: ac, marginBottom: 16 }}>{label}</p>}
+                <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.6rem,2.5vw,2.2rem)', fontWeight: 800, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: mainSub ? 20 : 0 }}>{mainTitle}</h2>
+                {mainSub && <p style={{ fontSize: 14, color: 'rgba(255,255,255,.5)', lineHeight: 1.6 }}>{mainSub}</p>}
+              </div>
+              {/* Lado direito — grid de cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols},1fr)`, gap: 1, background: 'rgba(255,255,255,.05)' }}>
+                {allItems.map((item, i) => {
+                  const lbl = typeof item === 'string' ? item : item.label;
+                  const ico = typeof item === 'string' ? '' : item.icon;
+                  const dsc = typeof item === 'string' ? '' : (item.desc || '');
+                  return (
+                    <div key={i} style={{ padding: '28px 24px', background: '#15161a', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'default', transition: 'background .2s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#1c1d22'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#15161a'; }}>
+                      {ico && <div style={{ fontSize: 20, width: 36, height: 36, borderRadius: 10, background: `${ac}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{ico}</div>}
+                      <div>
+                        <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#fff', lineHeight: 1.3 }}>{lbl}</p>
+                        {dsc && <p style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 5, lineHeight: 1.5 }}>{dsc}</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      // ── DARK CARDS (inspiração 2 — fundo escuro, cards escuros, ícone grande) ──
+      if (layout === 'dark_cards') {
+        return (
+          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div style={{ background: '#13141a', borderRadius: rr, padding: '56px 48px' }}>
+              {(label || mainTitle || mainSub) && (
+                <div style={{ marginBottom: 40 }}>
+                  {label && <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.12em', color: ac, marginBottom: 12 }}>{label}</p>}
+                  {mainTitle && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.6rem,2.8vw,2.4rem)', fontWeight: 800, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: mainSub ? 16 : 0, maxWidth: 520 }}>{mainTitle}</h2>}
+                  {mainSub && <p style={{ fontSize: 14, color: 'rgba(255,255,255,.45)', lineHeight: 1.65, maxWidth: 480 }}>{mainSub}</p>}
+                </div>
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12 }}>
+                {allItems.map((item, i) => {
+                  const lbl = typeof item === 'string' ? item : item.label;
+                  const ico = typeof item === 'string' ? '◈' : item.icon;
+                  const dsc = typeof item === 'string' ? '' : (item.desc || '');
+                  return (
+                    <div key={i} style={{ background: '#1c1d26', border: '1px solid rgba(255,255,255,.07)', borderRadius: 16, padding: '24px 20px', cursor: 'default', transition: 'border-color .2s, transform .2s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,.07)'; (e.currentTarget as HTMLElement).style.transform = ''; }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${ac}30`, background: `${ac}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 16 }}>{ico}</div>
+                      <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#fff', lineHeight: 1.3, marginBottom: dsc ? 6 : 0 }}>{lbl}</p>
+                      {dsc && <p style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', lineHeight: 1.55 }}>{dsc}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      // ── HALF SPLIT (inspiração 3 — fundo claro/escuro dividido ao meio) ──
+      if (layout === 'half_split') {
+        const half = Math.ceil(allItems.length / 2);
+        const leftItems = allItems.slice(0, half);
+        const rightItems = allItems.slice(half);
+        return (
+          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div style={{ borderRadius: rr, overflow: 'hidden' }}>
+              {/* Cabeçalho centralizado que cruza os dois lados */}
+              <div style={{ display: 'flex', position: 'relative' }}>
+                <div style={{ flex: 1, background: '#f4f4f6', padding: '48px 40px 24px' }} />
+                <div style={{ flex: 1, background: '#0f1017', padding: '48px 40px 24px' }} />
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 40, pointerEvents: 'none' }}>
+                  <div style={{ textAlign: 'center', maxWidth: 640, padding: '0 20px' }}>
+                    {label && (
+                      <div style={{ display: 'inline-block', background: '#0f1017', color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: '.1em', padding: '5px 14px', borderRadius: 8, marginBottom: 16 }}>{label}</div>
+                    )}
+                    {mainTitle && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.5rem,2.8vw,2.3rem)', fontWeight: 800, color: '#0f1017', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: mainSub ? 12 : 0 }}>{mainTitle}</h2>}
+                    {mainSub && <p style={{ fontSize: 14, color: '#666', lineHeight: 1.6 }}>{mainSub}</p>}
                   </div>
-                  <p className="text-[14px] text-[#1d1d1f] font-medium">{f}</p>
-                </div>
-              ))}
-            </div>
-          </Wrapper>
-        );
-      }
-
-      // Cards com hover animado
-      if (layout === 'cards_hover') {
-        return (
-          <Wrapper>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(hasIconItems ? iconItems : simpleItems.map(s => ({ icon: '✅', label: s, desc: '' }))).map((item, i) => (
-                <div key={i} className="group p-6 rounded-2xl cursor-default transition-all duration-300"
-                  style={{ background: '#f9f9fb', border: '1px solid rgba(0,0,0,.05)' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${t.from}08`; (e.currentTarget as HTMLElement).style.borderColor = `${t.from}25`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 32px ${t.from}15`; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#f9f9fb'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.05)'; (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
-                  <div className="text-2xl mb-3">{typeof item === 'string' ? '✅' : item.icon}</div>
-                  <p className="font-bold text-[#1d1d1f] text-[15px] mb-1" style={{ fontFamily: "'Outfit',sans-serif" }}>
-                    {typeof item === 'string' ? item : item.label}
-                  </p>
-                  {typeof item !== 'string' && item.desc && <p className="text-[13px] text-[#6e6e73] leading-relaxed">{item.desc}</p>}
-                </div>
-              ))}
-            </div>
-          </Wrapper>
-        );
-      }
-
-      // Grid padrão (com ícone se disponível)
-      return (
-        <Wrapper>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {(hasIconItems ? iconItems : simpleItems.map(s => ({ icon: '✅', label: s, desc: '' }))).map((item, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-2xl" style={{ background: '#f9f9fb', border: '1px solid rgba(0,0,0,.05)' }}>
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg" style={{ background: `${t.from}12` }}>
-                  {typeof item === 'string' ? <Check className="w-4 h-4" style={{ color: t.from }} /> : item.icon}
-                </div>
-                <div>
-                  <p className="text-[14px] font-semibold text-[#1d1d1f] leading-snug">
-                    {typeof item === 'string' ? item : item.label}
-                  </p>
-                  {typeof item !== 'string' && item.desc && <p className="text-[12px] text-[#6e6e73] mt-0.5 leading-relaxed">{item.desc}</p>}
                 </div>
               </div>
-            ))}
+              {/* Cards em dois lados */}
+              <div style={{ display: 'flex' }}>
+                {/* Lado claro */}
+                <div style={{ flex: 1, background: '#f4f4f6', padding: '16px 40px 48px', display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
+                  {leftItems.map((item, i) => {
+                    const lbl = typeof item === 'string' ? item : item.label;
+                    const ico = typeof item === 'string' ? '' : item.icon;
+                    const dsc = typeof item === 'string' ? '' : (item.desc || '');
+                    return (
+                      <div key={i} style={{ background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 16, padding: '20px 20px', display: 'flex', gap: 14, alignItems: 'flex-start', transition: 'border-color .2s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; }}>
+                        {ico && <div style={{ width: 40, height: 40, borderRadius: 12, background: `${ac}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{ico}</div>}
+                        <div>
+                          <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#1a1a1a', lineHeight: 1.3 }}>{lbl}</p>
+                          {dsc && <p style={{ fontSize: 12, color: '#888', marginTop: 4, lineHeight: 1.5 }}>{dsc}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Lado escuro */}
+                <div style={{ flex: 1, background: '#0f1017', padding: '16px 40px 48px', display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
+                  {rightItems.map((item, i) => {
+                    const lbl = typeof item === 'string' ? item : item.label;
+                    const ico = typeof item === 'string' ? '' : item.icon;
+                    const dsc = typeof item === 'string' ? '' : (item.desc || '');
+                    return (
+                      <div key={i} style={{ background: '#1a1b24', border: '1px solid rgba(255,255,255,.07)', borderRadius: 16, padding: '20px 20px', display: 'flex', gap: 14, alignItems: 'flex-start', transition: 'border-color .2s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,.07)'; }}>
+                        {ico && <div style={{ width: 40, height: 40, borderRadius: 12, background: `${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{ico}</div>}
+                        <div>
+                          <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#fff', lineHeight: 1.3 }}>{lbl}</p>
+                          {dsc && <p style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 4, lineHeight: 1.5 }}>{dsc}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      // ── HIGHLIGHT LIST (lista numerada) ────────────────────────────────────
+      if (layout === 'highlight_list') {
+        return (
+          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            {(label || mainTitle || mainSub) && (
+              <div style={{ textAlign: 'center', marginBottom: 36 }}>
+                {label && <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.1em', color: ac, marginBottom: 10 }}>{label}</p>}
+                {mainTitle && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.5rem,2.8vw,2.3rem)', fontWeight: 800, color: '#1a1a1a', letterSpacing: '-0.02em', marginBottom: mainSub ? 10 : 0 }}>{mainTitle}</h2>}
+                {mainSub && <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6 }}>{mainSub}</p>}
+              </div>
+            )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 10 }}>
+              {allItems.map((item, i) => {
+                const lbl = typeof item === 'string' ? item : item.label;
+                const dsc = typeof item === 'string' ? '' : (item.desc || '');
+                return (
+                  <div key={i} style={{ display: 'flex', gap: 14, padding: '16px 18px', background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 14, alignItems: 'flex-start', transition: 'border-color .2s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: ac, color: '#fff', fontWeight: 800, fontSize: 13, fontFamily: "'Outfit',sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </div>
+                    <div style={{ paddingTop: 2 }}>
+                      <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#1a1a1a', lineHeight: 1.3 }}>{lbl}</p>
+                      {dsc && <p style={{ fontSize: 12, color: '#888', marginTop: 4, lineHeight: 1.5 }}>{dsc}</p>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        );
+      }
+
+      // ── CHECKLIST ──────────────────────────────────────────────────────────
+      if (layout === 'checklist') {
+        return (
+          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            {(label || mainTitle || mainSub) && (
+              <div style={{ textAlign: 'center', marginBottom: 32 }}>
+                {label && <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.1em', color: ac, marginBottom: 10 }}>{label}</p>}
+                {mainTitle && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.5rem,2.8vw,2.3rem)', fontWeight: 800, color: '#1a1a1a', letterSpacing: '-0.02em', marginBottom: mainSub ? 10 : 0 }}>{mainTitle}</h2>}
+                {mainSub && <p style={{ fontSize: 14, color: '#888' }}>{mainSub}</p>}
+              </div>
+            )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 8, maxWidth: 860, margin: '0 auto' }}>
+              {allItems.map((item, i) => {
+                const lbl = typeof item === 'string' ? item : item.label;
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 50, transition: 'border-color .2s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; }}>
+                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: ac, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Check style={{ width: 11, height: 11, color: '#fff', strokeWidth: 3 }} />
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a', fontFamily: "'Outfit',sans-serif" }}>{lbl}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        );
+      }
+
+
+
+      // ── COMMUNITY CONNECT ─────────────────────────────────────────────────────
+      if (layout === 'community_connect') {
+        const bg = block.communityBgColor || '#1e2235';
+        const textCol = block.communityTextColor || '#ffffff';
+        const accentCol = block.communityAccentColor || '#7c9cff';
+        const mutedCol = block.communityMutedColor || '#a0aabe';
+        const eyebrow = block.communityEyebrow || 'Before you go...';
+        const cards = block.communityCards && block.communityCards.length > 0
+          ? block.communityCards
+          : [
+            { title: 'Discord.', desc: 'Connect our community channel.', linkLabel: 'Join', linkUrl: '#' },
+            { title: 'Github.', desc: 'Join our discussion channel.', linkLabel: 'Join', linkUrl: '#' },
+            { title: 'Newsletter.', desc: 'Get news and company information.', linkLabel: 'Follow', linkUrl: '#' },
+            { title: 'LinkedIn.', desc: 'Adopt best practices in projects.', linkLabel: 'Follow', linkUrl: '#' },
+            { title: 'Discuss.', desc: 'Suggest your own ideas.', linkLabel: 'Join', linkUrl: '#' },
+            { title: 'E-mail.', desc: 'Ask your follow-up questions.', linkLabel: 'Write', linkUrl: '#' },
+          ];
+        const cols = cards.length <= 3 ? cards.length : 3;
+        const dividerColor = 'rgba(255,255,255,0.08)';
+        return (
+          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div style={{ background: bg, borderRadius: rr, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 2fr' }}>
+              <div style={{ padding: '48px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: `1px solid ${dividerColor}` }}>
+                <p style={{ fontSize: 14, color: mutedCol, marginBottom: 'auto' }}>{eyebrow}</p>
+                <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.8rem,2.8vw,2.6rem)', fontWeight: 800, color: textCol, lineHeight: 1.15, letterSpacing: '-0.02em', marginTop: 48 }}>
+                  {mainTitle || 'Connect with our Community!'}
+                </h2>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+                {cards.map((card, i) => {
+                  const rowCount = Math.ceil(cards.length / cols);
+                  const cardRow = Math.floor(i / cols);
+                  const isLastRow = cardRow === rowCount - 1;
+                  return (
+                    <div key={i} style={{
+                      padding: '32px 24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 10,
+                      borderLeft: `1px solid ${dividerColor}`,
+                      borderBottom: isLastRow ? 'none' : `1px solid ${dividerColor}`,
+                    }}>
+                      <div>
+                        <span style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: textCol }}>{card.title}</span>
+                        {' '}
+                        <span style={{ fontSize: 13, color: mutedCol, lineHeight: 1.5 }}>{card.desc}</span>
+                      </div>
+                      <a
+                        href={card.linkUrl || '#'}
+                        style={{ fontSize: 13, color: accentCol, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', marginTop: 4 }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.75'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+                      >
+                        {card.linkLabel} <span style={{ fontSize: 11 }}>›</span>
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+      // ── CARDS HOVER ────────────────────────────────────────────────────────
+      return (
+        <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          {(label || mainTitle || mainSub) && (
+            <div style={{ textAlign: 'center', marginBottom: 36 }}>
+              {label && <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.1em', color: ac, marginBottom: 10 }}>{label}</p>}
+              {mainTitle && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.5rem,2.8vw,2.3rem)', fontWeight: 800, color: '#1a1a1a', letterSpacing: '-0.02em', marginBottom: mainSub ? 10 : 0 }}>{mainTitle}</h2>}
+              {mainSub && <p style={{ fontSize: 14, color: '#888' }}>{mainSub}</p>}
+            </div>
+          )}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 14 }}>
+            {allItems.map((item, i) => {
+              const lbl = typeof item === 'string' ? item : item.label;
+              const ico = typeof item === 'string' ? '' : item.icon;
+              const dsc = typeof item === 'string' ? '' : (item.desc || '');
+              return (
+                <div key={i} style={{ padding: '24px 20px', background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 18, cursor: 'default', transition: 'all .25s' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-5px)'; (e.currentTarget as HTMLElement).style.borderColor = `${ac}40`; (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 40px ${ac}18`; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
+                  {ico && <div style={{ width: 44, height: 44, borderRadius: 14, background: `${ac}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 14 }}>{ico}</div>}
+                  <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#1a1a1a', lineHeight: 1.35, marginBottom: dsc ? 6 : 0 }}>{lbl}</p>
+                  {dsc && <p style={{ fontSize: 12, color: '#888', lineHeight: 1.5 }}>{dsc}</p>}
+                </div>
+              );
+            })}
           </div>
-        </Wrapper>
+        </section>
       );
     }
 
@@ -366,83 +613,89 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
     // ── IMAGE TEXT (novo — estilo "Combate Intenso") ──────────────────────────
     case 'image_text': {
       const imgSrc = resolveImg(block.imageUrl);
-      const isDark = block.colorTheme === 'dark';
-      const bg = isDark ? '#0d0d0f' : '#fff';
-      const titleCol = isDark ? '#fff' : '#1d1d1f';
-      const descCol = isDark ? 'rgba(255,255,255,.6)' : '#6e6e73';
       const imgRight = block.imagePosition !== 'left';
       const rr = cardRadius(block);
+      const maxH = block.imageMaxHeight || 500;
+      const hasBg = block.imageHasBg !== false; // default true
+      const bgColor = block.imageBgColor || '#e0f2fe';
+      const contain = block.imageContain !== false; // default contain
 
       return (
         <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="overflow-hidden" style={{ background: bg, borderRadius: rr, border: isDark ? '1px solid rgba(255,255,255,.07)' : '1px solid rgba(0,0,0,.06)', boxShadow: isDark ? '0 32px 80px rgba(0,0,0,.35)' : '0 20px 60px rgba(0,0,0,.04)' }}>
-            {isDark && <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse 60% 80% at ${imgRight ? '0%' : '100%'} 50%,${t.from}0a,transparent)`, pointerEvents: 'none', borderRadius: rr }} />}
-            <div className={`grid lg:grid-cols-2 ${imgRight ? '' : 'lg:[direction:rtl]'}`}>
-              {/* Text side */}
-              <div className="p-10 lg:p-14 flex flex-col justify-center" style={{ direction: 'ltr' }}>
-                {block.badge && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-5 self-start"
-                    style={{ background: isDark ? `${t.from}18` : `${t.from}10`, color: t.from, border: `1px solid ${t.from}25` }}>
-                    {block.badge}
-                  </div>
-                )}
-                {block.title && (
-                  <h2 className="font-black leading-tight mb-4"
-                    style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.8rem,3.5vw,2.75rem)', letterSpacing: '-0.04em', color: titleCol }}>
-                    {block.title}
-                  </h2>
-                )}
-                {block.subtitle && (
-                  <p className="font-semibold mb-3" style={{ color: t.from, fontFamily: "'Outfit',sans-serif" }}>
-                    {block.subtitle}
-                  </p>
-                )}
-                {block.description && (
-                  <p className="leading-relaxed mb-8" style={{ color: descCol, fontSize: '0.95rem' }}>
-                    {block.description}
-                  </p>
-                )}
-                {block.items && block.items.length > 0 && (
-                  <div className="space-y-2.5 mb-8">
-                    {block.items.map((item, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${t.from}20` }}>
-                          <Check className="w-3 h-3" style={{ color: t.from }} />
-                        </div>
-                        <p style={{ color: isDark ? 'rgba(255,255,255,.75)' : '#1d1d1f', fontSize: '0.9rem' }}>{item}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {(block.ctaLabel || block.secondaryLabel) && (
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    {block.ctaLabel && (
-                      <Link to={block.ctaLink || '/cliente'}>
-                        <button className="flex items-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-[14px] text-white transition hover:scale-[1.02]"
-                          style={{ background: `linear-gradient(135deg,${t.from},${t.to})`, boxShadow: `0 8px 24px ${t.from}30` }}>
-                          <Phone className="w-4 h-4" />{block.ctaLabel}
-                        </button>
-                      </Link>
-                    )}
-                    {block.secondaryLabel && (
-                      <Link to={block.secondaryLink || '/'}>
-                        <button className="flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-[14px] transition hover:scale-[1.02]"
-                          style={{ background: isDark ? 'rgba(255,255,255,.08)' : '#f5f5f7', color: isDark ? '#fff' : '#1d1d1f', border: isDark ? '1px solid rgba(255,255,255,.12)' : '1px solid rgba(0,0,0,.08)' }}>
-                          {block.secondaryLabel}<ArrowRight className="w-4 h-4" />
-                        </button>
-                      </Link>
-                    )}
-                  </div>
-                )}
-              </div>
-              {/* Image side */}
-              <div className="relative" style={{ minHeight: 360, direction: 'ltr' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: imgRight ? '1fr 1fr' : '1fr 1fr',
+            borderRadius: rr,
+            overflow: 'hidden',
+            maxHeight: maxH,
+            border: '1px solid rgba(0,0,0,.07)',
+          }}>
+            {/* Text side */}
+            {!imgRight && (
+              <div style={{ background: hasBg ? bgColor : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', order: 0 }}>
                 {imgSrc
-                  ? <img src={imgSrc} alt={block.imageAlt || block.title || ''} className="w-full h-full object-cover" style={{ minHeight: 360 }} />
-                  : <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 360, background: isDark ? 'rgba(255,255,255,.03)' : '#f9f9fb' }}><span style={{ fontSize: 80 }}>🖼️</span></div>
+                  ? <img src={imgSrc} alt={block.imageAlt || block.title || ''} style={{ width: '100%', height: '100%', maxHeight: maxH, objectFit: contain ? 'contain' : 'cover', display: 'block' }} />
+                  : <div style={{ width: '100%', height: maxH, background: hasBg ? bgColor : '#f9f9fb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80 }}>🖼️</span></div>
                 }
               </div>
+            )}
+            {/* Content side */}
+            <div style={{ padding: '48px 52px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#fff', order: imgRight ? 0 : 1 }}>
+              {block.badge && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 50, border: `1px solid ${t.from}`, color: t.from, fontSize: 13, fontWeight: 600, marginBottom: 20, alignSelf: 'flex-start' }}>
+                  {block.badge} <ArrowRight style={{ width: 14, height: 14 }} />
+                </div>
+              )}
+              {block.title && (
+                <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.8rem,3vw,2.75rem)', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#1a1a1a', marginBottom: 16 }}>
+                  {block.title}
+                </h2>
+              )}
+              {block.description && (
+                <p style={{ fontSize: '0.95rem', color: '#555', lineHeight: 1.65, marginBottom: (block.items && block.items.length > 0) ? 24 : 0, display: 'block', padding: '8px 12px', background: t.from, color: '#fff', borderRadius: 6 }}>
+                  {block.description}
+                </p>
+              )}
+              {block.items && block.items.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
+                  {block.items.map((item, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: `${t.from}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Check style={{ width: 11, height: 11, color: t.from, strokeWidth: 3 }} />
+                      </div>
+                      <p style={{ fontSize: '0.9rem', color: '#333' }}>{item}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(block.ctaLabel || block.secondaryLabel) && (
+                <div style={{ display: 'flex', gap: 12, marginTop: 28, flexWrap: 'wrap' }}>
+                  {block.ctaLabel && (
+                    <Link to={block.ctaLink || '/cliente'}>
+                      <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 10, background: `linear-gradient(135deg,${t.from},${t.to})`, color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer' }}>
+                        {block.ctaLabel} <ArrowRight style={{ width: 16, height: 16 }} />
+                      </button>
+                    </Link>
+                  )}
+                  {block.secondaryLabel && (
+                    <Link to={block.secondaryLink || '/'}>
+                      <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 10, background: 'transparent', color: t.from, fontWeight: 700, fontSize: 14, border: `1px solid ${t.from}`, cursor: 'pointer' }}>
+                        {block.secondaryLabel} <ArrowRight style={{ width: 16, height: 16 }} />
+                      </button>
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
+            {/* Image side — right */}
+            {imgRight && (
+              <div style={{ background: hasBg ? bgColor : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', order: 1 }}>
+                {imgSrc
+                  ? <img src={imgSrc} alt={block.imageAlt || block.title || ''} style={{ width: '100%', height: '100%', maxHeight: maxH, objectFit: contain ? 'contain' : 'cover', display: 'block' }} />
+                  : <div style={{ width: '100%', height: maxH, background: hasBg ? bgColor : '#f9f9fb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80 }}>🖼️</span></div>
+                }
+              </div>
+            )}
           </div>
         </section>
       );
@@ -617,6 +870,72 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
           {[0, 1, 2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(0,0,0,.15)' }} />)}
         </div>
       );
+      if (block.dividerStyle === 'gradient') return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div style={{ height: 2, background: 'linear-gradient(90deg,transparent,rgba(0,0,0,.15),transparent)', borderRadius: 2 }} />
+        </div>
+      );
+      if (block.dividerStyle === 'dashed') return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div style={{ borderTop: '2px dashed rgba(0,0,0,.12)' }} />
+        </div>
+      );
+      if (block.dividerStyle === 'double') return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ height: 1, background: 'rgba(0,0,0,.12)' }} />
+            <div style={{ height: 1, background: 'rgba(0,0,0,.06)' }} />
+          </div>
+        </div>
+      );
+      if (block.dividerStyle === 'wave') return (
+        <div className="flex items-center justify-center py-4">
+          <svg viewBox="0 0 300 20" height="20" width="300" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 10 Q25 2 50 10 Q75 18 100 10 Q125 2 150 10 Q175 18 200 10 Q225 2 250 10 Q275 18 300 10" fill="none" stroke="rgba(0,0,0,.15)" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </div>
+      );
+      if (block.dividerStyle === 'ornament') return (
+        <div className="flex items-center justify-center gap-4 py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,.1)' }} />
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z" fill="rgba(0,0,0,.18)"/>
+          </svg>
+          <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,.1)' }} />
+        </div>
+      );
+      {
+        const c = block.dividerColor || '#3b82f6';
+        if (block.dividerStyle === 'triangle') return (
+          <div style={{ lineHeight: 0, overflow: 'hidden' }}>
+            <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="0,0 1440,0 1440,80 0,30" fill={c}/>
+            </svg>
+          </div>
+        );
+        if (block.dividerStyle === 'clouds') return (
+          <div style={{ lineHeight: 0, overflow: 'hidden' }}>
+            <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 80 Q60 20 130 50 Q200 10 290 50 Q360 5 450 50 Q520 15 610 50 Q680 10 770 50 Q840 15 930 50 Q1000 8 1090 50 Q1160 15 1250 50 Q1320 20 1440 40 L1440 80 Z" fill={c}/>
+            </svg>
+          </div>
+        );
+        if (block.dividerStyle === 'waves_fill') return (
+          <div style={{ lineHeight: 0, overflow: 'hidden' }}>
+            <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 50 Q180 10 360 50 Q540 90 720 50 Q900 10 1080 50 Q1260 90 1440 50 L1440 80 L0 80 Z" fill={c} opacity="0.45"/>
+              <path d="M0 60 Q180 30 360 60 Q540 90 720 60 Q900 30 1080 60 Q1260 90 1440 60 L1440 80 L0 80 Z" fill={c}/>
+            </svg>
+          </div>
+        );
+        if (block.dividerStyle === 'mountains') return (
+          <div style={{ lineHeight: 0, overflow: 'hidden' }}>
+            <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="0,80 240,15 480,55 720,5 960,45 1200,20 1440,50 1440,80" fill={c}/>
+            </svg>
+          </div>
+        );
+      }
       return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"><hr style={{ borderColor: 'rgba(0,0,0,.08)' }} /></div>;
 
     default:

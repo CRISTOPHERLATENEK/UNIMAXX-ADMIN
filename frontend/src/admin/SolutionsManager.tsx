@@ -405,11 +405,10 @@ export function SolutionsManager() {
                                 ...editingSolution,
                                 nav_link: isSelected ? '' : item.to
                               })}
-                              className={`text-sm px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 ${
-                                isSelected
+                              className={`text-sm px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 ${isSelected
                                   ? 'bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-200'
                                   : 'bg-white text-gray-700 border-gray-200 hover:border-orange-400 hover:text-orange-600 hover:bg-orange-50'
-                              }`}
+                                }`}
                             >
                               {isSelected && <Check className="w-3 h-3" />}
                               {item.label}

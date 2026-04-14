@@ -131,7 +131,7 @@ export type BlockType =
   | 'divider';
 
 // Variantes de layout para blocks específicos
-export type FeaturesLayout = 'dark_numbered';
+export type FeaturesLayout = 'dark_numbered' | 'grid' | 'checklist' | 'cards_hover' | 'bento' | 'highlight_list' | 'minimal_pills' | 'split_dark' | 'dark_cards' | 'half_split';
 export type BenefitsLayout = 'grid_cards' | 'side_image' | 'carousel';
 export type BlockSpacing = 'compact' | 'normal' | 'spacious';
 export type BlockRadius = 'none' | 'medium' | 'large';
@@ -152,6 +152,9 @@ export interface PageBlock {
   colorTheme?: 'light' | 'dark' | 'brand';
   // layout variants (new)
   featuresLayout?: FeaturesLayout;
+  featuresNoWrapper?: boolean;
+  featuresAccent?: string;
+  featuresLabel?: string;
   benefitsLayout?: BenefitsLayout;
   // spacing & border radius (new)
   blockSpacing?: BlockSpacing;
@@ -183,11 +186,20 @@ export interface PageBlock {
   imagePosition?: 'left' | 'right';
   // multiple images (image_text block)
   images?: { url: string; alt: string }[];
+  // image_text visual options
+  imageBgColor?: string;
+  imageHasBg?: boolean;
+  imageContain?: boolean;
+  imageMaxHeight?: number;
   // alert_banner
   alertType?: 'info' | 'success' | 'warning' | 'error';
   alertText?: string;
   // divider
-  dividerStyle?: 'line' | 'space' | 'dots';
+  dividerStyle?: 'line' | 'space' | 'dots' | 'gradient' | 'dashed' | 'double' | 'wave' | 'ornament' | 'triangle' | 'clouds' | 'waves_fill' | 'mountains';
+  dividerColor?: string;
+  // animated background
+  animatedBg?: 'none' | 'particles' | 'aurora' | 'grid' | 'waves' | 'pulse' | 'stars';
+  animatedBgColor?: string;
   // richtext
   html?: string;
 }

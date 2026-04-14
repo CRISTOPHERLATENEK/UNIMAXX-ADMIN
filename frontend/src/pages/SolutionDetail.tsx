@@ -12,6 +12,7 @@ import {
 import { Header } from '@/sections/Header';
 import { Footer } from '@/sections/Footer';
 import { fetchSolutionPageBySlug } from '@/services/solutionPagesService';
+import { AnimatedBgLayer } from '@/components/AnimatedBgLayer';
 import type { SolutionPage, PageBlock } from '@/types';
 
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace('/api', '');
@@ -76,6 +77,22 @@ function BlockRenderer({ block, t }: { block: PageBlock; t: typeof THEME[string]
     : isBrand ? { background: `linear-gradient(135deg,${t.from} 0%,${t.to} 100%)` }
       : { background: '#f5f5f7' };
 
+  const hasAnim = block.animatedBg && block.animatedBg !== 'none';
+  const inner = renderSolutionBlock({ block, t, textCol, subCol, bgStyle });
+
+  if (!hasAnim) return <>{inner}</>;
+  return (
+    <div style={{ position: 'relative', isolation: 'isolate' }}>
+      <AnimatedBgLayer type={block.animatedBg} color={block.animatedBgColor || t.from} />
+      <div style={{ position: 'relative', zIndex: 1 }}>{inner}</div>
+    </div>
+  );
+}
+
+function renderSolutionBlock({ block, t, textCol, subCol, bgStyle }: {
+  block: PageBlock; t: typeof THEME[string]; textCol: string; subCol: string;
+  bgStyle: React.CSSProperties;
+}): React.ReactNode {
   switch (block.type) {
 
     case 'hero': {
@@ -508,6 +525,72 @@ function BlockRenderer({ block, t }: { block: PageBlock; t: typeof THEME[string]
           {[0, 1, 2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(0,0,0,.15)' }} />)}
         </div>
       );
+      if (block.dividerStyle === 'gradient') return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div style={{ height: 2, background: 'linear-gradient(90deg,transparent,rgba(0,0,0,.15),transparent)', borderRadius: 2 }} />
+        </div>
+      );
+      if (block.dividerStyle === 'dashed') return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div style={{ borderTop: '2px dashed rgba(0,0,0,.12)' }} />
+        </div>
+      );
+      if (block.dividerStyle === 'double') return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ height: 1, background: 'rgba(0,0,0,.12)' }} />
+            <div style={{ height: 1, background: 'rgba(0,0,0,.06)' }} />
+          </div>
+        </div>
+      );
+      if (block.dividerStyle === 'wave') return (
+        <div className="flex items-center justify-center py-4">
+          <svg viewBox="0 0 300 20" height="20" width="300" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 10 Q25 2 50 10 Q75 18 100 10 Q125 2 150 10 Q175 18 200 10 Q225 2 250 10 Q275 18 300 10" fill="none" stroke="rgba(0,0,0,.15)" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </div>
+      );
+      if (block.dividerStyle === 'ornament') return (
+        <div className="flex items-center justify-center gap-4 py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,.1)' }} />
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z" fill="rgba(0,0,0,.18)"/>
+          </svg>
+          <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,.1)' }} />
+        </div>
+      );
+      {
+        const c = block.dividerColor || '#3b82f6';
+        if (block.dividerStyle === 'triangle') return (
+          <div style={{ lineHeight: 0, overflow: 'hidden' }}>
+            <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="0,0 1440,0 1440,80 0,30" fill={c}/>
+            </svg>
+          </div>
+        );
+        if (block.dividerStyle === 'clouds') return (
+          <div style={{ lineHeight: 0, overflow: 'hidden' }}>
+            <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 80 Q60 20 130 50 Q200 10 290 50 Q360 5 450 50 Q520 15 610 50 Q680 10 770 50 Q840 15 930 50 Q1000 8 1090 50 Q1160 15 1250 50 Q1320 20 1440 40 L1440 80 Z" fill={c}/>
+            </svg>
+          </div>
+        );
+        if (block.dividerStyle === 'waves_fill') return (
+          <div style={{ lineHeight: 0, overflow: 'hidden' }}>
+            <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 50 Q180 10 360 50 Q540 90 720 50 Q900 10 1080 50 Q1260 90 1440 50 L1440 80 L0 80 Z" fill={c} opacity="0.45"/>
+              <path d="M0 60 Q180 30 360 60 Q540 90 720 60 Q900 30 1080 60 Q1260 90 1440 60 L1440 80 L0 80 Z" fill={c}/>
+            </svg>
+          </div>
+        );
+        if (block.dividerStyle === 'mountains') return (
+          <div style={{ lineHeight: 0, overflow: 'hidden' }}>
+            <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="0,80 240,15 480,55 720,5 960,45 1200,20 1440,50 1440,80" fill={c}/>
+            </svg>
+          </div>
+        );
+      }
       return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"><hr style={{ borderColor: 'rgba(0,0,0,.08)' }} /></div>;
 
     default:

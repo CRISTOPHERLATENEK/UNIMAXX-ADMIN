@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { ANIM_BG_OPTIONS } from '@/components/AnimatedBgLayer';
+import type { AnimatedBgType } from '@/components/AnimatedBgLayer';
 import {
   Plus, X, ChevronUp, ChevronDown, Eye, EyeOff,
   GripVertical, Layers,
@@ -18,55 +20,55 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 // Ícones Lucide mais usados para seleção rápida
 const ICON_LIBRARY = [
-  '✅','⚡','🚀','🎯','💡','🔒','📊','🌐','📱','💳','🛒','🏪','🚛','⭐','🔗',
-  '📈','🤝','🧩','💬','📞','🎁','🏆','🔧','📝','👥','🌟','💰','🕐','🔑','📋',
-  '✨','🎨','🔔','📦','🏗️','🤖','💎','🌱','📡','🔐',
+  '✅', '⚡', '🚀', '🎯', '💡', '🔒', '📊', '🌐', '📱', '💳', '🛒', '🏪', '🚛', '⭐', '🔗',
+  '📈', '🤝', '🧩', '💬', '📞', '🎁', '🏆', '🔧', '📝', '👥', '🌟', '💰', '🕐', '🔑', '📋',
+  '✨', '🎨', '🔔', '📦', '🏗️', '🤖', '💎', '🌱', '📡', '🔐',
 ];
 
 const BLOCK_CATALOG = [
-  { type: 'hero'         as BlockType, label: 'Hero',            description: 'Cabeçalho criativo com variantes visuais',  emoji: '🌟' },
-  { type: 'features'     as BlockType, label: 'Funcionalidades',  description: 'Lista de recursos em grid',                emoji: '✅' },
-  { type: 'benefits'     as BlockType, label: 'Benefícios',       description: 'Resultados e ganhos — fundo escuro',       emoji: '⚡' },
-  { type: 'steps'        as BlockType, label: 'Como Funciona',    description: 'Passo a passo numerado',                   emoji: '🔢' },
-  { type: 'stats'        as BlockType, label: 'Estatísticas',     description: 'Números de impacto em destaque',           emoji: '📊' },
-  { type: 'testimonial'  as BlockType, label: 'Depoimento',       description: 'Citação de cliente',                      emoji: '💬' },
-  { type: 'faq'          as BlockType, label: 'FAQ',              description: 'Perguntas frequentes com acordeão',        emoji: '❓' },
-  { type: 'video'        as BlockType, label: 'Vídeo',            description: 'Embed YouTube',                           emoji: '▶️' },
-  { type: 'cta'          as BlockType, label: 'CTA',              description: 'Chamada para ação com gradiente',          emoji: '📣' },
-  { type: 'text'         as BlockType, label: 'Texto Simples',    description: 'Parágrafo ou título de texto',             emoji: '📝' },
-  { type: 'richtext'     as BlockType, label: 'Rich Text',        description: 'HTML livre',                              emoji: '🖊️' },
-  { type: 'image'        as BlockType, label: 'Imagem',           description: 'Imagem com legenda opcional',             emoji: '🖼️' },
-  { type: 'integrations' as BlockType, label: 'Integrações',      description: 'Tags de sistemas compatíveis',            emoji: '🔌' },
-  { type: 'image_text'   as BlockType, label: 'Imagem + Texto',  description: 'Imagem ao lado com título e descrição', emoji: '🖼️' },
-  { type: 'divider'      as BlockType, label: 'Divisor',          description: 'Separador visual entre seções',           emoji: '➖' },
+  { type: 'hero' as BlockType, label: 'Hero', description: 'Cabeçalho criativo com variantes visuais', emoji: '🌟' },
+  { type: 'features' as BlockType, label: 'Funcionalidades', description: 'Lista de recursos em grid', emoji: '✅' },
+  { type: 'benefits' as BlockType, label: 'Benefícios', description: 'Resultados e ganhos — fundo escuro', emoji: '⚡' },
+  { type: 'steps' as BlockType, label: 'Como Funciona', description: 'Passo a passo numerado', emoji: '🔢' },
+  { type: 'stats' as BlockType, label: 'Estatísticas', description: 'Números de impacto em destaque', emoji: '📊' },
+  { type: 'testimonial' as BlockType, label: 'Depoimento', description: 'Citação de cliente', emoji: '💬' },
+  { type: 'faq' as BlockType, label: 'FAQ', description: 'Perguntas frequentes com acordeão', emoji: '❓' },
+  { type: 'video' as BlockType, label: 'Vídeo', description: 'Embed YouTube', emoji: '▶️' },
+  { type: 'cta' as BlockType, label: 'CTA', description: 'Chamada para ação com gradiente', emoji: '📣' },
+  { type: 'text' as BlockType, label: 'Texto Simples', description: 'Parágrafo ou título de texto', emoji: '📝' },
+  { type: 'richtext' as BlockType, label: 'Rich Text', description: 'HTML livre', emoji: '🖊️' },
+  { type: 'image' as BlockType, label: 'Imagem', description: 'Imagem com legenda opcional', emoji: '🖼️' },
+  { type: 'integrations' as BlockType, label: 'Integrações', description: 'Tags de sistemas compatíveis', emoji: '🔌' },
+  { type: 'image_text' as BlockType, label: 'Imagem + Texto', description: 'Imagem ao lado com título e descrição', emoji: '🖼️' },
+  { type: 'divider' as BlockType, label: 'Divisor', description: 'Separador visual entre seções', emoji: '➖' },
 ];
 
 const HERO_LAYOUTS = [
-  { id: 'centered',   label: 'Centralizado',   desc: 'Título grande ao centro, gradiente de fundo' },
-  { id: 'split',      label: 'Dividido',        desc: 'Texto à esquerda, imagem à direita' },
-  { id: 'dark_glow',  label: 'Dark Glow',       desc: 'Fundo preto com glow neon da cor do tema' },
-  { id: 'magazine',   label: 'Magazine',        desc: 'Imagem de fundo full-bleed com overlay' },
-  { id: 'cinematic',  label: 'Cinematic',       desc: 'Estilo banner/game — imagem + título à esquerda + botão vídeo' },
+  { id: 'centered', label: 'Centralizado', desc: 'Título grande ao centro, gradiente de fundo' },
+  { id: 'split', label: 'Dividido', desc: 'Texto à esquerda, imagem à direita' },
+  { id: 'dark_glow', label: 'Dark Glow', desc: 'Fundo preto com glow neon da cor do tema' },
+  { id: 'magazine', label: 'Magazine', desc: 'Imagem de fundo full-bleed com overlay' },
+  { id: 'cinematic', label: 'Cinematic', desc: 'Estilo banner/game — imagem + título à esquerda + botão vídeo' },
 ];
 
 function makeBlock(type: BlockType): PageBlock {
-  const id = `${type}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  const id = `${type}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const b: PageBlock = { id, type, visible: true, blockSpacing: 'normal', blockRadius: 'large' };
-  if (type === 'hero')         return { ...b, heroLayout:'centered', title:'', subtitle:'', description:'', ctaLabel:'Falar com Especialista', ctaLink:'/cliente', colorTheme:'brand', badge:'' };
-  if (type === 'features')     return { ...b, title:'Funcionalidades', items:[], colorTheme:'dark' };
-  if (type === 'benefits')     return { ...b, title:'Benefícios', items:[], benefitsLayout:'grid_cards', colorTheme:'dark' };
-  if (type === 'steps')        return { ...b, title:'Como funciona', steps:[], colorTheme:'light' };
-  if (type === 'stats')        return { ...b, stats:[], colorTheme:'light' };
-  if (type === 'testimonial')  return { ...b, quote:'', author:'', role:'', colorTheme:'dark' };
-  if (type === 'faq')          return { ...b, title:'Perguntas Frequentes', faq:[], colorTheme:'light' };
-  if (type === 'video')        return { ...b, title:'', videoUrl:'', colorTheme:'dark' };
-  if (type === 'cta')          return { ...b, title:'', description:'', ctaLabel:'Falar com Especialista', ctaLink:'/cliente', colorTheme:'brand' };
-  if (type === 'text')         return { ...b, title:'', description:'', colorTheme:'light' };
-  if (type === 'richtext')     return { ...b, html:'', colorTheme:'light' };
-  if (type === 'image')        return { ...b, imageUrl:'', imageAlt:'', colorTheme:'light' };
-  if (type === 'integrations') return { ...b, title:'Integrações', items:[], colorTheme:'light' };
-  if (type === 'image_text')   return { ...b, title:'', description:'', imageUrl:'', imageAlt:'', imagePosition:'right', colorTheme:'dark', blockSpacing:'normal', blockRadius:'large' };
-  if (type === 'divider')      return { ...b, dividerStyle:'line', colorTheme:'light' };
+  if (type === 'hero') return { ...b, heroLayout: 'centered', title: '', subtitle: '', description: '', ctaLabel: 'Falar com Especialista', ctaLink: '/cliente', colorTheme: 'brand', badge: '' };
+  if (type === 'features') return { ...b, title: 'Os blocos de uma plataforma poderosa', featuresLabel: 'FEATURES', items: [], colorTheme: 'dark', featuresLayout: 'split_dark', featuresAccent: '#f97316' };
+  if (type === 'benefits') return { ...b, title: 'Benefícios', items: [], benefitsLayout: 'grid_cards', colorTheme: 'dark' };
+  if (type === 'steps') return { ...b, title: 'Como funciona', steps: [], colorTheme: 'light' };
+  if (type === 'stats') return { ...b, stats: [], colorTheme: 'light' };
+  if (type === 'testimonial') return { ...b, quote: '', author: '', role: '', colorTheme: 'dark' };
+  if (type === 'faq') return { ...b, title: 'Perguntas Frequentes', faq: [], colorTheme: 'light' };
+  if (type === 'video') return { ...b, title: '', videoUrl: '', colorTheme: 'dark' };
+  if (type === 'cta') return { ...b, title: '', description: '', ctaLabel: 'Falar com Especialista', ctaLink: '/cliente', colorTheme: 'brand' };
+  if (type === 'text') return { ...b, title: '', description: '', colorTheme: 'light' };
+  if (type === 'richtext') return { ...b, html: '', colorTheme: 'light' };
+  if (type === 'image') return { ...b, imageUrl: '', imageAlt: '', colorTheme: 'light' };
+  if (type === 'integrations') return { ...b, title: 'Integrações', items: [], colorTheme: 'light' };
+  if (type === 'image_text') return { ...b, title: '', description: '', imageUrl: '', imageAlt: '', imagePosition: 'right', colorTheme: 'dark', blockSpacing: 'normal', blockRadius: 'large' };
+  if (type === 'divider') return { ...b, dividerStyle: 'line', colorTheme: 'light' };
   return b;
 }
 
@@ -99,19 +101,19 @@ function TagList({ items, onChange, placeholder }: { items: string[]; onChange: 
       {items.map((item, i) => (
         <div key={i} className="flex items-center gap-2 group">
           <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] bg-[#f5f5f7]">
-            <span className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 text-[#98989d]">{i+1}</span>
+            <span className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 text-[#98989d]">{i + 1}</span>
             <span className="flex-1 leading-snug">{item}</span>
           </div>
-          <button onClick={() => onChange(items.filter((_,j)=>j!==i))}
+          <button onClick={() => onChange(items.filter((_, j) => j !== i))}
             className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] opacity-0 group-hover:opacity-100 transition hover:text-red-400 hover:bg-red-50">
-            <X style={{width:11,height:11}} />
+            <X style={{ width: 11, height: 11 }} />
           </button>
         </div>
       ))}
       <div className="flex gap-2">
-        <Input value={draft} onChange={e=>setDraft(e.target.value)} placeholder={placeholder||'Adicionar item…'} className="h-8 text-[13px]"
-          onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();add();}}} />
-        <Button size="sm" variant="outline" onClick={add} className="h-8 px-3 flex-shrink-0"><Plus style={{width:13,height:13}}/></Button>
+        <Input value={draft} onChange={e => setDraft(e.target.value)} placeholder={placeholder || 'Adicionar item…'} className="h-8 text-[13px]"
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add(); } }} />
+        <Button size="sm" variant="outline" onClick={add} className="h-8 px-3 flex-shrink-0"><Plus style={{ width: 13, height: 13 }} /></Button>
       </div>
     </div>
   );
@@ -166,15 +168,15 @@ function SpacingRadiusControls({ block, onChange }: { block: PageBlock; onChange
   const set = <K extends keyof PageBlock>(k: K, v: PageBlock[K]) => onChange({ ...block, [k]: v });
 
   const spacingOpts: { v: BlockSpacing; label: string; icon: React.ReactNode }[] = [
-    { v: 'compact',  label: 'Compacto',  icon: <Minimize2 style={{width:12,height:12}}/> },
-    { v: 'normal',   label: 'Normal',    icon: <Square style={{width:12,height:12}}/> },
-    { v: 'spacious', label: 'Generoso',  icon: <Maximize2 style={{width:12,height:12}}/> },
+    { v: 'compact', label: 'Compacto', icon: <Minimize2 style={{ width: 12, height: 12 }} /> },
+    { v: 'normal', label: 'Normal', icon: <Square style={{ width: 12, height: 12 }} /> },
+    { v: 'spacious', label: 'Generoso', icon: <Maximize2 style={{ width: 12, height: 12 }} /> },
   ];
 
   const radiusOpts: { v: BlockRadius; label: string }[] = [
-    { v: 'none',   label: 'Quadrado' },
+    { v: 'none', label: 'Quadrado' },
     { v: 'medium', label: 'Médio' },
-    { v: 'large',  label: 'Arredondado' },
+    { v: 'large', label: 'Arredondado' },
   ];
 
   return (
@@ -212,17 +214,73 @@ function SpacingRadiusControls({ block, onChange }: { block: PageBlock; onChange
           ))}
         </div>
       </div>
+
+      <SectionDivider label="Fundo Animado" />
+      <div>
+        <FL hint="Efeito animado aplicado por trás do conteúdo desta seção">Estilo</FL>
+        <div className="grid grid-cols-3 gap-1.5 mb-2">
+          {ANIM_BG_OPTIONS.map(opt => {
+            const active = (block.animatedBg || 'none') === opt.value;
+            const previewColor = block.animatedBgColor || '#f97316';
+            return (
+              <button key={opt.value} onClick={() => set('animatedBg', opt.value as AnimatedBgType)}
+                className="rounded-xl border-2 transition overflow-hidden"
+                style={{ borderColor: active ? '#f97316' : 'rgba(0,0,0,.08)', background: active ? '#fff7ed' : '#f5f5f7', padding: '8px 4px 4px' }}>
+                {/* mini preview */}
+                <div style={{ position: 'relative', height: 28, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: 6, background: active ? '#fff7ed' : '#eaeaec' }}>
+                  {opt.value !== 'none' && (
+                    <div style={{ position: 'absolute', inset: 0, color: previewColor, ...parseCss(opt.css) }} />
+                  )}
+                  {opt.value === 'none' && <span style={{ fontSize: 12, color: '#aaa' }}>—</span>}
+                </div>
+                <div className="text-[9px] font-bold text-center" style={{ color: active ? '#f97316' : '#6e6e73' }}>{opt.label}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {(block.animatedBg && block.animatedBg !== 'none') && (
+        <div>
+          <FL hint="Cor base das partículas / ondas / aurora">Cor do efeito</FL>
+          <div className="flex flex-wrap gap-1.5 mb-1.5">
+            {['#f97316','#6366f1','#10b981','#3b82f6','#ec4899','#8b5cf6','#14b8a6','#ef4444','#ffffff','#1e293b'].map(c => (
+              <button key={c} onClick={() => set('animatedBgColor', c)}
+                className="w-7 h-7 rounded-lg border-2 transition"
+                style={{ background: c, borderColor: (block.animatedBgColor || '#f97316') === c ? '#f97316' : 'transparent', boxShadow: (block.animatedBgColor || '#f97316') === c ? '0 0 0 2px #fff,0 0 0 4px #f97316' : 'none' }} />
+            ))}
+            <label className="w-7 h-7 rounded-lg border-2 overflow-hidden cursor-pointer relative" style={{ borderColor: 'rgba(0,0,0,.1)' }} title="Cor personalizada">
+              <input type="color" value={block.animatedBgColor || '#f97316'} onChange={e => set('animatedBgColor', e.target.value)}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+              <div className="w-full h-full flex items-center justify-center text-[13px]">🎨</div>
+            </label>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
+function parseCss(css: string): React.CSSProperties {
+  const result: Record<string, string> = {};
+  if (!css) return result;
+  css.split(';').forEach(rule => {
+    const [prop, ...vals] = rule.split(':');
+    if (prop && vals.length) {
+      const key = prop.trim().replace(/-([a-z])/g, (_, l) => l.toUpperCase());
+      result[key] = vals.join(':').trim();
+    }
+  });
+  return result as React.CSSProperties;
+}
+
 const BANNER_STYLES = [
   { id: 'cinematic', label: 'Cinemático' },
-  { id: 'neon',      label: 'Neon' },
+  { id: 'neon', label: 'Neon' },
   { id: 'editorial', label: 'Editorial' },
-  { id: 'split',     label: 'Dividido' },
-  { id: 'bold',      label: 'Impacto' },
-  { id: 'parallax',  label: 'Parallax' },
+  { id: 'split', label: 'Dividido' },
+  { id: 'bold', label: 'Impacto' },
+  { id: 'parallax', label: 'Parallax' },
 ] as const;
 
 function BannerStyleThumb({ id, accent }: { id: string; accent: string }) {
@@ -374,10 +432,10 @@ function HeroEditor({ block, onChange }: { block: PageBlock; onChange: (b: PageB
                   {uploading
                     ? <span style={{ color: '#f97316', fontSize: 13 }}>Enviando...</span>
                     : <>
-                        <span style={{ fontSize: 28 }}>🖼️</span>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: '#9ca3af', margin: 0 }}>Clique para enviar imagem</p>
-                        <p style={{ fontSize: 11, color: '#6b7280', margin: 0 }}>PNG, JPG, WEBP — 1920×800 recomendado</p>
-                      </>
+                      <span style={{ fontSize: 28 }}>🖼️</span>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#9ca3af', margin: 0 }}>Clique para enviar imagem</p>
+                      <p style={{ fontSize: 11, color: '#6b7280', margin: 0 }}>PNG, JPG, WEBP — 1920×800 recomendado</p>
+                    </>
                   }
                 </div>
               )}
@@ -467,30 +525,30 @@ function HeroEditor({ block, onChange }: { block: PageBlock; onChange: (b: PageB
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
           <div>
             <FL>Título *</FL>
-            <Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Ex: Tecnologia que Impulsiona" className="h-9" />
+            <Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Ex: Tecnologia que Impulsiona" className="h-9" />
           </div>
           <div>
             <FL hint="Pílula pequena acima do título">Badge / Subtítulo</FL>
-            <Input value={block.badge||''} onChange={e=>set('badge',e.target.value)} placeholder="Frase de destaque" className="h-9" />
+            <Input value={block.badge || ''} onChange={e => set('badge', e.target.value)} placeholder="Frase de destaque" className="h-9" />
           </div>
         </div>
         <div style={{ marginBottom: 14 }}>
           <FL>Descrição</FL>
-          <Textarea value={block.description||''} onChange={e=>set('description',e.target.value)}
+          <Textarea value={block.description || ''} onChange={e => set('description', e.target.value)}
             placeholder="Texto de apoio..." rows={2} className="resize-none text-[13px]" />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
             <FL>Texto do Botão</FL>
-            <Input value={block.ctaLabel||''} onChange={e=>set('ctaLabel',e.target.value)} placeholder="Ex: Saiba mais" className="h-9" />
+            <Input value={block.ctaLabel || ''} onChange={e => set('ctaLabel', e.target.value)} placeholder="Ex: Saiba mais" className="h-9" />
           </div>
           <div>
             <FL>Link do Botão</FL>
-            <Input value={block.ctaLink||''} onChange={e=>set('ctaLink',e.target.value)} placeholder="/solucoes ou https://..." className="h-9" />
+            <Input value={block.ctaLink || ''} onChange={e => set('ctaLink', e.target.value)} placeholder="/solucoes ou https://..." className="h-9" />
           </div>
         </div>
       </div>
-
+      <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
   );
 }
@@ -509,13 +567,13 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
       <FL>Fundo do bloco</FL>
       <div className="flex gap-2">
         {[
-          { v:'light' as const, label:'Claro',    bg:'#f5f5f7', fg:'#1d1d1f', border:'rgba(0,0,0,.08)' },
-          { v:'dark'  as const, label:'Escuro',   bg:'#0a0a0c', fg:'#fff',    border:'transparent' },
-          { v:'brand' as const, label:'Cor tema', bg:'#f97316', fg:'#fff',    border:'transparent' },
+          { v: 'light' as const, label: 'Claro', bg: '#f5f5f7', fg: '#1d1d1f', border: 'rgba(0,0,0,.08)' },
+          { v: 'dark' as const, label: 'Escuro', bg: '#0a0a0c', fg: '#fff', border: 'transparent' },
+          { v: 'brand' as const, label: 'Cor tema', bg: '#f97316', fg: '#fff', border: 'transparent' },
         ].map(o => (
           <button key={o.v} onClick={() => set('colorTheme', o.v)}
             className="flex-1 h-8 rounded-xl text-[11px] font-bold border-2 transition"
-            style={{background:o.bg,color:o.fg,borderColor:block.colorTheme===o.v?'#f97316':o.border}}>
+            style={{ background: o.bg, color: o.fg, borderColor: block.colorTheme === o.v ? '#f97316' : o.border }}>
             {o.label}
           </button>
         ))}
@@ -525,17 +583,234 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   // ── Features ──────────────────────────────────────────────────────────────
   if (block.type === 'features') {
+    const featLayouts: { v: string; label: string; desc: string; preview: string }[] = [
+      { v: 'split_dark', label: 'Split Dark', desc: 'Título à esq., cards colunados à dir. — fundo escuro', preview: '◧' },
+      { v: 'dark_cards', label: 'Dark Cards', desc: 'Cards escuros com ícone grande no topo', preview: '▦' },
+      { v: 'half_split', label: 'Half & Half', desc: 'Fundo claro/escuro dividido, cards em grade', preview: '◑' },
+      { v: 'highlight_list', label: 'Lista Numerada', desc: 'Número em destaque + texto, 2 colunas', preview: '⑆' },
+      { v: 'checklist', label: 'Checklist', desc: 'Check com pílula arredondada', preview: '✓' },
+      { v: 'cards_hover', label: 'Cards Hover', desc: 'Cards com animação no hover', preview: '▣' },
+      { v: 'community_connect', label: 'Community Connect', desc: 'Título à esq., grid de links sociais/canais à dir.', preview: '⊞' },
+    ];
+    const currentLayout = block.featuresLayout || 'split_dark';
+    const accent = block.featuresAccent || '#f97316';
+
     return (
       <div className="space-y-4">
-        <ThemePicker />
+
+        <SectionDivider label="Layout" />
+        <div>
+          <FL hint="Estilo visual da seção de features">Estilo Visual</FL>
+          <div className="grid grid-cols-1 gap-1.5">
+            {featLayouts.map(o => {
+              const sel = currentLayout === o.v;
+              return (
+                <button key={o.v} onClick={() => set('featuresLayout', o.v)}
+                  className="text-left px-3 py-2.5 rounded-xl border-2 transition flex items-center gap-3"
+                  style={{ borderColor: sel ? accent : 'rgba(0,0,0,.08)', background: sel ? `${accent}10` : '#fafafa' }}>
+                  <span className="text-[18px] w-7 text-center flex-shrink-0" style={{ color: sel ? accent : '#aaa' }}>{o.preview}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[12px] font-bold" style={{ color: sel ? accent : '#1d1d1f' }}>{o.label}</p>
+                      {sel && <span className="text-[10px] font-bold" style={{ color: accent }}>✓</span>}
+                    </div>
+                    <p className="text-[10px] leading-snug truncate" style={{ color: '#98989d' }}>{o.desc}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <SectionDivider label="Cor de Destaque" />
+        <div>
+          <FL hint="Cor usada nos números, ícones e destaques">Cor do Tema</FL>
+          <div className="flex items-center gap-2">
+            <input type="color" value={accent} onChange={e => set('featuresAccent', e.target.value)}
+              className="w-10 h-10 rounded-xl border-2 cursor-pointer flex-shrink-0"
+              style={{ borderColor: 'rgba(0,0,0,.1)', padding: 2 }} />
+            <Input value={accent} onChange={e => set('featuresAccent', e.target.value)}
+              placeholder="#f97316" className="h-9 font-mono text-[13px]" />
+            <div className="flex gap-1.5 flex-shrink-0">
+              {['#f97316', '#2563eb', '#16a34a', '#9333ea', '#e11d48', '#0ea5e9'].map(c => (
+                <button key={c} onClick={() => set('featuresAccent', c)}
+                  className="w-6 h-6 rounded-lg border-2 transition"
+                  style={{ background: c, borderColor: accent === c ? '#1d1d1f' : 'transparent' }} />
+              ))}
+            </div>
+          </div>
+        </div>
 
         <SectionDivider label="Conteúdo" />
-        <div><FL>Título</FL><Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Funcionalidades" className="h-9"/></div>
-
         <div>
-          <FL hint="Cada linha vira um card numerado no estilo dark">Itens</FL>
-          <TagList items={block.items||[]} onChange={v=>set('items',v)} placeholder="Ex: Controle de estoque em tempo real"/>
+          <FL hint="Label pequeno acima do título (ex: FEATURES, RECURSOS)">Label / Badge</FL>
+          <Input value={block.featuresLabel || ''} onChange={e => set('featuresLabel', e.target.value)} placeholder="FEATURES" className="h-9 font-mono text-[12px]" />
         </div>
+        <div><FL>Título principal</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Os blocos de uma plataforma poderosa" className="h-9" /></div>
+        <div><FL hint="Subtítulo abaixo do título">Subtítulo / Descrição</FL>
+          <Textarea value={block.subtitle || ''} onChange={e => set('subtitle', e.target.value)} placeholder="Nossa equipe vai entrar em contato para entender melhor suas necessidades" className="text-[13px] resize-none" rows={2} />
+        </div>
+        <div>
+          <FL hint="Cada linha vira um card no layout selecionado">Itens</FL>
+          <TagList items={block.items || []} onChange={v => set('items', v)} placeholder="Ex: Controle de estoque em tempo real" />
+        </div>
+
+        {/* ── Community Connect specific editor ── */}
+        {currentLayout === 'community_connect' && (() => {
+          const cbg = block.communityBgColor || '#1e2235';
+          const ctxt = block.communityTextColor || '#ffffff';
+          const cacc = block.communityAccentColor || '#7c9cff';
+          const cmut = block.communityMutedColor || '#a0aabe';
+          const setCard = (i: number, field: string, val: string) => {
+            const a = [...(block.communityCards || [])];
+            a[i] = { ...a[i], [field]: val };
+            set('communityCards', a);
+          };
+          return (
+            <>
+              {/* ── Seção 1: Textos principais ── */}
+              <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 14, padding: 16, marginTop: 4 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: '#1d1d1f', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 14 }}>✏️</span> Textos do Lado Esquerdo
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div>
+                    <p style={{ fontSize: 11, color: '#98989d', marginBottom: 4 }}>Eyebrow <span style={{ opacity: .6 }}>— texto pequeno acima do título</span></p>
+                    <Input value={block.communityEyebrow || ''} onChange={e => set('communityEyebrow', e.target.value)}
+                      placeholder="Before you go..." className="h-9" />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 11, color: '#98989d', marginBottom: 4 }}>Título principal</p>
+                    <Input value={block.title || ''} onChange={e => set('title', e.target.value)}
+                      placeholder="Connect with our Community!" className="h-9" />
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Seção 2: Cores com mini-preview ── */}
+              <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 14, padding: 16 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: '#1d1d1f', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 14 }}>🎨</span> Cores
+                </p>
+
+                {/* Mini-preview ao vivo */}
+                <div style={{ borderRadius: 10, overflow: 'hidden', marginBottom: 14, border: '1px solid rgba(0,0,0,.06)' }}>
+                  <div style={{ background: cbg, padding: '10px 14px', display: 'grid', gridTemplateColumns: '1fr 1.4fr' }}>
+                    <div style={{ paddingRight: 10, borderRight: '1px solid rgba(255,255,255,.1)' }}>
+                      <p style={{ fontSize: 9, color: cmut, marginBottom: 2 }}>Before you go...</p>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: ctxt, lineHeight: 1.2 }}>Connect with<br />Community!</p>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, paddingLeft: 10 }}>
+                      {['Discord', 'Github', 'LinkedIn', 'E-mail'].map((name, i) => (
+                        <div key={i} style={{ padding: '4px 6px' }}>
+                          <p style={{ fontSize: 8, fontWeight: 700, color: ctxt, marginBottom: 1 }}>{name}.</p>
+                          <p style={{ fontSize: 7, color: cmut, marginBottom: 2 }}>Description here.</p>
+                          <p style={{ fontSize: 7, color: cacc, fontWeight: 600 }}>Join ›</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {[
+                    { label: 'Fundo', hint: 'Cor de fundo do bloco', key: 'communityBgColor', val: cbg },
+                    { label: 'Texto', hint: 'Títulos e texto principal', key: 'communityTextColor', val: ctxt },
+                    { label: 'Links', hint: 'Cor dos links/botões', key: 'communityAccentColor', val: cacc },
+                    { label: 'Secundário', hint: 'Descrições e textos menores', key: 'communityMutedColor', val: cmut },
+                  ].map(({ label, hint, key, val }) => (
+                    <div key={key}>
+                      <p style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f', marginBottom: 2 }}>{label}</p>
+                      <p style={{ fontSize: 10, color: '#98989d', marginBottom: 6 }}>{hint}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: val, border: '1px solid rgba(0,0,0,.12)', cursor: 'pointer', overflow: 'hidden' }}>
+                            <input type="color" value={val}
+                              onChange={e => set(key as keyof typeof block, e.target.value)}
+                              style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+                          </div>
+                        </div>
+                        <Input value={val} onChange={e => set(key as keyof typeof block, e.target.value)}
+                          className="h-8 font-mono text-[11px]" style={{ flex: 1 }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Seção 3: Cards de Canal ── */}
+              <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 14, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#1d1d1f', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 14 }}>🔗</span> Canais / Links
+                    </p>
+                    <p style={{ fontSize: 10, color: '#98989d', marginTop: 2 }}>Aparecem no grid à direita — máx. 6 recomendado</p>
+                  </div>
+                  <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] gap-1 flex-shrink-0"
+                    onClick={() => set('communityCards', [...(block.communityCards || []), { title: '', desc: '', linkLabel: 'Join', linkUrl: '#' }])}>
+                    <Plus style={{ width: 11, height: 11 }} /> Adicionar
+                  </Button>
+                </div>
+
+                {(block.communityCards || []).length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: '#c7c7cc', fontSize: 12 }}>
+                    Nenhum canal ainda — clique em Adicionar
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(block.communityCards || []).map((card, i) => (
+                    <div key={i} style={{ border: '1px solid rgba(0,0,0,.08)', borderRadius: 10, overflow: 'hidden' }}>
+                      {/* Header do card — clicável para expandir */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: '#f9f9f9', cursor: 'default' }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: cbg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: ctxt }}>{i + 1}</span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: '#1d1d1f', margin: 0, truncate: true }}>
+                            {card.title || <span style={{ color: '#c7c7cc' }}>Sem título</span>}
+                          </p>
+                          {card.desc && <p style={{ fontSize: 10, color: '#98989d', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.desc}</p>}
+                        </div>
+                        <a href={card.linkUrl || '#'} target="_blank" style={{ fontSize: 10, color: cacc, fontWeight: 600, flexShrink: 0, textDecoration: 'none' }}>{card.linkLabel || 'Join'} ›</a>
+                        <button onClick={() => set('communityCards', (block.communityCards || []).filter((_, j) => j !== i))}
+                          style={{ width: 22, height: 22, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c7c7cc', flexShrink: 0 }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#fee2e2'; (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#c7c7cc'; }}>
+                          <X style={{ width: 11, height: 11 }} />
+                        </button>
+                      </div>
+                      {/* Campos do card */}
+                      <div style={{ padding: '10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                        <div style={{ gridColumn: '1 / -1' }}>
+                          <p style={{ fontSize: 10, color: '#98989d', marginBottom: 3 }}>Título do canal</p>
+                          <Input value={card.title} placeholder="Ex: Discord." className="h-8 text-[12px]"
+                            onChange={e => setCard(i, 'title', e.target.value)} />
+                        </div>
+                        <div style={{ gridColumn: '1 / -1' }}>
+                          <p style={{ fontSize: 10, color: '#98989d', marginBottom: 3 }}>Descrição curta</p>
+                          <Input value={card.desc} placeholder="Ex: Connect our community channel." className="h-8 text-[12px]"
+                            onChange={e => setCard(i, 'desc', e.target.value)} />
+                        </div>
+                        <div>
+                          <p style={{ fontSize: 10, color: '#98989d', marginBottom: 3 }}>Texto do link</p>
+                          <Input value={card.linkLabel} placeholder="Join" className="h-8 text-[12px]"
+                            onChange={e => setCard(i, 'linkLabel', e.target.value)} />
+                        </div>
+                        <div>
+                          <p style={{ fontSize: 10, color: '#98989d', marginBottom: 3 }}>URL de destino</p>
+                          <Input value={card.linkUrl} placeholder="https://..." className="h-8 text-[12px]"
+                            onChange={e => setCard(i, 'linkUrl', e.target.value)} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          );
+        })()}
 
         <SpacingRadiusControls block={block} onChange={onChange} />
       </div>
@@ -545,9 +820,9 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
   // ── Benefits ──────────────────────────────────────────────────────────────
   if (block.type === 'benefits') {
     const layouts: { v: BenefitsLayout; label: string; desc: string }[] = [
-      { v: 'grid_cards',  label: 'Grid de Cards',      desc: 'Cards em grade, fundo escuro' },
-      { v: 'side_image',  label: 'Lista c/ Imagem',     desc: 'Texto à esq., imagem à dir.' },
-      { v: 'carousel',    label: 'Carrossel',           desc: 'Navegação horizontal' },
+      { v: 'grid_cards', label: 'Grid de Cards', desc: 'Cards em grade, fundo escuro' },
+      { v: 'side_image', label: 'Lista c/ Imagem', desc: 'Texto à esq., imagem à dir.' },
+      { v: 'carousel', label: 'Carrossel', desc: 'Navegação horizontal' },
     ];
     const [uploading, setUploading] = useState(false);
     const token = localStorage.getItem('token');
@@ -555,7 +830,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
       setUploading(true);
       try {
         const fd = new FormData(); fd.append('image', file);
-        const res = await fetch(`${API_URL}/admin/upload`, { method:'POST', headers:{Authorization:`Bearer ${token}`}, body:fd });
+        const res = await fetch(`${API_URL}/admin/upload`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
         if (!res.ok) throw new Error('Upload falhou');
         const { url } = await res.json();
         set('imageUrl', url);
@@ -602,30 +877,30 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
         )}
 
         <SectionDivider label="Conteúdo" />
-        <div><FL>Título</FL><Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Benefícios" className="h-9"/></div>
+        <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Benefícios" className="h-9" /></div>
         <div>
           <FL hint="Itens com ícone para cada benefício">Benefícios com Ícone</FL>
           <div className="space-y-2">
-            {(block.iconItems||[]).map((item, i) => (
+            {(block.iconItems || []).map((item, i) => (
               <div key={i} className="p-3 rounded-xl bg-[#f5f5f7] group">
                 <div className="flex items-center gap-2 mb-2">
                   <IconPicker value={item.icon} onChange={v => {
-                    const a=[...(block.iconItems||[])]; a[i]={...a[i],icon:v}; set('iconItems',a);
-                  }}/>
-                  <button onClick={() => set('iconItems', (block.iconItems||[]).filter((_,j)=>j!==i))}
+                    const a = [...(block.iconItems || [])]; a[i] = { ...a[i], icon: v }; set('iconItems', a);
+                  }} />
+                  <button onClick={() => set('iconItems', (block.iconItems || []).filter((_, j) => j !== i))}
                     className="ml-auto w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] opacity-0 group-hover:opacity-100 transition hover:text-red-400 hover:bg-red-50">
-                    <X style={{width:11,height:11}}/>
+                    <X style={{ width: 11, height: 11 }} />
                   </button>
                 </div>
                 <Input value={item.label} placeholder="Ex: +30% de vendas" className="h-8 text-[13px] bg-white mb-1.5"
-                  onChange={e=>{const a=[...(block.iconItems||[])];a[i]={...a[i],label:e.target.value};set('iconItems',a);}}/>
-                <Input value={item.desc||''} placeholder="Descrição curta (opcional)" className="h-8 text-[13px] bg-white"
-                  onChange={e=>{const a=[...(block.iconItems||[])];a[i]={...a[i],desc:e.target.value};set('iconItems',a);}}/>
+                  onChange={e => { const a = [...(block.iconItems || [])]; a[i] = { ...a[i], label: e.target.value }; set('iconItems', a); }} />
+                <Input value={item.desc || ''} placeholder="Descrição curta (opcional)" className="h-8 text-[13px] bg-white"
+                  onChange={e => { const a = [...(block.iconItems || [])]; a[i] = { ...a[i], desc: e.target.value }; set('iconItems', a); }} />
               </div>
             ))}
             <Button variant="outline" size="sm" className="w-full h-8 text-[12px] gap-1.5"
-              onClick={() => set('iconItems', [...(block.iconItems||[]), { icon: '⚡', label: '', desc: '' }])}>
-              <Plus style={{width:12,height:12}}/> Adicionar benefício
+              onClick={() => set('iconItems', [...(block.iconItems || []), { icon: '⚡', label: '', desc: '' }])}>
+              <Plus style={{ width: 12, height: 12 }} /> Adicionar benefício
             </Button>
           </div>
         </div>
@@ -633,7 +908,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
         {/* Lista simples como fallback */}
         <div>
           <FL hint="Lista simples (sem ícone)">Itens Simples (opcional)</FL>
-          <TagList items={block.items||[]} onChange={v=>set('items',v)} placeholder="Ex: Redução de custos operacionais"/>
+          <TagList items={block.items || []} onChange={v => set('items', v)} placeholder="Ex: Redução de custos operacionais" />
         </div>
 
         <SpacingRadiusControls block={block} onChange={onChange} />
@@ -645,9 +920,9 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
   if (block.type === 'integrations') return (
     <div className="space-y-3">
       <ThemePicker />
-      <div><FL>Título</FL><Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Integrações" className="h-9"/></div>
+      <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Integrações" className="h-9" /></div>
       <div><FL hint="Nome de cada sistema integrado">Sistemas</FL>
-        <TagList items={block.items||[]} onChange={v=>set('items',v)} placeholder="Ex: iFood, SAP, Mercado Pago…"/></div>
+        <TagList items={block.items || []} onChange={v => set('items', v)} placeholder="Ex: iFood, SAP, Mercado Pago…" /></div>
       <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
   );
@@ -655,25 +930,25 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
   if (block.type === 'steps') return (
     <div className="space-y-3">
       <ThemePicker />
-      <div><FL>Título</FL><Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Como funciona" className="h-9"/></div>
-      {(block.steps||[]).map((step,i)=>(
+      <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Como funciona" className="h-9" /></div>
+      {(block.steps || []).map((step, i) => (
         <div key={i} className="p-3 rounded-xl bg-[#f5f5f7] space-y-2 group">
           <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-[#f97316] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">{i+1}</span>
+            <span className="w-5 h-5 rounded-full bg-[#f97316] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
             <Input value={step.title} placeholder="Título" className="h-8 text-[13px] bg-white flex-1"
-              onChange={e=>{const a=[...(block.steps||[])];a[i]={...a[i],title:e.target.value};set('steps',a);}}/>
-            <button onClick={()=>set('steps',(block.steps||[]).filter((_,j)=>j!==i))}
+              onChange={e => { const a = [...(block.steps || [])]; a[i] = { ...a[i], title: e.target.value }; set('steps', a); }} />
+            <button onClick={() => set('steps', (block.steps || []).filter((_, j) => j !== i))}
               className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] opacity-0 group-hover:opacity-100 transition hover:text-red-400 hover:bg-red-50 flex-shrink-0">
-              <X style={{width:11,height:11}}/>
+              <X style={{ width: 11, height: 11 }} />
             </button>
           </div>
           <Textarea value={step.description} placeholder="Descrição…" rows={2} className="resize-none text-[13px] bg-white"
-            onChange={e=>{const a=[...(block.steps||[])];a[i]={...a[i],description:e.target.value};set('steps',a);}}/>
+            onChange={e => { const a = [...(block.steps || [])]; a[i] = { ...a[i], description: e.target.value }; set('steps', a); }} />
         </div>
       ))}
       <Button variant="outline" size="sm" className="w-full h-8 text-[12px] gap-1.5"
-        onClick={()=>set('steps',[...(block.steps||[]),{title:'',description:''}])}>
-        <Plus style={{width:12,height:12}}/> Adicionar passo
+        onClick={() => set('steps', [...(block.steps || []), { title: '', description: '' }])}>
+        <Plus style={{ width: 12, height: 12 }} /> Adicionar passo
       </Button>
       <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
@@ -683,22 +958,22 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
     <div className="space-y-2">
       <ThemePicker />
       <FL hint="Máx. 4">Estatísticas</FL>
-      {(block.stats||[]).map((s,i)=>(
+      {(block.stats || []).map((s, i) => (
         <div key={i} className="flex items-center gap-2 group">
           <Input value={s.value} placeholder="Ex: 500+" className="h-8 text-[13px]"
-            onChange={e=>{const a=[...(block.stats||[])];a[i]={...a[i],value:e.target.value};set('stats',a);}}/>
+            onChange={e => { const a = [...(block.stats || [])]; a[i] = { ...a[i], value: e.target.value }; set('stats', a); }} />
           <Input value={s.label} placeholder="Ex: Clientes ativos" className="h-8 text-[13px]"
-            onChange={e=>{const a=[...(block.stats||[])];a[i]={...a[i],label:e.target.value};set('stats',a);}}/>
-          <button onClick={()=>set('stats',(block.stats||[]).filter((_,j)=>j!==i))}
+            onChange={e => { const a = [...(block.stats || [])]; a[i] = { ...a[i], label: e.target.value }; set('stats', a); }} />
+          <button onClick={() => set('stats', (block.stats || []).filter((_, j) => j !== i))}
             className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] opacity-0 group-hover:opacity-100 transition hover:text-red-400 hover:bg-red-50 flex-shrink-0">
-            <X style={{width:11,height:11}}/>
+            <X style={{ width: 11, height: 11 }} />
           </button>
         </div>
       ))}
-      {(block.stats||[]).length < 4 && (
+      {(block.stats || []).length < 4 && (
         <Button variant="outline" size="sm" className="w-full h-8 text-[12px] gap-1.5"
-          onClick={()=>set('stats',[...(block.stats||[]),{value:'',label:''}])}>
-          <Plus style={{width:12,height:12}}/> Adicionar
+          onClick={() => set('stats', [...(block.stats || []), { value: '', label: '' }])}>
+          <Plus style={{ width: 12, height: 12 }} /> Adicionar
         </Button>
       )}
       <SpacingRadiusControls block={block} onChange={onChange} />
@@ -708,35 +983,36 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
   if (block.type === 'testimonial') return (
     <div className="space-y-3">
       <ThemePicker />
-      <div><FL>Citação</FL><Textarea value={block.quote||''} onChange={e=>set('quote',e.target.value)} rows={3} placeholder="O sistema transformou nossa gestão…" className="resize-none text-[13px]"/></div>
+      <div><FL>Citação</FL><Textarea value={block.quote || ''} onChange={e => set('quote', e.target.value)} rows={3} placeholder="O sistema transformou nossa gestão…" className="resize-none text-[13px]" /></div>
       <div className="grid grid-cols-2 gap-2">
-        <div><FL>Autor</FL><Input value={block.author||''} onChange={e=>set('author',e.target.value)} placeholder="João Silva" className="h-9"/></div>
-        <div><FL>Cargo</FL><Input value={block.role||''} onChange={e=>set('role',e.target.value)} placeholder="CEO, Rede Farma" className="h-9"/></div>
+        <div><FL>Autor</FL><Input value={block.author || ''} onChange={e => set('author', e.target.value)} placeholder="João Silva" className="h-9" /></div>
+        <div><FL>Cargo</FL><Input value={block.role || ''} onChange={e => set('role', e.target.value)} placeholder="CEO, Rede Farma" className="h-9" /></div>
       </div>
+      <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
   );
 
   if (block.type === 'faq') return (
     <div className="space-y-3">
       <ThemePicker />
-      <div><FL>Título</FL><Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Perguntas Frequentes" className="h-9"/></div>
-      {(block.faq||[]).map((item,i)=>(
+      <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Perguntas Frequentes" className="h-9" /></div>
+      {(block.faq || []).map((item, i) => (
         <div key={i} className="p-3 rounded-xl bg-[#f5f5f7] space-y-2 group">
           <div className="flex items-center gap-2">
             <Input value={item.question} placeholder="Pergunta…" className="h-8 text-[13px] bg-white flex-1"
-              onChange={e=>{const a=[...(block.faq||[])];a[i]={...a[i],question:e.target.value};set('faq',a);}}/>
-            <button onClick={()=>set('faq',(block.faq||[]).filter((_,j)=>j!==i))}
+              onChange={e => { const a = [...(block.faq || [])]; a[i] = { ...a[i], question: e.target.value }; set('faq', a); }} />
+            <button onClick={() => set('faq', (block.faq || []).filter((_, j) => j !== i))}
               className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] opacity-0 group-hover:opacity-100 transition hover:text-red-400 hover:bg-red-50 flex-shrink-0">
-              <X style={{width:11,height:11}}/>
+              <X style={{ width: 11, height: 11 }} />
             </button>
           </div>
           <Textarea value={item.answer} placeholder="Resposta…" rows={2} className="resize-none text-[13px] bg-white"
-            onChange={e=>{const a=[...(block.faq||[])];a[i]={...a[i],answer:e.target.value};set('faq',a);}}/>
+            onChange={e => { const a = [...(block.faq || [])]; a[i] = { ...a[i], answer: e.target.value }; set('faq', a); }} />
         </div>
       ))}
       <Button variant="outline" size="sm" className="w-full h-8 text-[12px] gap-1.5"
-        onClick={()=>set('faq',[...(block.faq||[]),{question:'',answer:''}])}>
-        <Plus style={{width:12,height:12}}/> Adicionar pergunta
+        onClick={() => set('faq', [...(block.faq || []), { question: '', answer: '' }])}>
+        <Plus style={{ width: 12, height: 12 }} /> Adicionar pergunta
       </Button>
       <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
@@ -745,41 +1021,44 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
   if (block.type === 'video') return (
     <div className="space-y-3">
       <ThemePicker />
-      <div><FL>Título (opcional)</FL><Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Veja o sistema em 2 minutos" className="h-9"/></div>
-      <div><FL hint="URL completa do YouTube">URL do Vídeo</FL><Input value={block.videoUrl||''} onChange={e=>set('videoUrl',e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="h-9"/></div>
-      {block.videoUrl && (()=>{
-        const m=block.videoUrl!.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
-        const id=m?m[1]:null;
+      <div><FL>Título (opcional)</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Veja o sistema em 2 minutos" className="h-9" /></div>
+      <div><FL hint="URL completa do YouTube">URL do Vídeo</FL><Input value={block.videoUrl || ''} onChange={e => set('videoUrl', e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="h-9" /></div>
+      {block.videoUrl && (() => {
+        const m = block.videoUrl!.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+        const id = m ? m[1] : null;
         return id ? (
-          <div className="rounded-xl overflow-hidden relative bg-black" style={{paddingTop:'56.25%'}}>
-            <iframe className="absolute inset-0 w-full h-full" src={`https://www.youtube.com/embed/${id}?rel=0`} title="preview" allowFullScreen/>
+          <div className="rounded-xl overflow-hidden relative bg-black" style={{ paddingTop: '56.25%' }}>
+            <iframe className="absolute inset-0 w-full h-full" src={`https://www.youtube.com/embed/${id}?rel=0`} title="preview" allowFullScreen />
           </div>
         ) : <p className="text-[12px] text-red-500">URL inválida.</p>;
       })()}
+      <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
   );
 
   if (block.type === 'cta') return (
     <div className="space-y-3">
       <ThemePicker />
-      <div><FL>Título</FL><Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Pronto para transformar seu negócio?" className="h-9"/></div>
-      <div><FL>Descrição</FL><Textarea value={block.description||''} onChange={e=>set('description',e.target.value)} rows={2} placeholder="Fale com nossos especialistas…" className="resize-none text-[13px]"/></div>
+      <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Pronto para transformar seu negócio?" className="h-9" /></div>
+      <div><FL>Descrição</FL><Textarea value={block.description || ''} onChange={e => set('description', e.target.value)} rows={2} placeholder="Fale com nossos especialistas…" className="resize-none text-[13px]" /></div>
       <div className="grid grid-cols-2 gap-2">
-        <div><FL>Botão principal</FL><Input value={block.ctaLabel||''} onChange={e=>set('ctaLabel',e.target.value)} placeholder="Falar com Especialista" className="h-9"/></div>
-        <div><FL>Link</FL><Input value={block.ctaLink||''} onChange={e=>set('ctaLink',e.target.value)} placeholder="/cliente" className="h-9"/></div>
+        <div><FL>Botão principal</FL><Input value={block.ctaLabel || ''} onChange={e => set('ctaLabel', e.target.value)} placeholder="Falar com Especialista" className="h-9" /></div>
+        <div><FL>Link</FL><Input value={block.ctaLink || ''} onChange={e => set('ctaLink', e.target.value)} placeholder="/cliente" className="h-9" /></div>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <div><FL>Botão secundário</FL><Input value={block.secondaryLabel||''} onChange={e=>set('secondaryLabel',e.target.value)} placeholder="Ver soluções" className="h-9"/></div>
-        <div><FL>Link secundário</FL><Input value={block.secondaryLink||''} onChange={e=>set('secondaryLink',e.target.value)} placeholder="/solucoes" className="h-9"/></div>
+        <div><FL>Botão secundário</FL><Input value={block.secondaryLabel || ''} onChange={e => set('secondaryLabel', e.target.value)} placeholder="Ver soluções" className="h-9" /></div>
+        <div><FL>Link secundário</FL><Input value={block.secondaryLink || ''} onChange={e => set('secondaryLink', e.target.value)} placeholder="/solucoes" className="h-9" /></div>
       </div>
+      <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
   );
 
   if (block.type === 'text') return (
     <div className="space-y-3">
       <ThemePicker />
-      <div><FL>Título (opcional)</FL><Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Título do bloco" className="h-9"/></div>
-      <div><FL>Texto</FL><Textarea value={block.description||''} onChange={e=>set('description',e.target.value)} rows={5} placeholder="Seu texto aqui…" className="resize-none text-[13px]"/></div>
+      <div><FL>Título (opcional)</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Título do bloco" className="h-9" /></div>
+      <div><FL>Texto</FL><Textarea value={block.description || ''} onChange={e => set('description', e.target.value)} rows={5} placeholder="Seu texto aqui…" className="resize-none text-[13px]" /></div>
+      <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
   );
 
@@ -788,26 +1067,28 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
       <ThemePicker />
       <div>
         <FL hint="HTML puro — <b>, <ul>, <a href=...>, <h2>, etc.">Conteúdo HTML</FL>
-        <Textarea value={block.html||''} onChange={e=>set('html',e.target.value)} rows={8}
+        <Textarea value={block.html || ''} onChange={e => set('html', e.target.value)} rows={8}
           placeholder="<h2>Título</h2><p>Parágrafo...</p>"
-          className="resize-none text-[12px] font-mono"/>
+          className="resize-none text-[12px] font-mono" />
       </div>
       {block.html && (
         <div>
           <p className="text-[10px] font-bold text-[#98989d] uppercase tracking-wider mb-1">Preview</p>
-          <div className="p-3 rounded-xl border text-[13px]" style={{borderColor:'rgba(0,0,0,.07)',background:'#fafafa'}}
-            dangerouslySetInnerHTML={{__html:block.html}}/>
+          <div className="p-3 rounded-xl border text-[13px]" style={{ borderColor: 'rgba(0,0,0,.07)', background: '#fafafa' }}
+            dangerouslySetInnerHTML={{ __html: block.html }} />
         </div>
       )}
+      <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
   );
 
   if (block.type === 'image') return (
     <div className="space-y-3">
       <ThemePicker />
-      <div><FL hint="URL da imagem">URL da Imagem</FL><Input value={block.imageUrl||''} onChange={e=>set('imageUrl',e.target.value)} placeholder="https://..." className="h-9"/></div>
-      <div><FL>Texto alternativo</FL><Input value={block.imageAlt||''} onChange={e=>set('imageAlt',e.target.value)} placeholder="Descrição da imagem" className="h-9"/></div>
-      {block.imageUrl && <div className="rounded-xl overflow-hidden border" style={{borderColor:'rgba(0,0,0,.07)'}}><img src={block.imageUrl} alt={block.imageAlt||''} className="w-full max-h-48 object-cover"/></div>}
+      <div><FL hint="URL da imagem">URL da Imagem</FL><Input value={block.imageUrl || ''} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." className="h-9" /></div>
+      <div><FL>Texto alternativo</FL><Input value={block.imageAlt || ''} onChange={e => set('imageAlt', e.target.value)} placeholder="Descrição da imagem" className="h-9" /></div>
+      {block.imageUrl && <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'rgba(0,0,0,.07)' }}><img src={block.imageUrl} alt={block.imageAlt || ''} className="w-full max-h-48 object-cover" /></div>}
+      <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
   );
 
@@ -816,38 +1097,123 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
   if (block.type === 'image_text') {
     const [uploading, setUploading] = useState(false);
     const token = localStorage.getItem('token');
-    const uploadImg = async (file: File) => {
+
+    const uploadImgAt = async (i: number, file: File) => {
       setUploading(true);
       try {
         const fd = new FormData(); fd.append('image', file);
-        const res = await fetch(`${API_URL}/admin/upload`, { method:'POST', headers:{Authorization:`Bearer ${token}`}, body:fd });
+        const res = await fetch(`${API_URL}/admin/upload`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
         if (!res.ok) throw new Error('Upload falhou');
         const { url } = await res.json();
-        set('imageUrl', url);
+        const imgs = block.images && block.images.length > 0 ? [...block.images] : block.imageUrl ? [{ url: block.imageUrl, alt: block.imageAlt || '' }] : [];
+        imgs[i] = { ...imgs[i], url };
+        onChange({ ...block, images: imgs, imageUrl: imgs[0]?.url || '', imageAlt: imgs[0]?.alt || '' });
       } finally { setUploading(false); }
     };
 
+    const hasBg = block.imageHasBg !== false;
+    const bgColor = block.imageBgColor || '#e0f2fe';
+    const contain = block.imageContain !== false;
+    const maxH = block.imageMaxHeight || 500;
+
+    const imgs: { url: string; alt: string }[] = block.images && block.images.length > 0
+      ? block.images
+      : block.imageUrl ? [{ url: block.imageUrl, alt: block.imageAlt || '' }] : [];
+
+    const setImgs = (next: { url: string; alt: string }[]) =>
+      onChange({ ...block, images: next, imageUrl: next[0]?.url || '', imageAlt: next[0]?.alt || '' });
+
     return (
       <div className="space-y-4">
-        <ThemePicker />
 
         <SectionDivider label="Posição da Imagem" />
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { v: 'right', label: 'Texto | Imagem', icon: '▤' },
+            { v: 'left', label: 'Imagem | Texto', icon: '▧' },
+          ].map(o => {
+            const sel = (block.imagePosition || 'right') === o.v;
+            return (
+              <button key={o.v} onClick={() => set('imagePosition', o.v as 'left' | 'right')}
+                className="flex items-center gap-2 p-3 rounded-xl border-2 transition"
+                style={{ borderColor: sel ? '#f97316' : 'rgba(0,0,0,.08)', background: sel ? '#fff7ed' : '#fafafa' }}>
+                <span className="text-lg">{o.icon}</span>
+                <p className="text-[11px] font-bold" style={{ color: sel ? '#f97316' : '#1d1d1f' }}>{o.label}</p>
+                {sel && <span className="ml-auto text-[10px] font-bold" style={{ color: '#f97316' }}>✓</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        <SectionDivider label="Fundo da Imagem" />
+        <button
+          onClick={() => set('imageHasBg', !hasBg)}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 transition text-left"
+          style={{ borderColor: hasBg ? '#f97316' : 'rgba(0,0,0,.08)', background: hasBg ? '#fff7ed' : '#fafafa' }}>
+          <div className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border-2 transition"
+            style={{ borderColor: hasBg ? '#f97316' : 'rgba(0,0,0,.2)', background: hasBg ? '#f97316' : 'transparent' }}>
+            {hasBg && <span className="text-white text-[9px] font-black">✓</span>}
+          </div>
+          <div>
+            <p className="text-[12px] font-bold" style={{ color: hasBg ? '#f97316' : '#1d1d1f' }}>Mostrar fundo colorido</p>
+            <p className="text-[10px]" style={{ color: '#98989d' }}>Adiciona cor de fundo atrás da imagem</p>
+          </div>
+        </button>
+
+        {hasBg && (
+          <div>
+            <FL hint="Cor de fundo do lado da imagem">Cor do fundo</FL>
+            <div className="flex items-center gap-2">
+              <input type="color" value={bgColor} onChange={e => set('imageBgColor', e.target.value)}
+                className="w-10 h-10 rounded-xl border-2 cursor-pointer flex-shrink-0"
+                style={{ borderColor: 'rgba(0,0,0,.1)', padding: 2 }} />
+              <Input value={bgColor} onChange={e => set('imageBgColor', e.target.value)}
+                placeholder="#e0f2fe" className="h-9 font-mono text-[13px]" />
+              <div className="flex gap-1.5 flex-shrink-0">
+                {['#e0f2fe', '#f0fdf4', '#fef3c7', '#fce7f3', '#ede9fe', '#f1f5f9'].map(c => (
+                  <button key={c} onClick={() => set('imageBgColor', c)}
+                    className="w-6 h-6 rounded-lg border-2 transition"
+                    style={{ background: c, borderColor: bgColor === c ? '#1d1d1f' : 'rgba(0,0,0,.1)' }} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <SectionDivider label="Tamanho e Ajuste" />
         <div>
-          <FL hint="De qual lado a imagem aparece">Layout</FL>
+          <FL hint="Altura máxima do bloco em pixels (recomendado: 480–560px)">Altura máxima do bloco</FL>
+          <div className="flex items-center gap-2">
+            <input type="range" min={300} max={800} step={20} value={maxH}
+              onChange={e => set('imageMaxHeight', Number(e.target.value))}
+              className="flex-1" />
+            <span className="text-[13px] font-bold w-16 text-right" style={{ color: '#1d1d1f' }}>{maxH}px</span>
+          </div>
+          <div className="flex gap-2 mt-1.5">
+            {[400, 480, 560, 640].map(v => (
+              <button key={v} onClick={() => set('imageMaxHeight', v)}
+                className="flex-1 h-7 rounded-lg text-[11px] font-bold border transition"
+                style={{ borderColor: maxH === v ? '#f97316' : 'rgba(0,0,0,.1)', background: maxH === v ? '#fff7ed' : '#f5f5f7', color: maxH === v ? '#f97316' : '#6e6e73' }}>
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <FL hint="Como a imagem se ajusta ao espaço">Ajuste da imagem</FL>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { v: 'right', label: '← Texto | Imagem →', desc: 'Texto à esq., imagem à dir.' },
-              { v: 'left',  label: '← Imagem | Texto →', desc: 'Imagem à esq., texto à dir.' },
+              { v: true, label: 'Imagem inteira (contain)', desc: 'Mostra a imagem completa' },
+              { v: false, label: 'Preencher (cover)', desc: 'Corta para preencher' },
             ].map(o => {
-              const sel = (block.imagePosition || 'right') === o.v;
+              const sel = contain === o.v;
               return (
-                <button key={o.v} onClick={() => set('imagePosition', o.v as 'left' | 'right')}
-                  className="text-left p-3 rounded-xl border-2 transition"
+                <button key={String(o.v)} onClick={() => set('imageContain', o.v)}
+                  className="text-left p-2.5 rounded-xl border-2 transition"
                   style={{ borderColor: sel ? '#f97316' : 'rgba(0,0,0,.08)', background: sel ? '#fff7ed' : '#fafafa' }}>
-                  <p className="text-[11px] font-bold" style={{ color: sel ? '#f97316' : '#1d1d1f' }}>
-                    {sel ? '✓ ' : ''}{o.label}
-                  </p>
-                  <p className="text-[10px] mt-0.5" style={{ color: '#98989d' }}>{o.desc}</p>
+                  <p className="text-[11px] font-bold leading-tight" style={{ color: sel ? '#f97316' : '#1d1d1f' }}>{sel ? '✓ ' : ''}{o.label}</p>
+                  <p className="text-[9px] mt-0.5" style={{ color: '#98989d' }}>{o.desc}</p>
                 </button>
               );
             })}
@@ -855,111 +1221,170 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
         </div>
 
         <SectionDivider label="Conteúdo" />
-        <div><FL hint="Pílula acima do título">Badge (opcional)</FL><Input value={block.badge||''} onChange={e=>set('badge',e.target.value)} placeholder="Ex: Destaque" className="h-9"/></div>
-        <div><FL>Título *</FL><Input value={block.title||''} onChange={e=>set('title',e.target.value)} placeholder="Ex: Combate Intenso" className="h-9"/></div>
-        <div><FL>Subtítulo</FL><Input value={block.subtitle||''} onChange={e=>set('subtitle',e.target.value)} placeholder="Frase de destaque" className="h-9"/></div>
-        <div><FL>Descrição</FL><Textarea value={block.description||''} onChange={e=>set('description',e.target.value)} rows={4} placeholder="Texto explicativo…" className="resize-none text-[13px]"/></div>
-
+        <div><FL hint="Pílula/badge acima do título">Badge (opcional)</FL><Input value={block.badge || ''} onChange={e => set('badge', e.target.value)} placeholder="Ex: Recursos →" className="h-9" /></div>
+        <div><FL>Título *</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Ex: Automatize o seu delivery" className="h-9" /></div>
+        <div><FL hint="Texto destacado com fundo colorido abaixo do título">Descrição</FL>
+          <Textarea value={block.description || ''} onChange={e => set('description', e.target.value)} rows={3} placeholder="Veja como automatizar o WhatsApp do seu delivery pode melhorar seus resultados." className="resize-none text-[13px]" />
+        </div>
         <div><FL hint="Lista de tópicos com check (opcional)">Tópicos</FL>
-          <TagList items={block.items||[]} onChange={v=>set('items',v)} placeholder="Ex: Controle em tempo real"/></div>
-
+          <TagList items={block.items || []} onChange={v => set('items', v)} placeholder="Ex: Controle em tempo real" /></div>
         <div className="grid grid-cols-2 gap-2">
-          <div><FL>Botão principal</FL><Input value={block.ctaLabel||''} onChange={e=>set('ctaLabel',e.target.value)} placeholder="Saiba mais" className="h-9"/></div>
-          <div><FL>Link</FL><Input value={block.ctaLink||''} onChange={e=>set('ctaLink',e.target.value)} placeholder="/cliente" className="h-9"/></div>
+          <div><FL>Botão principal</FL><Input value={block.ctaLabel || ''} onChange={e => set('ctaLabel', e.target.value)} placeholder="Conheça os planos" className="h-9" /></div>
+          <div><FL>Link</FL><Input value={block.ctaLink || ''} onChange={e => set('ctaLink', e.target.value)} placeholder="/cliente" className="h-9" /></div>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <div><FL>Botão secundário</FL><Input value={block.secondaryLabel||''} onChange={e=>set('secondaryLabel',e.target.value)} placeholder="Ver mais" className="h-9"/></div>
-          <div><FL>Link secundário</FL><Input value={block.secondaryLink||''} onChange={e=>set('secondaryLink',e.target.value)} placeholder="/solucoes" className="h-9"/></div>
+          <div><FL>Botão secundário</FL><Input value={block.secondaryLabel || ''} onChange={e => set('secondaryLabel', e.target.value)} placeholder="Ver mais" className="h-9" /></div>
+          <div><FL>Link secundário</FL><Input value={block.secondaryLink || ''} onChange={e => set('secondaryLink', e.target.value)} placeholder="/solucoes" className="h-9" /></div>
         </div>
 
-        <SectionDivider label="Imagens" />
-
-        {/* Multiple images list */}
-        {(() => {
-          // Normalise: if old single imageUrl exists and images[] not yet set, seed it
-          const imgs: { url: string; alt: string }[] = block.images && block.images.length > 0
-            ? block.images
-            : block.imageUrl ? [{ url: block.imageUrl, alt: block.imageAlt || '' }] : [];
-
-          const setImgs = (next: { url: string; alt: string }[]) => {
-            onChange({ ...block, images: next, imageUrl: next[0]?.url || '', imageAlt: next[0]?.alt || '' });
-          };
-
-          const addImg = () => setImgs([...imgs, { url: '', alt: '' }]);
-
-          const removeImg = (i: number) => setImgs(imgs.filter((_, idx) => idx !== i));
-
-          const updateImg = (i: number, field: 'url' | 'alt', val: string) => {
-            const next = imgs.map((img, idx) => idx === i ? { ...img, [field]: val } : img);
-            setImgs(next);
-          };
-
-          const uploadImgAt = async (i: number, file: File) => {
-            setUploading(true);
-            try {
-              const fd = new FormData(); fd.append('image', file);
-              const res = await fetch(`${API_URL}/admin/upload`, { method:'POST', headers:{Authorization:`Bearer ${token}`}, body:fd });
-              if (!res.ok) throw new Error('Upload falhou');
-              const { url } = await res.json();
-              updateImg(i, 'url', url);
-            } finally { setUploading(false); }
-          };
-
-          return (
-            <div className="space-y-4">
-              {imgs.map((img, i) => (
-                <div key={i} className="border rounded-xl p-3 space-y-2" style={{ borderColor: 'rgba(0,0,0,.09)', background: '#fafafa' }}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-[#6e6e73] uppercase tracking-wide">Imagem {i + 1}</span>
-                    {imgs.length > 1 && (
-                      <button onClick={() => removeImg(i)} className="w-6 h-6 rounded-full flex items-center justify-center text-red-400 hover:bg-red-50 transition">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                  <ImageUploadField
-                    value={img.url}
-                    onChange={url => updateImg(i, 'url', url)}
-                    onUpload={file => uploadImgAt(i, file)}
-                    uploading={uploading}
-                    spec={{ dimensions: '800×600 px', formats: 'JPG, PNG, WEBP', maxSize: '2 MB', where: `Imagem ${i + 1}` }}
-                    height={90}
-                  />
-                  <div><FL>Texto alternativo</FL><Input value={img.alt} onChange={e => updateImg(i, 'alt', e.target.value)} placeholder="Descrição da imagem" className="h-8 text-[12px]"/></div>
-                </div>
-              ))}
-              <button
-                onClick={addImg}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed text-[12px] font-bold transition hover:bg-orange-50"
-                style={{ borderColor: '#f97316', color: '#f97316' }}>
-                <Plus className="w-4 h-4" /> Adicionar imagem
-              </button>
-              {imgs.length > 1 && (
-                <p className="text-[11px] text-[#98989d] text-center">Múltiplas imagens aparecem em carrossel automático</p>
-              )}
+        <SectionDivider label="Imagem" />
+        <div className="space-y-3">
+          {imgs.map((img, i) => (
+            <div key={i} className="border rounded-xl p-3 space-y-2" style={{ borderColor: 'rgba(0,0,0,.09)', background: '#fafafa' }}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-bold text-[#6e6e73] uppercase tracking-wide">Imagem {i + 1}</span>
+                {imgs.length > 1 && (
+                  <button onClick={() => setImgs(imgs.filter((_, idx) => idx !== i))} className="w-6 h-6 rounded-full flex items-center justify-center text-red-400 hover:bg-red-50 transition">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              <ImageUploadField
+                value={img.url}
+                onChange={url => { const n = imgs.map((m, idx) => idx === i ? { ...m, url } : m); setImgs(n); }}
+                onUpload={file => uploadImgAt(i, file)}
+                uploading={uploading}
+                spec={{ dimensions: '800×600 px — imagem aparece com contain, mostrando inteira', formats: 'JPG, PNG, WEBP', maxSize: '2 MB', where: `Imagem ${i + 1}` }}
+                height={100}
+              />
+              <Input value={img.alt} onChange={e => { const n = imgs.map((m, idx) => idx === i ? { ...m, alt: e.target.value } : m); setImgs(n); }} placeholder="Texto alternativo" className="h-8 text-[12px]" />
             </div>
-          );
-        })()}
+          ))}
+          <button onClick={() => setImgs([...imgs, { url: '', alt: '' }])}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed text-[12px] font-bold transition hover:bg-orange-50"
+            style={{ borderColor: '#f97316', color: '#f97316' }}>
+            <Plus className="w-4 h-4" /> Adicionar imagem
+          </button>
+        </div>
 
         <SpacingRadiusControls block={block} onChange={onChange} />
       </div>
     );
   }
+  if (block.type === 'divider') {
+    const dc = block.dividerColor || '#3b82f6';
+    const SHAPE_COLORS = ['#3b82f6','#10b981','#8b5cf6','#f97316','#ef4444','#0ea5e9','#ec4899','#14b8a6','#1e293b','#6366f1'];
+    const isShape = ['triangle','clouds','waves_fill','mountains'].includes(block.dividerStyle || '');
 
-  if (block.type === 'divider') return (
-    <div>
-      <FL>Estilo</FL>
-      <div className="grid grid-cols-3 gap-1.5">
-        {(['line','space','dots'] as const).map(s=>(
-          <button key={s} onClick={()=>set('dividerStyle',s)}
-            className="h-8 rounded-xl text-[11px] font-bold border-2 transition"
-            style={{borderColor:block.dividerStyle===s?'#f97316':'rgba(0,0,0,.08)',background:block.dividerStyle===s?'#fff7ed':'#f5f5f7',color:block.dividerStyle===s?'#f97316':'#6e6e73'}}>
-            {s==='line'?'Linha':s==='space'?'Espaço':'Pontos'}
-          </button>
-        ))}
+    type DivOpt = { value: string; label: string; preview: React.ReactNode };
+    const SIMPLE_OPTIONS: DivOpt[] = [
+      { value: 'line',     label: 'Linha',      preview: <div style={{ width:'100%',height:1,background:'rgba(0,0,0,.2)',margin:'6px 0' }}/> },
+      { value: 'space',    label: 'Espaço',     preview: <div style={{ width:'100%',height:8,background:'repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0,rgba(0,0,0,.06) 4px,transparent 4px,transparent 8px)',borderRadius:2 }}/> },
+      { value: 'dots',     label: 'Pontos',     preview: <div style={{display:'flex',gap:4,justifyContent:'center'}}>{[0,1,2].map(i=><span key={i} style={{width:5,height:5,borderRadius:'50%',background:'rgba(0,0,0,.25)',display:'block'}}/>)}</div> },
+      { value: 'gradient', label: 'Gradiente',  preview: <div style={{ width:'100%',height:2,background:'linear-gradient(90deg,transparent,rgba(0,0,0,.25),transparent)',margin:'6px 0' }}/> },
+      { value: 'dashed',   label: 'Tracejado',  preview: <div style={{ width:'100%',borderTop:'2px dashed rgba(0,0,0,.2)',margin:'6px 0' }}/> },
+      { value: 'double',   label: 'Duplo',      preview: <div style={{display:'flex',flexDirection:'column',gap:3,margin:'4px 0'}}><div style={{height:1,background:'rgba(0,0,0,.2)'}}/><div style={{height:1,background:'rgba(0,0,0,.12)'}}/></div> },
+      { value: 'wave',     label: 'Onda',       preview: <svg viewBox="0 0 80 12" height="12" width="80" style={{display:'block',margin:'2px auto'}}><path d="M0 6 Q10 0 20 6 Q30 12 40 6 Q50 0 60 6 Q70 12 80 6" fill="none" stroke="rgba(0,0,0,.25)" strokeWidth="1.5"/></svg> },
+      { value: 'ornament', label: 'Ornamento',  preview: <div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'center'}}><div style={{flex:1,height:1,background:'rgba(0,0,0,.18)'}}/><span style={{fontSize:10,color:'rgba(0,0,0,.3)'}}>◆</span><div style={{flex:1,height:1,background:'rgba(0,0,0,.18)'}}/></div> },
+    ];
+
+    const SHAPE_OPTIONS: DivOpt[] = [
+      {
+        value: 'triangle',
+        label: 'Triângulo',
+        preview: (
+          <svg viewBox="0 0 80 28" height="28" width="80" style={{display:'block'}}>
+            <polygon points="0,0 80,0 80,28 0,12" fill={dc}/>
+          </svg>
+        ),
+      },
+      {
+        value: 'clouds',
+        label: 'Nuvens',
+        preview: (
+          <svg viewBox="0 0 80 28" height="28" width="80" style={{display:'block'}}>
+            <path d="M0 28 Q5 10 12 18 Q18 6 26 18 Q32 4 40 18 Q46 6 54 18 Q60 8 68 18 Q74 10 80 14 L80 28 Z" fill={dc}/>
+          </svg>
+        ),
+      },
+      {
+        value: 'waves_fill',
+        label: 'Ondas',
+        preview: (
+          <svg viewBox="0 0 80 28" height="28" width="80" style={{display:'block'}}>
+            <path d="M0 18 Q10 8 20 18 Q30 28 40 18 Q50 8 60 18 Q70 28 80 18 L80 28 L0 28 Z" fill={dc} opacity="0.5"/>
+            <path d="M0 22 Q10 14 20 22 Q30 30 40 22 Q50 14 60 22 Q70 30 80 22 L80 28 L0 28 Z" fill={dc}/>
+          </svg>
+        ),
+      },
+      {
+        value: 'mountains',
+        label: 'Montanhas',
+        preview: (
+          <svg viewBox="0 0 80 28" height="28" width="80" style={{display:'block'}}>
+            <polygon points="0,28 20,8 40,22 60,4 80,18 80,28" fill={dc}/>
+          </svg>
+        ),
+      },
+    ];
+
+    return (
+      <div className="space-y-3">
+        <div>
+          <FL>Simples</FL>
+          <div className="grid grid-cols-2 gap-1.5">
+            {SIMPLE_OPTIONS.map(opt => {
+              const active = (block.dividerStyle || 'line') === opt.value;
+              return (
+                <button key={opt.value} onClick={() => set('dividerStyle', opt.value)}
+                  className="rounded-xl border-2 transition px-2 py-1.5"
+                  style={{ borderColor: active ? '#f97316' : 'rgba(0,0,0,.08)', background: active ? '#fff7ed' : '#f5f5f7' }}>
+                  <div style={{ pointerEvents:'none' }}>{opt.preview}</div>
+                  <div className="text-[10px] font-bold mt-1 text-center" style={{ color: active ? '#f97316' : '#6e6e73' }}>{opt.label}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <FL>Decorativos (com cor)</FL>
+          <div className="grid grid-cols-2 gap-1.5">
+            {SHAPE_OPTIONS.map(opt => {
+              const active = block.dividerStyle === opt.value;
+              return (
+                <button key={opt.value} onClick={() => set('dividerStyle', opt.value)}
+                  className="rounded-xl border-2 transition px-2 py-1.5 overflow-hidden"
+                  style={{ borderColor: active ? '#f97316' : 'rgba(0,0,0,.08)', background: active ? '#fff7ed' : '#f5f5f7' }}>
+                  <div style={{ pointerEvents:'none', borderRadius:6, overflow:'hidden', background:'#e5e7eb' }}>{opt.preview}</div>
+                  <div className="text-[10px] font-bold mt-1 text-center" style={{ color: active ? '#f97316' : '#6e6e73' }}>{opt.label}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {isShape && (
+          <div>
+            <FL>Cor do divisor</FL>
+            <div className="flex flex-wrap gap-1.5">
+              {SHAPE_COLORS.map(c => (
+                <button key={c} onClick={() => set('dividerColor', c)}
+                  className="w-7 h-7 rounded-lg border-2 transition"
+                  style={{ background: c, borderColor: dc === c ? '#f97316' : 'transparent', boxShadow: dc === c ? '0 0 0 2px #fff,0 0 0 4px #f97316' : 'none' }} />
+              ))}
+              <label className="w-7 h-7 rounded-lg border-2 overflow-hidden cursor-pointer" style={{ borderColor: 'rgba(0,0,0,.1)' }}
+                title="Cor personalizada">
+                <input type="color" value={dc} onChange={e => set('dividerColor', e.target.value)}
+                  className="w-full h-full opacity-0 cursor-pointer" style={{ marginTop: -4 }} />
+                <div className="w-full h-full flex items-center justify-center text-[14px]" style={{ marginTop: -28 }}>🎨</div>
+              </label>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  }
 
   return <p className="text-[12px] text-[#98989d]">Sem editor para este tipo.</p>;
 }
@@ -971,17 +1396,17 @@ function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDo
   onChange: (b: PageBlock) => void; onRemove: () => void; onMoveUp: () => void; onMoveDown: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const def = BLOCK_CATALOG.find(d=>d.type===block.type);
-  const summary = block.title || (block.quote||'').slice(0,40) || (block.alertText||'').slice(0,40) || (block.html||'').slice(0,40) || '';
+  const def = BLOCK_CATALOG.find(d => d.type === block.type);
+  const summary = block.title || (block.quote || '').slice(0, 40) || (block.alertText || '').slice(0, 40) || (block.html || '').slice(0, 40) || '';
 
-  const heroColors: Record<string, string> = { centered:'#6366f1', split:'#22c55e', dark_glow:'#0a0a0c', magazine:'#1e293b' };
-  const blockColor = block.type === 'hero' ? (heroColors[block.heroLayout||'centered'] || '#f97316') : '#f97316';
+  const heroColors: Record<string, string> = { centered: '#6366f1', split: '#22c55e', dark_glow: '#0a0a0c', magazine: '#1e293b' };
+  const blockColor = block.type === 'hero' ? (heroColors[block.heroLayout || 'centered'] || '#f97316') : '#f97316';
 
   // Badge de variante para features/benefits
   const variantLabel =
-    block.type === 'features' ? 'Dark Numerado' :
-    block.type === 'benefits' && block.benefitsLayout ? { grid_cards:'Grid', side_image:'c/ Imagem', carousel:'Carrossel' }[block.benefitsLayout] :
-    block.type === 'hero' && block.heroLayout ? HERO_LAYOUTS.find(l=>l.id===block.heroLayout)?.label : null;
+    block.type === 'features' ? ({ split_dark: 'Split Dark', dark_cards: 'Dark Cards', half_split: 'Half & Half', grid: 'Grid c/ Ícone', highlight_list: 'Lista Numerada', minimal_pills: 'Pílulas', checklist: 'Checklist', cards_hover: 'Cards Hover', community_connect: 'Community Connect' }[block.featuresLayout || 'split_dark'] || 'Split Dark') :
+      block.type === 'benefits' && block.benefitsLayout ? { grid_cards: 'Grid', side_image: 'c/ Imagem', carousel: 'Carrossel' }[block.benefitsLayout] :
+        block.type === 'hero' && block.heroLayout ? HERO_LAYOUTS.find(l => l.id === block.heroLayout)?.label : null;
 
   // Badge de espaçamento
   const spacingLabel = block.blockSpacing && block.blockSpacing !== 'normal'
@@ -989,22 +1414,22 @@ function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDo
 
   return (
     <div className="rounded-2xl border overflow-hidden transition-all"
-      style={{borderColor: expanded ? `${blockColor}25` : 'rgba(0,0,0,.08)', opacity: block.visible ? 1 : 0.5, boxShadow: expanded ? `0 4px 20px ${blockColor}10` : 'none'}}>
+      style={{ borderColor: expanded ? `${blockColor}25` : 'rgba(0,0,0,.08)', opacity: block.visible ? 1 : 0.5, boxShadow: expanded ? `0 4px 20px ${blockColor}10` : 'none' }}>
 
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2.5 bg-white">
-        <GripVertical style={{width:14,height:14,color:'#c7c7cc',flexShrink:0}}/>
-        <button className="flex items-center gap-2.5 flex-1 min-w-0 text-left" onClick={()=>setExpanded(v=>!v)}>
+        <GripVertical style={{ width: 14, height: 14, color: '#c7c7cc', flexShrink: 0 }} />
+        <button className="flex items-center gap-2.5 flex-1 min-w-0 text-left" onClick={() => setExpanded(v => !v)}>
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-base leading-none"
-            style={{background: `${blockColor}14`}}>
-            <span style={{fontSize:14}}>{def?.emoji || '📦'}</span>
+            style={{ background: `${blockColor}14` }}>
+            <span style={{ fontSize: 14 }}>{def?.emoji || '📦'}</span>
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <p className="text-[13px] font-semibold text-[#1d1d1f] leading-none">{def?.label || block.type}</p>
               {variantLabel && (
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                  style={{background:`${blockColor}15`, color: blockColor}}>
+                  style={{ background: `${blockColor}15`, color: blockColor }}>
                   {variantLabel}
                 </span>
               )}
@@ -1018,19 +1443,19 @@ function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDo
           </div>
         </button>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <button disabled={index===0} onClick={onMoveUp} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition"><ChevronUp style={{width:13,height:13}}/></button>
-          <button disabled={index===total-1} onClick={onMoveDown} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition"><ChevronDown style={{width:13,height:13}}/></button>
-          <button onClick={()=>onChange({...block,visible:!block.visible})} className="w-6 h-6 rounded-lg flex items-center justify-center transition hover:bg-[#f5f5f7]" style={{color:block.visible?'#34c759':'#c7c7cc'}}>
-            {block.visible?<Eye style={{width:13,height:13}}/>:<EyeOff style={{width:13,height:13}}/>}
+          <button disabled={index === 0} onClick={onMoveUp} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition"><ChevronUp style={{ width: 13, height: 13 }} /></button>
+          <button disabled={index === total - 1} onClick={onMoveDown} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition"><ChevronDown style={{ width: 13, height: 13 }} /></button>
+          <button onClick={() => onChange({ ...block, visible: !block.visible })} className="w-6 h-6 rounded-lg flex items-center justify-center transition hover:bg-[#f5f5f7]" style={{ color: block.visible ? '#34c759' : '#c7c7cc' }}>
+            {block.visible ? <Eye style={{ width: 13, height: 13 }} /> : <EyeOff style={{ width: 13, height: 13 }} />}
           </button>
-          <button onClick={onRemove} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-red-400 hover:bg-red-50 transition"><X style={{width:13,height:13}}/></button>
+          <button onClick={onRemove} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-red-400 hover:bg-red-50 transition"><X style={{ width: 13, height: 13 }} /></button>
         </div>
       </div>
 
       {/* Expanded editor */}
       {expanded && (
-        <div className="border-t px-4 py-4 bg-[#fafafa]" style={{borderColor:'rgba(0,0,0,.06)'}}>
-          <BlockEditor block={block} onChange={onChange}/>
+        <div className="border-t px-4 py-4 bg-[#fafafa]" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+          <BlockEditor block={block} onChange={onChange} />
         </div>
       )}
     </div>
@@ -1042,23 +1467,23 @@ function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDo
 function BlockPicker({ onAdd, onClose }: { onAdd: (type: BlockType) => void; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      style={{background:'rgba(0,0,0,.45)',backdropFilter:'blur(4px)'}}
-      onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      style={{ background: 'rgba(0,0,0,.45)', backdropFilter: 'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b" style={{borderColor:'rgba(0,0,0,.07)'}}>
+        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
           <div>
-            <p className="font-bold text-[15px] text-[#1d1d1f]" style={{fontFamily:"'Outfit',sans-serif"}}>Adicionar bloco</p>
+            <p className="font-bold text-[15px] text-[#1d1d1f]" style={{ fontFamily: "'Outfit',sans-serif" }}>Adicionar bloco</p>
             <p className="text-[11px] text-[#98989d]">Escolha o tipo de seção</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#f5f5f7] transition" style={{color:'#6e6e73'}}>
-            <X style={{width:16,height:16}}/>
+          <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#f5f5f7] transition" style={{ color: '#6e6e73' }}>
+            <X style={{ width: 16, height: 16 }} />
           </button>
         </div>
         <div className="p-4 grid grid-cols-2 gap-2 max-h-[65vh] overflow-y-auto">
-          {BLOCK_CATALOG.map(def=>(
-            <button key={def.type} onClick={()=>{onAdd(def.type);onClose();}}
+          {BLOCK_CATALOG.map(def => (
+            <button key={def.type} onClick={() => { onAdd(def.type); onClose(); }}
               className="flex items-start gap-3 p-3 rounded-2xl border text-left transition hover:border-[#f97316] hover:bg-orange-50 group"
-              style={{borderColor:'rgba(0,0,0,.08)'}}>
+              style={{ borderColor: 'rgba(0,0,0,.08)' }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#f5f5f7] text-lg leading-none group-hover:bg-orange-100 transition">
                 {def.emoji}
               </div>
@@ -1090,9 +1515,9 @@ export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
       onChange(n);
     }
   };
-  const upd = (i: number, b: PageBlock) => { const n=[...blocks]; n[i]=b; onChange(n); };
-  const rem = (i: number) => onChange(blocks.filter((_,j)=>j!==i));
-  const mov = (i: number, d: -1|1) => { const n=[...blocks]; const t=i+d; if(t<0||t>=n.length)return; [n[i],n[t]]=[n[t],n[i]]; onChange(n); };
+  const upd = (i: number, b: PageBlock) => { const n = [...blocks]; n[i] = b; onChange(n); };
+  const rem = (i: number) => onChange(blocks.filter((_, j) => j !== i));
+  const mov = (i: number, d: -1 | 1) => { const n = [...blocks]; const t = i + d; if (t < 0 || t >= n.length) return;[n[i], n[t]] = [n[t], n[i]]; onChange(n); };
 
   // Quick-add image_text block at a position without opening picker
   const quickAddImageText = (afterIndex: number) => {
@@ -1103,47 +1528,47 @@ export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
 
   return (
     <div className="space-y-2">
-      {blocks.length===0 && (
-        <div className="flex flex-col items-center justify-center py-10 rounded-2xl border-2 border-dashed text-center" style={{borderColor:'rgba(0,0,0,.08)'}}>
-          <Layers style={{width:36,height:36,color:'#c7c7cc',marginBottom:10}}/>
+      {blocks.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-10 rounded-2xl border-2 border-dashed text-center" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+          <Layers style={{ width: 36, height: 36, color: '#c7c7cc', marginBottom: 10 }} />
           <p className="text-[13px] font-medium text-[#6e6e73]">Nenhum bloco ainda</p>
           <p className="text-[12px] text-[#98989d] mb-4">Adicione blocos para montar a página</p>
-          <Button variant="outline" size="sm" className="gap-1.5 text-[12px]" onClick={()=>setShowPicker(-1)}>
-            <Plus style={{width:13,height:13}}/> Adicionar primeiro bloco
+          <Button variant="outline" size="sm" className="gap-1.5 text-[12px]" onClick={() => setShowPicker(-1)}>
+            <Plus style={{ width: 13, height: 13 }} /> Adicionar primeiro bloco
           </Button>
         </div>
       )}
-      {blocks.map((block,i)=>(
+      {blocks.map((block, i) => (
         <React.Fragment key={block.id}>
           <BlockCard block={block} index={i} total={blocks.length}
-            onChange={b=>upd(i,b)} onRemove={()=>rem(i)} onMoveUp={()=>mov(i,-1)} onMoveDown={()=>mov(i,1)}/>
+            onChange={b => upd(i, b)} onRemove={() => rem(i)} onMoveUp={() => mov(i, -1)} onMoveDown={() => mov(i, 1)} />
           {/* Between-block inserter */}
-          <div className="flex items-center gap-2 px-1 group/inserter" style={{height:28}}>
-            <div className="flex-1 h-px transition-all" style={{background:'rgba(0,0,0,.06)'}}/>
+          <div className="flex items-center gap-2 px-1 group/inserter" style={{ height: 28 }}>
+            <div className="flex-1 h-px transition-all" style={{ background: 'rgba(0,0,0,.06)' }} />
             <button
               title="Adicionar Imagem + Texto aqui"
               onClick={() => quickAddImageText(i)}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold opacity-0 group-hover/inserter:opacity-100 transition-all hover:scale-105"
-              style={{background:'#fff7ed',color:'#f97316',border:'1.5px dashed #f97316'}}>
-              <Plus style={{width:11,height:11}}/> Imagem + Texto
+              style={{ background: '#fff7ed', color: '#f97316', border: '1.5px dashed #f97316' }}>
+              <Plus style={{ width: 11, height: 11 }} /> Imagem + Texto
             </button>
             <button
               title="Adicionar outro tipo de bloco aqui"
               onClick={() => setShowPicker(i)}
               className="w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover/inserter:opacity-100 transition-all hover:scale-110"
-              style={{background:'#f5f5f7',color:'#6e6e73',border:'1.5px dashed rgba(0,0,0,.15)'}}>
-              <Plus style={{width:11,height:11}}/>
+              style={{ background: '#f5f5f7', color: '#6e6e73', border: '1.5px dashed rgba(0,0,0,.15)' }}>
+              <Plus style={{ width: 11, height: 11 }} />
             </button>
-            <div className="flex-1 h-px transition-all" style={{background:'rgba(0,0,0,.06)'}}/>
+            <div className="flex-1 h-px transition-all" style={{ background: 'rgba(0,0,0,.06)' }} />
           </div>
         </React.Fragment>
       ))}
-      {blocks.length>0 && (
-        <Button variant="outline" className="w-full h-10 gap-2 text-[13px] font-medium rounded-2xl border-dashed" onClick={()=>setShowPicker(-1)}>
-          <Plus style={{width:14,height:14}}/> Adicionar bloco
+      {blocks.length > 0 && (
+        <Button variant="outline" className="w-full h-10 gap-2 text-[13px] font-medium rounded-2xl border-dashed" onClick={() => setShowPicker(-1)}>
+          <Plus style={{ width: 14, height: 14 }} /> Adicionar bloco
         </Button>
       )}
-      {showPicker !== null && <BlockPicker onAdd={(type) => insertAt(type, showPicker)} onClose={()=>setShowPicker(null)}/>}
+      {showPicker !== null && <BlockPicker onAdd={(type) => insertAt(type, showPicker)} onClose={() => setShowPicker(null)} />}
     </div>
   );
 }
