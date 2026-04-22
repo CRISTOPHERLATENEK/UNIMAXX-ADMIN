@@ -8,7 +8,8 @@ export type AnimatedBgType =
   | 'grid'
   | 'waves'
   | 'pulse'
-  | 'stars';
+  | 'stars'
+  | 'oxpay';
 
 const STYLE_ID = 'animated-bg-keyframes';
 
@@ -19,6 +20,7 @@ const KEYFRAMES = `
 @keyframes abg-wave   { 0%{transform:translateX(0)}   100%{transform:translateX(-50%)} }
 @keyframes abg-pulse  { 0%{transform:scale(.4); opacity:.55} 100%{transform:scale(2.4); opacity:0} }
 @keyframes abg-twinkle{ 0%,100%{opacity:.1; transform:scale(.8)} 50%{opacity:.9; transform:scale(1.2)} }
+@keyframes abg-ox-orb { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-30px,20px) scale(1.1)} }
 `;
 
 function injectStyles() {
@@ -157,6 +159,19 @@ function Pulse({ color }: { color: string }) {
   );
 }
 
+// ── Oxpay ─────────────────────────────────────────────────────────────────────
+function Oxpay({ color }: { color: string }) {
+  return (
+    <div style={{ 
+      position: 'absolute', 
+      inset: 0, 
+      overflow: 'hidden', 
+      pointerEvents: 'none',
+      background: color || '#050508'
+    }} />
+  );
+}
+
 // ── Stars ─────────────────────────────────────────────────────────────────────
 function Stars({ color }: { color: string }) {
   const stars = Array.from({ length: 30 }, (_, i) => ({
@@ -194,6 +209,7 @@ export function AnimatedBgLayer({ type, color = '#f97316' }: { type?: AnimatedBg
     waves:     <Waves     color={color} />,
     pulse:     <Pulse     color={color} />,
     stars:     <Stars     color={color} />,
+    oxpay:     <Oxpay     color={color} />,
   };
   return <>{map[type]}</>;
 }
@@ -253,5 +269,12 @@ export const ANIM_BG_OPTIONS: {
                       radial-gradient(circle at 30% 75%, currentColor 1px, transparent 1px),
                       radial-gradient(circle at 70% 80%, currentColor 1.5px, transparent 1.5px);
           background-size: 100% 100%; opacity:.5;`,
+  },
+  {
+    value: 'oxpay',
+    label: 'Oxpay Dark',
+    css: `background: #050508; 
+          box-shadow: inset 0 0 20px currentColor;
+          border: 1px solid currentColor;`,
   },
 ];

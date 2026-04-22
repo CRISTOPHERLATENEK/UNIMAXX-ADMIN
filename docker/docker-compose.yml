@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=\${JWT_SECRET}
+      - FRONTEND_URL=http://localhost:80
+    volumes:
+      - ./backend/database.sqlite:/app/database.sqlite
+      - ./backend/uploads:/app/uploads
+    restart: unless-stopped
+    networks:
+      - unimaxx-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - unimaxx-network
+
+networks:
+  unimaxx-network:
+    driver: bridge

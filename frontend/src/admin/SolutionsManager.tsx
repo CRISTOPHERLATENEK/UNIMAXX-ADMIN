@@ -169,6 +169,16 @@ export function SolutionsManager() {
   const activeSolutions = data.solutions.filter(s => s.active === 1).length;
   const isEditing = !!(editingSolution?.id);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  const filteredSolutions = data.solutions
+    .sort((a, b) => a.order_num - b.order_num)
+    .filter(s => !searchQuery || s.title.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase()));
+  const totalPages = Math.ceil(filteredSolutions.length / PAGE_SIZE);
+  const pagedSolutions = filteredSolutions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   return (
     <div className="space-y-6">
 
@@ -197,19 +207,38 @@ export function SolutionsManager() {
         </div>
       </div>
 
+      {/* Busca */}
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Buscar soluções por nome ou descrição..."
+          value={searchQuery}
+          onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+          className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-300 bg-white"
+        />
+        <svg className="absolute left-3 top-3 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        {searchQuery && (
+          <button onClick={() => setSearchQuery('')} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 text-xs">✕</button>
+        )}
+      </div>
+
       {/* Lista */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {data.solutions.length === 0 ? (
+        {filteredSolutions.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-400 mb-4">Nenhuma solução cadastrada ainda</p>
-            <Button onClick={openNewSolution} variant="outline" className="border-orange-200 text-orange-600 hover:bg-orange-50">
-              <Plus className="w-4 h-4 mr-2" /> Criar primeira solução
-            </Button>
+            <p className="text-gray-400 mb-4">{searchQuery ? 'Nenhuma solução encontrada para a busca' : 'Nenhuma solução cadastrada ainda'}</p>
+            {!searchQuery && (
+              <Button onClick={openNewSolution} variant="outline" className="border-orange-200 text-orange-600 hover:bg-orange-50">
+                <Plus className="w-4 h-4 mr-2" /> Criar primeira solução
+              </Button>
+            )}
           </div>
         ) : (
+          <>
           <div className="divide-y divide-gray-100">
-            {data.solutions
-              .sort((a, b) => a.order_num - b.order_num)
+            {pagedSolutions
               .map((solution) => {
                 const navLink = solution.nav_link;
                 return (
@@ -277,6 +306,31 @@ export function SolutionsManager() {
                 );
               })}
           </div>
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50">
+              <p className="text-xs text-gray-500">
+                {filteredSolutions.length} resultado{filteredSolutions.length !== 1 ? 's' : ''} · página {currentPage} de {totalPages}
+              </p>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-white transition-colors"
+                >
+                  ← Anterior
+                </button>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-white transition-colors"
+                >
+                  Próxima →
+                </button>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
 

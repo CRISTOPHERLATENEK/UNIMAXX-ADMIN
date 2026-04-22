@@ -1,14 +1,34 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # ── Proxy: /api e /uploads → Node.js backend (porta 3001) ──────────────
+  # Necessário para que as chamadas de API e as imagens enviadas
+  # pelo admin funcionem quando o frontend está no public_html do Apache.
+  <IfModule mod_proxy.c>
+    RewriteCond %{REQUEST_URI} ^/api/ [OR]
+    RewriteCond %{REQUEST_URI} ^/uploads/
+    RewriteRule ^(.*)$ http://127.0.0.1:3001/$1 [P,L]
+  </IfModule>
+
+  # ── React Router: redireciona tudo para index.html ──────────────────────
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
 </IfModule>
 
+# ── Headers de cache ────────────────────────────────────────────────────────
 <IfModule mod_headers.c>
-  Header set Cache-Control "no-cache, no-store, must-revalidate"
-  Header set Pragma "no-cache"
-  Header set Expires 0
+  # HTML principal: nunca cachear (garante que a SPA sempre carrega atualizada)
+  <FilesMatch "index\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+
+  # Assets com hash (JS/CSS gerados pelo Vite): cache longo
+  <FilesMatch "\.(js|css|woff2?|ttf|eot|svg|ico|png|jpg|jpeg|webp|gif)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
 </IfModule>

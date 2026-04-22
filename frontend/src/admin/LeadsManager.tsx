@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Phone, Tag, MessageSquare, Trash2, RefreshCw, Eye, EyeOff, Download } from 'lucide-react';
+import { Mail, Phone, Tag, MessageSquare, Trash2, RefreshCw, Eye, EyeOff, Download, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -14,17 +14,18 @@ function timeAgo(date: string) {
   const d = new Date(date);
   const diff = (Date.now() - d.getTime()) / 1000;
   if (diff < 60) return 'agora';
-  if (diff < 3600) return `${Math.floor(diff/60)}min atrás`;
-  if (diff < 86400) return `${Math.floor(diff/3600)}h atrás`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}min atrás`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h atrás`;
   return d.toLocaleDateString('pt-BR');
 }
 
 export function LeadsManager() {
   const { toast } = useToast();
-  const [leads, setLeads]     = useState<Lead[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Lead | null>(null);
-  const [filter, setFilter]   = useState<'all'|'unread'|'read'>('all');
+  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const [search, setSearch] = useState('');
 
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -54,19 +55,29 @@ export function LeadsManager() {
     toast({ title: 'Lead excluído' });
   };
 
-  const exportCSV = () => {
-    const rows = [['Nome','Telefone','Email','Segmento','Mensagem','Data']];
-    leads.forEach(l => rows.push([l.name, l.phone, l.email, l.segment, l.message, l.created_at]));
-    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-    a.download = `leads-${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
+  const exportCSV = async () => {
+    try {
+      const r = await fetch(`${API_URL}/admin/leads/export`, { headers });
+      if (!r.ok) throw new Error();
+      const blob = await r.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {
+      toast({ title: 'Erro ao exportar', variant: 'destructive' });
+    }
   };
 
-  const filtered = leads.filter(l =>
-    filter === 'all' ? true : filter === 'unread' ? !l.read_at : !!l.read_at
-  );
+  const filtered = leads.filter(l => {
+    const matchFilter = filter === 'all' ? true : filter === 'unread' ? !l.read_at : !!l.read_at;
+    if (!matchFilter) return false;
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return l.name?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q) ||
+      l.phone?.includes(q) || l.segment?.toLowerCase().includes(q) || l.message?.toLowerCase().includes(q);
+  });
   const unread = leads.filter(l => !l.read_at).length;
 
   return (
@@ -91,9 +102,25 @@ export function LeadsManager() {
       <div className="flex h-[calc(100vh-120px)]">
         {/* List */}
         <div className="w-80 flex-shrink-0 border-r bg-white overflow-y-auto" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
+          {/* Search */}
+          <div className="px-3 pt-3">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+              <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Buscar leads..."
+                className="flex-1 bg-transparent text-xs outline-none text-gray-700 placeholder:text-gray-400"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+              )}
+            </div>
+          </div>
+
           {/* Filter tabs */}
-          <div className="flex border-b px-3 pt-3 gap-1" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
-            {(['all','unread','read'] as const).map(f => (
+          <div className="flex border-b px-3 pt-2 gap-1" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
+            {(['all', 'unread', 'read'] as const).map(f => (
               <button key={f} onClick={() => setFilter(f)}
                 className="px-3 py-2 text-xs font-semibold rounded-lg transition mb-2"
                 style={filter === f ? { background: '#f97316', color: '#fff' } : { color: '#6e6e73' }}>
@@ -109,7 +136,7 @@ export function LeadsManager() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-16 px-4">
               <Mail className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-sm text-gray-400">Nenhum lead encontrado</p>
+              <p className="text-sm text-gray-400">{search ? 'Nenhum resultado para a busca' : 'Nenhum lead encontrado'}</p>
             </div>
           ) : (
             filtered.map(lead => (
@@ -191,7 +218,7 @@ export function LeadsManager() {
 
                 <div className="flex gap-2 pt-2">
                   {selected.phone && (
-                    <a href={`https://wa.me/${selected.phone.replace(/\D/g,'')}`} target="_blank" rel="noreferrer"
+                    <a href={`https://wa.me/${selected.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
                       className="flex-1 text-center py-2.5 rounded-xl text-sm font-bold text-white transition hover:opacity-90"
                       style={{ background: '#25d366' }}>
                       WhatsApp

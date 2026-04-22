@@ -209,6 +209,7 @@ function Editor({ initial, isNew, onSave, onBack }: {
   const handleSave = async () => {
     if (!form.title.trim()) { toast({ title: 'Título é obrigatório', variant: 'destructive' }); return; }
     if (!form.solution_id.trim()) { toast({ title: 'ID da solução é obrigatório', variant: 'destructive' }); return; }
+    if (!form.description.trim()) { toast({ title: 'Descrição é obrigatória', variant: 'destructive' }); return; }
     setSaving(true);
     try { await onSave(form); }
     catch (e: any) { toast({ title: e?.message || 'Erro ao salvar', variant: 'destructive' }); }
@@ -327,7 +328,7 @@ function Editor({ initial, isNew, onSave, onBack }: {
                         placeholder="maxx-erp" className="h-10 rounded-l-none flex-1" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Icon picker */}
                     <div>
                       <FL>Ícone</FL>

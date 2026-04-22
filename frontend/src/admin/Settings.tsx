@@ -248,7 +248,7 @@ function AdvancedColorPicker({
           </div>
 
           {/* Info row */}
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
             {[
               { label: 'HEX', val: safeHex.toUpperCase() },
               { label: 'HSL', val: `${h}° ${s}% ${l}%` },
@@ -375,7 +375,7 @@ function LivePreviewMini({ pc, sc, ac, fontH, fontB }: { pc: string; sc: string;
       </div>
 
       {/* Mini cards */}
-      <div className="grid grid-cols-3 gap-2 p-3" style={{ background: '#f9f9fb' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3" style={{ background: '#f9f9fb' }}>
         {[['Rápido', '⚡'], ['Seguro', '🔒'], ['Fácil', '✨']].map(([t, icon]) => (
           <div key={t} className="rounded-xl p-2.5 text-center" style={{ background: '#fff', border: `1px solid rgba(0,0,0,.06)` }}>
             <div className="text-base mb-1">{icon}</div>
@@ -1136,7 +1136,7 @@ function TabRodape({ settings, setSetting, content, setContentKey }: {
 
               {/* Links da coluna */}
               <div className="p-4 space-y-2">
-                <div className="grid grid-cols-2 gap-2 mb-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-1">
                   <p className="text-[10px] font-bold text-[#98989d] uppercase tracking-wider pl-1">Texto exibido</p>
                   <p className="text-[10px] font-bold text-[#98989d] uppercase tracking-wider pl-1">URL / Caminho</p>
                 </div>

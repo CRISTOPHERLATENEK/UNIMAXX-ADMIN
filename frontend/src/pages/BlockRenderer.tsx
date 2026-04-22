@@ -10,8 +10,16 @@ import {
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const BASE_URL = API_URL.replace('/api', '');
 
-export const resolveImg = (p?: string) =>
-  !p ? null : p.startsWith('http') ? p : `${BASE_URL}${p}`;
+export const resolveImg = (p?: string) => {
+  if (!p) return null;
+  if (p.startsWith('http')) return p;
+  // Se o caminho já começa com /uploads, não duplica
+  const cleanPath = p.startsWith('/') ? p : `/${p}`;
+  if (cleanPath.startsWith('/uploads')) {
+    return `${BASE_URL}${cleanPath}`;
+  }
+  return `${BASE_URL}/uploads${cleanPath}`;
+};
 
 export const DEFAULT_T = {
   from: '#f97316', to: '#c2410c', text: '#f97316', glow: 'rgba(249,115,22,.35)',
@@ -253,11 +261,49 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
 
   const isDark = block.colorTheme === 'dark';
   const isBrand = block.colorTheme === 'brand';
-  const textCol = (isDark || isBrand) ? 'white' : '#1d1d1f';
-  const subCol = (isDark || isBrand) ? 'rgba(255,255,255,.6)' : '#6e6e73';
+  const isOxpay = block.animatedBg === 'oxpay';
+  const textCol = (isDark || isBrand || isOxpay) ? 'white' : '#1d1d1f';
+  const subCol = (isDark || isBrand || isOxpay) ? 'rgba(255,255,255,.6)' : '#6e6e73';
   const hasAnim = block.animatedBg && block.animatedBg !== 'none';
 
   const inner = renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen });
+
+  if (isOxpay) {
+    const bgColor = block.animatedBgColor || '#050508';
+    return (
+      <div style={{ position: 'relative', isolation: 'isolate', marginTop: 60, padding: '0 20px' }}>
+        {/* O Formato de Aba Oxpay (Folder Tab) */}
+        <div style={{ 
+          position: 'absolute', 
+          top: -40, 
+          right: 20, 
+          width: '280px', 
+          height: 41, 
+          background: bgColor,
+          borderRadius: '24px 24px 0 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          boxShadow: '0 -10px 30px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ width: 40, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
+          <div style={{ width: 40, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
+          <div style={{ width: 40, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
+        </div>
+        <div style={{ 
+          position: 'relative', 
+          zIndex: 1, 
+          background: bgColor,
+          borderRadius: '48px 0 48px 48px',
+          overflow: 'hidden',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.2)'
+        }}>
+          <div style={{ position: 'relative', zIndex: 2 }}>{inner}</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!hasAnim) return <>{inner}</>;
   return (
@@ -652,7 +698,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                 </h2>
               )}
               {block.description && (
-                <p style={{ fontSize: '0.95rem', color: '#555', lineHeight: 1.65, marginBottom: (block.items && block.items.length > 0) ? 24 : 0, display: 'block', padding: '8px 12px', background: t.from, color: '#fff', borderRadius: 6 }}>
+                <p style={{ fontSize: '0.95rem', lineHeight: 1.65, marginBottom: (block.items && block.items.length > 0) ? 24 : 0, display: 'block', padding: '8px 12px', background: t.from, color: '#fff', borderRadius: 6 }}>
                   {block.description}
                 </p>
               )}

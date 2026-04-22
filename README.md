@@ -1,145 +1,155 @@
-<<<<<<< HEAD
-# Unimaxx Site - Site Corporativo com Painel Administrativo
+# UNIMAXX Admin - Sistema de Gerenciamento de Conteúdo
 
-Site corporativo completo para a Unimaxx com painel administrativo para gerenciamento de conteúdo.
+Sistema profissional de gerenciamento de conteúdo com Page Builder visual, temas customizáveis e CMS completo.
 
-## Estrutura do Projeto
+## ✨ Funcionalidades
 
-```
-linx-site/
-├── backend/          # API Node.js com SQLite
-│   ├── server.js     # Servidor principal
-│   ├── package.json
-│   └── .env.example
-├── frontend/         # React + TypeScript + Tailwind
-│   ├── src/
-│   │   ├── sections/ # Seções do site
-│   │   ├── admin/    # Painel administrativo
-│   │   ├── context/  # Contextos React
-│   │   ├── data/     # Dados padrão
-│   │   └── types/    # Tipos TypeScript
-│   ├── package.json
-│   └── .env.example
-└── README.md
-```
+### 🎨 Page Builder Visual
+- Editor drag-and-drop intuitivo
+- 15+ componentes pré-construídos
+- Preview responsivo (desktop/tablet/mobile)
+- Undo/Redo ilimitado
+- Edição de estilos em tempo real
 
-## Funcionalidades
+### 🎯 Sistema de Temas
+- Paleta de cores completa
+- Tipografia customizável (Google Fonts)
+- Espaçamentos e bordas configuráveis
+- CSS personalizado
+- Preview ao vivo
 
-### Site Público
-- ✅ Header com navegação dropdown
-- ✅ Hero com estatísticas
-- ✅ Quick Links (ERP, PDV, Digital, BI)
-- ✅ Seção de Soluções
-- ✅ Nossos Números
-- ✅ Segmentos
-- ✅ Diferenciais
-- ✅ Formulário de Contato
-- ✅ Footer
+### 📄 Gestão de Páginas
+- Criação de páginas ilimitadas
+- SEO integrado (meta tags, Open Graph)
+- Publicação com um clique
+- Versionamento automático
+- URLs amigáveis
 
-### Painel Administrativo
-- ✅ Login com JWT
-- ✅ Dashboard com estatísticas
-- ✅ Gerenciamento de Conteúdo (todos os textos do site)
-- ✅ Gerenciamento de Soluções (CRUD completo)
-- ✅ Gerenciamento de Segmentos (CRUD completo)
-- ✅ Gerenciamento de Estatísticas
-- ✅ Configurações de perfil
+### 🖼️ Biblioteca de Mídia
+- Upload multi-arquivo
+- Organização por pastas
+- Preview de imagens
+- Otimização automática
 
-## Instalação
+### 📊 Analytics
+- Estatísticas de acesso
+- Log de atividades
+- Submissões de formulários
+- Relatórios exportáveis
 
-### Backend
+## 🚀 Instalação Rápida
 
+### Opção 1: Docker (Recomendado)
 ```bash
+# Clone o repositório
+git clone https://github.com/CRISTOPHERLATENEK/UNIMAXX-ADMIN.git
+cd UNIMAXX-ADMIN
+
+# Execute o setup automatizado
+chmod +x scripts/setup.sh
+./scripts/setup.sh
+
+# Suba com Docker
+docker-compose -f docker/docker-compose.yml up -d
+```
+
+### Opção 2: Manual
+```bash
+# Backend
 cd backend
-npm install
 cp .env.example .env
+npm install
+npm run migrate
 npm start
-```
 
-O servidor estará rodando em `http://localhost:3001`
-
-### Frontend
-
-```bash
+# Frontend (novo terminal)
 cd frontend
-npm install
 cp .env.example .env
+npm install
 npm run dev
 ```
 
-O site estará disponível em `http://localhost:5173`
+Acesse: http://localhost:5173 (frontend) | http://localhost:3001 (api)
 
-## Dados de Acesso
+## 🛠️ Stack Tecnológica
 
-**Painel Administrativo:**
-- URL: `/admin`
-- E-mail: `admin@linx.com`
-- Senha: `admin123`
+- **Frontend:** React 18, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend:** Node.js, Express, SQLite
+- **Autenticação:** JWT, bcrypt
+- **Upload:** Multer
+- **Container:** Docker, Docker Compose
 
-## Deploy na Hostinger
+## 📁 Estrutura do Projeto
 
-### Backend (Node.js)
+```
+UNIMAXX-ADMIN/
+├── backend/
+│   ├── middleware/      # Segurança, autenticação, audit
+│   ├── routes/          # API routes
+│   ├── database/        # Migrações e seeds
+│   └── uploads/         # Arquivos de mídia
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── admin/
+│   │   │   │   ├── PageBuilder/    # Editor visual
+│   │   │   │   ├── ThemeEditor.tsx # Personalização
+│   │   │   │   └── MediaLibrary.tsx# Gestão de mídia
+│   │   │   └── sections/           # Componentes do site
+│   │   └── hooks/       # Hooks customizados
+├── docker/              # Configurações Docker
+├── scripts/             # Scripts de automação
+└── docs/                # Documentação completa
+```
 
-1. Acesse o painel da Hostinger
-2. Vá em "Avançado" > "Setup Node.js"
-3. Configure:
-   - Versão Node: 18.x ou superior
-   - Application root: `backend`
-   - Application URL: seu domínio
-   - Application startup file: `server.js`
-4. Instale as dependências via SSH:
-   ```bash
-   cd backend
-   npm install
-   ```
-5. Configure as variáveis de ambiente no painel
+## 🔐 Segurança
 
-### Frontend (React)
+- ✅ Rate limiting em todas as rotas
+- ✅ Headers de segurança (Helmet)
+- ✅ CORS configurado
+- ✅ Proteção contra SQL Injection
+- ✅ Sanitização de inputs
+- ✅ Validação de uploads
+- ✅ Logs de auditoria
 
-1. Build do projeto:
-   ```bash
-   cd frontend
-   npm run build
-   ```
-2. Faça upload da pasta `dist` para o diretório público do servidor
-3. Configure o arquivo `.htaccess` para rotas do React Router
+## 📝 Documentação
 
-### Banco de Dados
+- [API Reference](docs/API.md)
+- [Deploy Guide](docs/DEPLOY.md)
+- [Security Checklist](docs/SECURITY.md)
 
-O projeto usa SQLite, o arquivo `database.sqlite` será criado automaticamente na primeira execução.
+## 🎨 Componentes Disponíveis
 
-## API Endpoints
+| Componente | Descrição |
+|------------|-----------|
+| Hero | Banner principal com título, subtítulo e CTA |
+| Text | Bloco de texto rich editor |
+| Image | Imagem com legenda e alinhamento |
+| Features | Grid de recursos/cards |
+| Gallery | Galeria de imagens (grid/masonry) |
+| Video | Player de vídeo integrado |
+| Testimonials | Carrossel de depoimentos |
+| Pricing | Tabela de planos |
+| Team | Perfis da equipe |
+| FAQ | Acordeão de perguntas |
+| CTA | Call to action |
+| Newsletter | Formulário de email |
+| Countdown | Contador regressivo |
+| Map | Mapa interativo |
+| Spacer | Espaçamento vertical |
 
-### Públicos
-- `GET /api/content` - Conteúdo do site
-- `GET /api/solutions` - Lista de soluções
-- `GET /api/segments` - Lista de segmentos
-- `GET /api/stats` - Estatísticas
+## 🤝 Contribuição
 
-### Autenticação
-- `POST /api/auth/login` - Login
-- `GET /api/auth/me` - Usuário atual
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -am 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
 
-### Administrativos (requer token)
-- `PUT /api/admin/content` - Atualizar conteúdo
-- `POST /api/admin/solutions` - Criar solução
-- `PUT /api/admin/solutions/:id` - Atualizar solução
-- `DELETE /api/admin/solutions/:id` - Excluir solução
-- `POST /api/admin/segments` - Criar segmento
-- `PUT /api/admin/segments/:id` - Atualizar segmento
-- `DELETE /api/admin/segments/:id` - Excluir segmento
-- `PUT /api/admin/stats/:id` - Atualizar estatística
-- `GET /api/admin/all-data` - Todos os dados
+## 📄 Licença
 
-## Tecnologias
+MIT License - veja [LICENSE](LICENSE) para detalhes.
 
-- **Frontend:** React 18, TypeScript, Tailwind CSS, shadcn/ui, React Router
-- **Backend:** Node.js, Express, SQLite, JWT, bcrypt
-- **Build:** Vite
+---
 
-## Licença
-
-MIT
-=======
-# UNIMAXX-ADMIN
->>>>>>> 1786f96100a6256824f02366a2911322e4cb011c
+**Nota:** Este projeto foi atualizado com sistema de Page Builder profissional, temas dinâmicos e CMS completo. Mantenha suas dependências sempre atualizadas para segurança máxima.

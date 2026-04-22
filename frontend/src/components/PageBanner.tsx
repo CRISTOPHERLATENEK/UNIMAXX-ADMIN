@@ -12,7 +12,12 @@ const BASE_URL = API_URL.replace('/api', '');
 
 function imgUrl(src: string) {
   if (!src) return '';
-  return src.startsWith('http') ? src : `${BASE_URL}${src}`;
+  if (src.startsWith('http')) return src;
+  const cleanPath = src.startsWith('/') ? src : `/${src}`;
+  if (cleanPath.startsWith('/uploads')) {
+    return `${BASE_URL}${cleanPath}`;
+  }
+  return `${BASE_URL}/uploads${cleanPath}`;
 }
 
 // ─── Parallax Slide ──────────────────────────────────────────────────────────
@@ -208,6 +213,38 @@ export function BannerSlide({ banner }: { banner: Banner }) {
 
   if (style === 'parallax') {
     return <ParallaxBannerSlide banner={banner} c={c} hasImage={hasImage} hasText={hasText} />;
+  }
+
+  if (style === 'oxpay') {
+    return (
+      <div style={{ position: 'relative', width: '100%', minHeight: 520, paddingTop: 68, background: '#050508', overflow: 'hidden' }}>
+        {/* Grid sutil */}
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px)', backgroundSize: '60px 60px', opacity: 0.4 }} />
+        
+        {/* Orbes de luz (estilo Oxpay) */}
+        <div style={{ 
+          position: 'absolute', top: '-10%', right: '-5%', width: '60%', height: '70%', 
+          borderRadius: '50%', background: `radial-gradient(circle, ${c}15 0%, transparent 70%)`, 
+          filter: 'blur(80px)'
+        }} />
+        <div style={{ 
+          position: 'absolute', bottom: '-15%', left: '-10%', width: '50%', height: '60%', 
+          borderRadius: '50%', background: `radial-gradient(circle, ${c}10 0%, transparent 70%)`, 
+          filter: 'blur(100px)'
+        }} />
+        
+        {/* Overlay de gradiente escuro */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(5,5,8,0.9) 0%, rgba(5,5,8,0.4) 50%, rgba(5,5,8,0.9) 100%)' }} />
+
+        {hasImage && <img src={imgUrl(banner.image)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .25 }} />}
+        
+        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 2rem', display: 'flex', alignItems: 'center', minHeight: 452 }}>
+          <div style={{ maxWidth: 640 }}>
+            <SlideContent banner={banner} c={c} />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Default: cinematic

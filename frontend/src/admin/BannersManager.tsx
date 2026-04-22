@@ -393,6 +393,40 @@ export function BannersManager() {
                 </div>
               </div>
 
+              {/* ── Agendamento ── */}
+              <div style={{ background: '#fff', borderRadius: 16, border: '1px solid rgba(0,0,0,.07)', padding: 20 }}>
+                <p style={{ fontWeight: 600, fontSize: 14, color: '#1d1d1f', marginBottom: 4 }}>Agendamento (opcional)</p>
+                <p style={{ fontSize: 12, color: '#98989d', marginBottom: 14 }}>Defina datas de início e fim para exibição automática do banner.</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <Label style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', display: 'block', marginBottom: 6 }}>Início</Label>
+                    <Input
+                      type="datetime-local"
+                      value={draft.starts_at ? draft.starts_at.slice(0, 16) : ''}
+                      onChange={e => saveNow({ starts_at: e.target.value || undefined })}
+                      style={{ borderRadius: 10, fontSize: 13 }}
+                    />
+                  </div>
+                  <div>
+                    <Label style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', display: 'block', marginBottom: 6 }}>Fim</Label>
+                    <Input
+                      type="datetime-local"
+                      value={draft.ends_at ? draft.ends_at.slice(0, 16) : ''}
+                      onChange={e => saveNow({ ends_at: e.target.value || undefined })}
+                      style={{ borderRadius: 10, fontSize: 13 }}
+                    />
+                  </div>
+                </div>
+                {(draft.starts_at || draft.ends_at) && (
+                  <button
+                    onClick={() => saveNow({ starts_at: undefined, ends_at: undefined })}
+                    style={{ marginTop: 10, fontSize: 11, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    Remover agendamento
+                  </button>
+                )}
+              </div>
+
               {/* ── Fundo ── */}
               <div style={{ background: '#fff', borderRadius: 16, border: '1px solid rgba(0,0,0,.07)', padding: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>

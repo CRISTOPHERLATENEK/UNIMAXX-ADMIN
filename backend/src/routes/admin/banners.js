@@ -8,15 +8,18 @@ router.post('/', (req, res) => {
     cta_text = '', cta_link = '', order_num = 0, active = 1,
     use_default_bg = 1, bg_color = '#f97316',
     page = 'home', banner_style = 'cinematic', use_style = 1,
+    starts_at = null, ends_at = null,
   } = req.body || {};
 
   db.run(
     `INSERT INTO banners
       (title, subtitle, description, image, cta_text, cta_link,
-       order_num, active, use_default_bg, bg_color, page, banner_style, use_style)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+       order_num, active, use_default_bg, bg_color, page, banner_style, use_style,
+       starts_at, ends_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [title, subtitle, description, image, cta_text, cta_link,
-     order_num, active, use_default_bg, bg_color, page, banner_style, use_style],
+     order_num, active, use_default_bg, bg_color, page, banner_style, use_style,
+     starts_at, ends_at],
     function (err) {
       if (err) return res.status(500).json({ error: 'Erro ao criar banner', detail: err.message });
       res.json({ ok: true, id: this.lastID });
@@ -31,17 +34,20 @@ router.put('/:id', (req, res) => {
     title, subtitle, description, image,
     cta_text, cta_link, order_num, active,
     use_default_bg, bg_color, page, banner_style, use_style,
+    starts_at, ends_at,
   } = req.body || {};
 
   db.run(
     `UPDATE banners SET
       title=?, subtitle=?, description=?, image=?,
       cta_text=?, cta_link=?, order_num=?, active=?,
-      use_default_bg=?, bg_color=?, page=?, banner_style=?, use_style=?
+      use_default_bg=?, bg_color=?, page=?, banner_style=?, use_style=?,
+      starts_at=?, ends_at=?
      WHERE id=?`,
     [title, subtitle, description, image,
      cta_text, cta_link, order_num, active,
      use_default_bg, bg_color, page || 'home', banner_style || 'cinematic', use_style ?? 1,
+     starts_at ?? null, ends_at ?? null,
      id],
     function (err) {
       if (err) return res.status(500).json({ error: 'Erro ao atualizar banner', detail: err.message });

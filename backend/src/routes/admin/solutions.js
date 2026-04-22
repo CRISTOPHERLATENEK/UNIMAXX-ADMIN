@@ -1,5 +1,8 @@
 const router = require('express').Router();
 const { db, parseArr } = require('../../db/database');
+const { validateBody, validateParams } = require('../../middleware/validate');
+const { idParamSchema, solutionSchema } = require('../../validation/admin');
+const { logAudit } = require('../../utils/audit');
 
 router.get('/', (req, res) => {
   db.all('SELECT * FROM solutions ORDER BY order_num', [], (err, rows) => {
@@ -8,17 +11,12 @@ router.get('/', (req, res) => {
   });
 });
 
-router.put('/:id', (req, res) => {
-  const id = req.params.id;
-  const b = req.body || {};
-  const title = b.title || '', description = b.description || '';
-  if (!title) return res.status(400).json({ error: 'title é obrigatório' });
-
-  const vals = {
-    cta_text: b.cta_text || 'Saiba mais', icon: b.icon || 'Building2', image: b.image || '',
-    order_num: Number(b.order_num || 0), active: b.active === 0 || b.active === false ? 0 : 1,
-    nav_link: b.nav_link || null,
-    features: JSON.stringify(Array.isArray(b.features) ? b.features : []),
+router.put('/:id', validateParams(idParamSchema), validateBody(solutionSchema), (req, res) => {
+  const { id } = req.validatedParams;
+  const payload = req.validatedBody;
+  const values = {
+    ...payload,
+    features: JSON.stringify(payload.features || []),
   };
 
   db.get('SELECT 1 FROM solutions WHERE solution_id=?', [id], (err, exists) => {
@@ -27,24 +25,34 @@ router.put('/:id', (req, res) => {
       db.run(
         `INSERT INTO solutions (solution_id,title,description,features,cta_text,icon,image,order_num,active,nav_link)
          VALUES (?,?,?,?,?,?,?,?,?,?)`,
-        [id, title, description, vals.features, vals.cta_text, vals.icon, vals.image, vals.order_num, vals.active, vals.nav_link],
-        (e) => e ? res.status(500).json({ error: 'Erro ao criar' }) : res.json({ message: 'Criado' })
+        [id, payload.title, payload.description, values.features, payload.cta_text, payload.icon, payload.image, payload.order_num, payload.active, payload.nav_link || null],
+        async (e) => {
+          if (e) return res.status(500).json({ error: 'Erro ao criar' });
+          await logAudit(req, { userId: req.user?.id, action: 'create_solution', entity: 'solutions', entityId: id, details: { title: payload.title } });
+          res.json({ message: 'Criado' });
+        }
       );
     } else {
       db.run(
         `UPDATE solutions SET title=?,description=?,features=?,cta_text=?,icon=?,image=?,order_num=?,active=?,nav_link=?
          WHERE solution_id=?`,
-        [title, description, vals.features, vals.cta_text, vals.icon, vals.image, vals.order_num, vals.active, vals.nav_link, id],
-        (e) => e ? res.status(500).json({ error: 'Erro ao atualizar' }) : res.json({ message: 'Atualizado' })
+        [payload.title, payload.description, values.features, payload.cta_text, payload.icon, payload.image, payload.order_num, payload.active, payload.nav_link || null, id],
+        async (e) => {
+          if (e) return res.status(500).json({ error: 'Erro ao atualizar' });
+          await logAudit(req, { userId: req.user?.id, action: 'update_solution', entity: 'solutions', entityId: id, details: { title: payload.title } });
+          res.json({ message: 'Atualizado' });
+        }
       );
     }
   });
 });
 
-router.delete('/:id', (req, res) => {
-  db.run('DELETE FROM solutions WHERE solution_id=?', [req.params.id], function(err) {
+router.delete('/:id', validateParams(idParamSchema), (req, res) => {
+  const { id } = req.validatedParams;
+  db.run('DELETE FROM solutions WHERE solution_id=?', [id], async function (err) {
     if (err) return res.status(500).json({ error: 'Erro' });
     if (this.changes === 0) return res.status(404).json({ error: 'Não encontrado' });
+    await logAudit(req, { userId: req.user?.id, action: 'delete_solution', entity: 'solutions', entityId: id });
     res.json({ message: 'Excluído' });
   });
 });

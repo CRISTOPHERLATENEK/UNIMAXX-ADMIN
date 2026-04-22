@@ -52,6 +52,8 @@ export interface Banner {
   bg_color?: string;
   page?: string;
   banner_style?: string;
+  starts_at?: string;
+  ends_at?: string;
 }
 
 export interface ClientLogo {
@@ -131,7 +133,7 @@ export type BlockType =
   | 'divider';
 
 // Variantes de layout para blocks específicos
-export type FeaturesLayout = 'dark_numbered' | 'grid' | 'checklist' | 'cards_hover' | 'bento' | 'highlight_list' | 'minimal_pills' | 'split_dark' | 'dark_cards' | 'half_split';
+export type FeaturesLayout = 'dark_numbered' | 'grid' | 'checklist' | 'cards_hover' | 'bento' | 'highlight_list' | 'minimal_pills' | 'split_dark' | 'dark_cards' | 'half_split' | 'community_connect';
 export type BenefitsLayout = 'grid_cards' | 'side_image' | 'carousel';
 export type BlockSpacing = 'compact' | 'normal' | 'spacious';
 export type BlockRadius = 'none' | 'medium' | 'large';
@@ -198,10 +200,17 @@ export interface PageBlock {
   dividerStyle?: 'line' | 'space' | 'dots' | 'gradient' | 'dashed' | 'double' | 'wave' | 'ornament' | 'triangle' | 'clouds' | 'waves_fill' | 'mountains';
   dividerColor?: string;
   // animated background
-  animatedBg?: 'none' | 'particles' | 'aurora' | 'grid' | 'waves' | 'pulse' | 'stars';
+  animatedBg?: 'none' | 'particles' | 'aurora' | 'grid' | 'waves' | 'pulse' | 'stars' | 'oxpay';
   animatedBgColor?: string;
   // richtext
   html?: string;
+  // community_connect layout
+  communityBgColor?: string;
+  communityTextColor?: string;
+  communityAccentColor?: string;
+  communityMutedColor?: string;
+  communityEyebrow?: string;
+  communityCards?: { title: string; desc: string; linkLabel: string; linkUrl: string }[];
 }
 
 // ─── Solution Pages (lean — conteúdo vive em blocks_json) ────────────────────

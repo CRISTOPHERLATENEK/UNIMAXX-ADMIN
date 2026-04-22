@@ -91,9 +91,19 @@ export function Dashboard() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => { if (!isAuthenticated) navigate('/admin/login'); }, [isAuthenticated, navigate]);
   useEffect(() => { const t = setInterval(() => setCurrentTime(new Date()), 60000); return () => clearInterval(t); }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const token = localStorage.getItem('token');
+    fetch(`${API_URL}/admin/leads/unread-count`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d && setUnreadCount(d.count || 0))
+      .catch(() => {});
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -257,22 +267,34 @@ export function Dashboard() {
 
           {/* Atalhos */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-            <h2 className="text-[13px] font-bold text-gray-900 mb-3">Atalhos</h2>
+            <h2 className="text-[13px] font-bold text-gray-900 mb-3">Ações Rápidas</h2>
             <div className="space-y-0.5">
               {[
-                { label: 'Editor da Home',      icon: Globe,      link: '/admin/home' },
-                { label: 'Banners / Carrossel', icon: Image,      link: '/admin/banners' },
-                { label: 'Soluções',            icon: Briefcase,  link: '/admin/solucoes' },
-                { label: 'Leads & Contatos',    icon: Mail,       link: '/admin/leads' },
-                { label: 'Configurações',       icon: Settings,   link: '/admin/configuracoes' },
-              ].map(item => { const Icon = item.icon; return (
-                <button key={item.label} onClick={() => navigate(item.link)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-gray-50 transition text-left">
-                  <Icon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0"/>
-                  <span className="text-[12px] text-gray-600 font-medium flex-1">{item.label}</span>
-                  <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0"/>
-                </button>
-              );})}
+                { label: 'Editar Hero da Home',  icon: Globe,      link: '/admin/home',            desc: 'Banner principal' },
+                { label: 'Nova Solução',         icon: Briefcase,  link: '/admin/solucoes',         desc: 'Adicionar produto' },
+                { label: 'Banners & Carrossel',  icon: Image,      link: '/admin/banners',          desc: 'Gerencie banners' },
+                { label: 'Leads & Contatos',     icon: Mail,       link: '/admin/leads',            desc: 'Ver contatos', badge: true },
+                { label: 'Configurações',        icon: Settings,   link: '/admin/configuracoes',    desc: 'Site e integrações' },
+              ].map(item => {
+                const Icon = item.icon;
+                const isLeads = item.badge;
+                return (
+                  <button key={item.label} onClick={() => navigate(item.link)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-gray-50 transition text-left">
+                    <Icon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0"/>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[12px] text-gray-700 font-semibold block">{item.label}</span>
+                      <span className="text-[10px] text-gray-400">{item.desc}</span>
+                    </div>
+                    {isLeads && unreadCount > 0 && (
+                      <span className="min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                    <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0"/>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

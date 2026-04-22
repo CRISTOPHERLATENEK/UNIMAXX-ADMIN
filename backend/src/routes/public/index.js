@@ -28,7 +28,11 @@ router.get('/settings', cache(30), (req, res) => {
 // ── Banners ───────────────────────────────────────────────────────────────
 router.get('/banners/all', cache(30), (req, res) => {
   db.all(
-    `SELECT * FROM banners WHERE active=1 AND title IS NOT NULL AND title != ''
+    `SELECT * FROM banners
+     WHERE active=1
+       AND title IS NOT NULL AND title != ''
+       AND (starts_at IS NULL OR starts_at <= datetime('now'))
+       AND (ends_at IS NULL OR ends_at >= datetime('now'))
      ORDER BY page, order_num`,
     [],
     (err, rows) => {

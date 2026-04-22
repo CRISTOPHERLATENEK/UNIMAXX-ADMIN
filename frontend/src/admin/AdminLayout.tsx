@@ -7,7 +7,7 @@ import {
   Star, Layers, BarChart2, Tag, MessageSquare, Handshake,
   HelpCircle, Building2, Scale, Inbox, Mail,
   Settings, LogOut, Menu, ChevronDown, User, X, Globe,
-  ChevronRight, Search, Zap, ChevronLeft,
+  ChevronRight, Search, Zap, ChevronLeft, Image,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { GlobalSearch } from '@/admin/GlobalSearch';
@@ -20,12 +20,14 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-type MenuItem = { path: string; label: string; icon: React.ElementType; exact?: boolean; badge?: boolean };
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
+type MenuItem = { path: string; label: string; icon: React.ElementType; exact?: boolean; badge?: boolean; unreadBadge?: boolean };
 type MenuGroup = { label: string; items: MenuItem[] };
 
 const menuGroups: MenuGroup[] = [
   {
-    label: 'MAIN',
+    label: 'GERAL',
     items: [
       { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
     ],
@@ -33,43 +35,44 @@ const menuGroups: MenuGroup[] = [
   {
     label: 'CONTEÚDO',
     items: [
-      { path: '/admin/home',          label: 'Editor da Home',       icon: LayoutTemplate },
-      { path: '/admin/conteudo',      label: 'Conteúdo Geral',       icon: AlignLeft },
-      { path: '/admin/paginas',       label: 'Páginas do Site',      icon: FileText },
-      { path: '/admin/links-rapidos', label: 'Links Rápidos',        icon: Link2 },
-      { path: '/admin/diferenciais',  label: 'Diferenciais',         icon: Star },
+      { path: '/admin/home', label: 'Seções da Home', icon: LayoutTemplate },
+      { path: '/admin/conteudo', label: 'Textos e Logos', icon: AlignLeft },
+      { path: '/admin/paginas', label: 'Páginas Extras', icon: FileText },
+      { path: '/admin/banners', label: 'Banners & Carrossel', icon: Image },
+      { path: '/admin/links-rapidos', label: 'Links Rápidos', icon: Link2 },
+      { path: '/admin/diferenciais', label: 'Diferenciais', icon: Star },
     ],
   },
   {
     label: 'SOLUÇÕES',
     items: [
-      { path: '/admin/solucoes',      label: 'Soluções',             icon: Layers },
+      { path: '/admin/solucoes', label: 'Soluções', icon: Layers },
     ],
   },
   {
     label: 'EMPRESA',
     items: [
-      { path: '/admin/segmentos',     label: 'Segmentos',            icon: Tag },
-      { path: '/admin/estatisticas',  label: 'Estatísticas',         icon: BarChart2 },
+      { path: '/admin/segmentos', label: 'Segmentos', icon: Tag },
+      { path: '/admin/estatisticas', label: 'Estatísticas', icon: BarChart2 },
     ],
   },
   {
-    label: 'PROVA SOCIAL',
+    label: 'CREDIBILIDADE',
     items: [
-      { path: '/admin/logos-clientes',label: 'Features Marquee',     icon: Zap },
-      { path: '/admin/depoimentos',   label: 'Depoimentos',          icon: MessageSquare },
-      { path: '/admin/parceiros',     label: 'Parceiros',            icon: Handshake },
+      { path: '/admin/logos-clientes', label: 'Logos em Destaque', icon: Zap },
+      { path: '/admin/depoimentos', label: 'Depoimentos', icon: MessageSquare },
+      { path: '/admin/parceiros', label: 'Parceiros', icon: Handshake },
     ],
   },
   {
-    label: 'SETTINGS',
+    label: 'CONFIGURAÇÕES',
     items: [
-      { path: '/admin/central-ajuda', label: 'Central de Ajuda',     icon: HelpCircle },
-      { path: '/admin/institucional', label: 'Institucional',        icon: Building2 },
-      { path: '/admin/legal',         label: 'Termos & Privacidade', icon: Scale },
-      { path: '/admin/leads',         label: 'Leads & Contatos',     icon: Inbox },
-      { path: '/admin/newsletter',    label: 'Newsletter',           icon: Mail },
-      { path: '/admin/configuracoes', label: 'Configurações',        icon: Settings, badge: true },
+      { path: '/admin/central-ajuda', label: 'Central de Ajuda', icon: HelpCircle },
+      { path: '/admin/institucional', label: 'Institucional', icon: Building2 },
+      { path: '/admin/legal', label: 'Termos & Privacidade', icon: Scale },
+      { path: '/admin/leads', label: 'Leads & Contatos', icon: Inbox, unreadBadge: true },
+      { path: '/admin/newsletter', label: 'Newsletter', icon: Mail },
+      { path: '/admin/configuracoes', label: 'Configurações', icon: Settings, badge: true },
     ],
   },
 ];
@@ -80,12 +83,13 @@ const MINI = 56;
 
 export function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed]   = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { user, logout }            = useAuth();
-  const { data }                    = useData();
-  const navigate                    = useNavigate();
-  const location                    = useLocation();
+  const [unreadLeads, setUnreadLeads] = useState(0);
+  const { user, logout } = useAuth();
+  const { data } = useData();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
@@ -95,6 +99,26 @@ export function AdminLayout() {
     };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  // Poll unread leads count every 60 seconds
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const fetchCount = async () => {
+      try {
+        const r = await fetch(`${API_URL}/admin/leads/unread-count`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (r.ok) {
+          const d = await r.json();
+          setUnreadLeads(d.count || 0);
+        }
+      } catch { /* ignore */ }
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleLogout = () => { logout(); navigate('/admin/login'); };
@@ -118,9 +142,9 @@ export function AdminLayout() {
            transition-all duration-150
            ${mini ? 'justify-center p-[9px]' : 'gap-3 px-3 py-[7.5px]'}
            ${isActive
-             ? 'text-white'
-             : 'text-white/35 hover:text-white/75 hover:bg-white/[0.05]'
-           }`
+            ? 'text-white'
+            : 'text-white/35 hover:text-white/75 hover:bg-white/[0.05]'
+          }`
         }
         style={({ isActive }) => isActive
           ? { background: 'linear-gradient(135deg,rgba(249,115,22,.9),rgba(220,85,10,.9))', boxShadow: '0 2px 10px rgba(249,115,22,.25),inset 0 1px 0 rgba(255,255,255,.1)' }
@@ -134,6 +158,11 @@ export function AdminLayout() {
             {!mini && item.badge && data && !(data.settings?.whatsapp_number && data.settings?.seo_site_name) && (
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
             )}
+            {!mini && item.unreadBadge && unreadLeads > 0 && (
+              <span className="min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1 flex-shrink-0">
+                {unreadLeads > 99 ? '99+' : unreadLeads}
+              </span>
+            )}
           </>
         )}
       </NavLink>
@@ -141,10 +170,19 @@ export function AdminLayout() {
     if (!mini) return link;
     return (
       <Tooltip>
-        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipTrigger asChild>
+          <div className="relative">
+            {link}
+            {item.unreadBadge && unreadLeads > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center">
+                {unreadLeads > 9 ? '9+' : unreadLeads}
+              </span>
+            )}
+          </div>
+        </TooltipTrigger>
         <TooltipContent side="right" sideOffset={14}
           style={{ background: '#1c1f2b', color: 'rgba(255,255,255,.9)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, fontSize: 12, fontWeight: 500, padding: '5px 10px' }}>
-          {item.label}
+          {item.label}{item.unreadBadge && unreadLeads > 0 ? ` (${unreadLeads})` : ''}
         </TooltipContent>
       </Tooltip>
     );

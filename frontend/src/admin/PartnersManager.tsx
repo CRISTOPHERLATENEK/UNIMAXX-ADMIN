@@ -166,7 +166,7 @@ export function PartnersManager() {
                   placeholder="https://www.parceiro.com" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Ordem</label>
                   <input type="number" value={editing.order_num ?? 0} onChange={(e) => setEditing({ ...editing, order_num: Number(e.target.value) })}

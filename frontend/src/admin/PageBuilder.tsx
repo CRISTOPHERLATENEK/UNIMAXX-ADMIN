@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ANIM_BG_OPTIONS } from '@/components/AnimatedBgLayer';
 import type { AnimatedBgType } from '@/components/AnimatedBgLayer';
 import {
@@ -49,6 +49,7 @@ const HERO_LAYOUTS = [
   { id: 'dark_glow', label: 'Dark Glow', desc: 'Fundo preto com glow neon da cor do tema' },
   { id: 'magazine', label: 'Magazine', desc: 'Imagem de fundo full-bleed com overlay' },
   { id: 'cinematic', label: 'Cinematic', desc: 'Estilo banner/game — imagem + título à esquerda + botão vídeo' },
+  { id: 'oxpay', label: 'Oxpay', desc: 'Fundo escuro premium com orbes de luz e grid sutil' },
 ];
 
 function makeBlock(type: BlockType): PageBlock {
@@ -281,6 +282,7 @@ const BANNER_STYLES = [
   { id: 'split', label: 'Dividido' },
   { id: 'bold', label: 'Impacto' },
   { id: 'parallax', label: 'Parallax' },
+  { id: 'oxpay', label: 'Oxpay' },
 ] as const;
 
 function BannerStyleThumb({ id, accent }: { id: string; accent: string }) {
@@ -337,6 +339,13 @@ function BannerStyleThumb({ id, accent }: { id: string; accent: string }) {
         <div style={{ width: 30, height: 5, background: '#fff', borderRadius: 2, marginBottom: 2 }} />
         <div style={{ width: 18, height: 7, border: '2px solid rgba(255,255,255,.3)', borderRadius: 999, marginTop: 3 }} />
       </div>
+    </div>
+  );
+  if (id === 'oxpay') return (
+    <div style={{ ...base, background: '#050508' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px)', backgroundSize: '10px 10px', opacity: 0.2 }} />
+      <div style={{ position: 'absolute', top: '10%', right: '10%', width: '40%', height: '40%', borderRadius: '50%', background: a, filter: 'blur(15px)', opacity: 0.3 }} />
+      <div style={{ position: 'absolute', bottom: '10%', left: '10%', width: '30%', height: '30%', borderRadius: '50%', background: a, filter: 'blur(12px)', opacity: 0.2 }} />
     </div>
   );
   return (
@@ -605,7 +614,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
             {featLayouts.map(o => {
               const sel = currentLayout === o.v;
               return (
-                <button key={o.v} onClick={() => set('featuresLayout', o.v)}
+                <button key={o.v} onClick={() => set('featuresLayout', o.v as FeaturesLayout)}
                   className="text-left px-3 py-2.5 rounded-xl border-2 transition flex items-center gap-3"
                   style={{ borderColor: sel ? accent : 'rgba(0,0,0,.08)', background: sel ? `${accent}10` : '#fafafa' }}>
                   <span className="text-[18px] w-7 text-center flex-shrink-0" style={{ color: sel ? accent : '#aaa' }}>{o.preview}</span>
@@ -768,7 +777,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
                           <span style={{ fontSize: 11, fontWeight: 700, color: ctxt }}>{i + 1}</span>
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 12, fontWeight: 600, color: '#1d1d1f', margin: 0, truncate: true }}>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: '#1d1d1f', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {card.title || <span style={{ color: '#c7c7cc' }}>Sem título</span>}
                           </p>
                           {card.desc && <p style={{ fontSize: 10, color: '#98989d', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.desc}</p>}
@@ -1336,7 +1345,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
             {SIMPLE_OPTIONS.map(opt => {
               const active = (block.dividerStyle || 'line') === opt.value;
               return (
-                <button key={opt.value} onClick={() => set('dividerStyle', opt.value)}
+                <button key={opt.value} onClick={() => set('dividerStyle', opt.value as PageBlock['dividerStyle'])}
                   className="rounded-xl border-2 transition px-2 py-1.5"
                   style={{ borderColor: active ? '#f97316' : 'rgba(0,0,0,.08)', background: active ? '#fff7ed' : '#f5f5f7' }}>
                   <div style={{ pointerEvents:'none' }}>{opt.preview}</div>
@@ -1353,7 +1362,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
             {SHAPE_OPTIONS.map(opt => {
               const active = block.dividerStyle === opt.value;
               return (
-                <button key={opt.value} onClick={() => set('dividerStyle', opt.value)}
+                <button key={opt.value} onClick={() => set('dividerStyle', opt.value as PageBlock['dividerStyle'])}
                   className="rounded-xl border-2 transition px-2 py-1.5 overflow-hidden"
                   style={{ borderColor: active ? '#f97316' : 'rgba(0,0,0,.08)', background: active ? '#fff7ed' : '#f5f5f7' }}>
                   <div style={{ pointerEvents:'none', borderRadius:6, overflow:'hidden', background:'#e5e7eb' }}>{opt.preview}</div>
@@ -1391,9 +1400,9 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
 // ── Block card ────────────────────────────────────────────────────────────────
 
-function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDown }: {
+function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDown, onDuplicate }: {
   block: PageBlock; index: number; total: number;
-  onChange: (b: PageBlock) => void; onRemove: () => void; onMoveUp: () => void; onMoveDown: () => void;
+  onChange: (b: PageBlock) => void; onRemove: () => void; onMoveUp: () => void; onMoveDown: () => void; onDuplicate: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const def = BLOCK_CATALOG.find(d => d.type === block.type);
@@ -1404,7 +1413,7 @@ function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDo
 
   // Badge de variante para features/benefits
   const variantLabel =
-    block.type === 'features' ? ({ split_dark: 'Split Dark', dark_cards: 'Dark Cards', half_split: 'Half & Half', grid: 'Grid c/ Ícone', highlight_list: 'Lista Numerada', minimal_pills: 'Pílulas', checklist: 'Checklist', cards_hover: 'Cards Hover', community_connect: 'Community Connect' }[block.featuresLayout || 'split_dark'] || 'Split Dark') :
+    block.type === 'features' ? (({ split_dark: 'Split Dark', dark_cards: 'Dark Cards', half_split: 'Half & Half', grid: 'Grid c/ Ícone', highlight_list: 'Lista Numerada', minimal_pills: 'Pílulas', checklist: 'Checklist', cards_hover: 'Cards Hover', community_connect: 'Community Connect', bento: 'Bento', dark_numbered: 'Numerado Dark' } as Record<string, string>)[block.featuresLayout || 'split_dark'] || 'Split Dark') :
       block.type === 'benefits' && block.benefitsLayout ? { grid_cards: 'Grid', side_image: 'c/ Imagem', carousel: 'Carrossel' }[block.benefitsLayout] :
         block.type === 'hero' && block.heroLayout ? HERO_LAYOUTS.find(l => l.id === block.heroLayout)?.label : null;
 
@@ -1443,12 +1452,17 @@ function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDo
           </div>
         </button>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <button disabled={index === 0} onClick={onMoveUp} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition"><ChevronUp style={{ width: 13, height: 13 }} /></button>
-          <button disabled={index === total - 1} onClick={onMoveDown} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition"><ChevronDown style={{ width: 13, height: 13 }} /></button>
-          <button onClick={() => onChange({ ...block, visible: !block.visible })} className="w-6 h-6 rounded-lg flex items-center justify-center transition hover:bg-[#f5f5f7]" style={{ color: block.visible ? '#34c759' : '#c7c7cc' }}>
+          <button disabled={index === 0} onClick={onMoveUp} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition" title="Mover para cima"><ChevronUp style={{ width: 13, height: 13 }} /></button>
+          <button disabled={index === total - 1} onClick={onMoveDown} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition" title="Mover para baixo"><ChevronDown style={{ width: 13, height: 13 }} /></button>
+          <button onClick={() => onChange({ ...block, visible: !block.visible })} className="w-6 h-6 rounded-lg flex items-center justify-center transition hover:bg-[#f5f5f7]" style={{ color: block.visible ? '#34c759' : '#c7c7cc' }} title={block.visible ? 'Ocultar bloco' : 'Mostrar bloco'}>
             {block.visible ? <Eye style={{ width: 13, height: 13 }} /> : <EyeOff style={{ width: 13, height: 13 }} />}
           </button>
-          <button onClick={onRemove} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-red-400 hover:bg-red-50 transition"><X style={{ width: 13, height: 13 }} /></button>
+          <button onClick={onDuplicate} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-blue-400 hover:bg-blue-50 transition" title="Duplicar bloco">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+          </button>
+          <button onClick={() => { if (window.confirm('Excluir este bloco?')) onRemove(); }} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-red-400 hover:bg-red-50 transition" title="Excluir bloco"><X style={{ width: 13, height: 13 }} /></button>
         </div>
       </div>
 
@@ -1504,30 +1518,145 @@ function BlockPicker({ onAdd, onClose }: { onAdd: (type: BlockType) => void; onC
 export interface PageBuilderProps { blocks: PageBlock[]; onChange: (blocks: PageBlock[]) => void; }
 
 export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
-  const [showPicker, setShowPicker] = useState<number | null>(null); // null=hidden, -1=append, N=insert after index N
+  const [showPicker, setShowPicker] = useState<number | null>(null);
+  const [history, setHistory] = useState<PageBlock[][]>([]);
+  const [future, setFuture] = useState<PageBlock[][]>([]);
+
+  // Wrap onChange to track history
+  const applyChange = (newBlocks: PageBlock[]) => {
+    setHistory(h => [...h.slice(-20), blocks]);
+    setFuture([]);
+    onChange(newBlocks);
+  };
+
+  const undo = () => {
+    if (!history.length) return;
+    const prev = history[history.length - 1];
+    setHistory(h => h.slice(0, -1));
+    setFuture(f => [blocks, ...f]);
+    onChange(prev);
+  };
+
+  const redo = () => {
+    if (!future.length) return;
+    const next = future[0];
+    setFuture(f => f.slice(1));
+    setHistory(h => [...h, blocks]);
+    onChange(next);
+  };
+
+  // Keyboard shortcuts: Ctrl+Z / Ctrl+Y
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [history, future, blocks]);
+
   const insertAt = (type: BlockType, afterIndex: number) => {
     const newBlock = makeBlock(type);
     if (afterIndex === -1) {
-      onChange([...blocks, newBlock]);
+      applyChange([...blocks, newBlock]);
     } else {
       const n = [...blocks];
       n.splice(afterIndex + 1, 0, newBlock);
-      onChange(n);
+      applyChange(n);
     }
   };
-  const upd = (i: number, b: PageBlock) => { const n = [...blocks]; n[i] = b; onChange(n); };
-  const rem = (i: number) => onChange(blocks.filter((_, j) => j !== i));
-  const mov = (i: number, d: -1 | 1) => { const n = [...blocks]; const t = i + d; if (t < 0 || t >= n.length) return;[n[i], n[t]] = [n[t], n[i]]; onChange(n); };
+  const upd = (i: number, b: PageBlock) => { const n = [...blocks]; n[i] = b; applyChange(n); };
+  const rem = (i: number) => applyChange(blocks.filter((_, j) => j !== i));
+  const mov = (i: number, d: -1 | 1) => { const n = [...blocks]; const t = i + d; if (t < 0 || t >= n.length) return;[n[i], n[t]] = [n[t], n[i]]; applyChange(n); };
+  const dup = (i: number) => {
+    const clone = { ...JSON.parse(JSON.stringify(blocks[i])), id: `block-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+    const n = [...blocks];
+    n.splice(i + 1, 0, clone);
+    applyChange(n);
+  };
+
+  const exportJSON = () => {
+    const json = JSON.stringify(blocks, null, 2);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    a.download = `blocks-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  const importJSON = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) {
+          if (window.confirm(`Importar ${parsed.length} blocos? Isso substituirá os blocos atuais.`)) {
+            applyChange(parsed);
+          }
+        } else {
+          alert('Arquivo JSON inválido — esperado um array de blocos.');
+        }
+      } catch {
+        alert('Erro ao ler o arquivo JSON.');
+      }
+    };
+    input.click();
+  };
 
   // Quick-add image_text block at a position without opening picker
   const quickAddImageText = (afterIndex: number) => {
     const n = [...blocks];
     n.splice(afterIndex + 1, 0, makeBlock('image_text'));
-    onChange(n);
+    applyChange(n);
   };
 
   return (
     <div className="space-y-2">
+      {/* Toolbar: undo/redo + export/import */}
+      <div className="flex items-center gap-2 mb-3">
+        <button
+          onClick={undo} disabled={!history.length}
+          title="Desfazer (Ctrl+Z)"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition disabled:opacity-30"
+          style={{ background: '#fff', borderColor: '#e5e7eb', color: '#374151' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/></svg>
+          Desfazer
+        </button>
+        <button
+          onClick={redo} disabled={!future.length}
+          title="Refazer (Ctrl+Y)"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition disabled:opacity-30"
+          style={{ background: '#fff', borderColor: '#e5e7eb', color: '#374151' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 000 11H13"/></svg>
+          Refazer
+        </button>
+        <div className="flex-1" />
+        <button
+          onClick={importJSON}
+          title="Importar blocos de JSON"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition"
+          style={{ background: '#fff', borderColor: '#e5e7eb', color: '#374151' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar
+        </button>
+        <button
+          onClick={exportJSON} disabled={!blocks.length}
+          title="Exportar blocos como JSON"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition disabled:opacity-30"
+          style={{ background: '#f0fdf4', borderColor: '#bbf7d0', color: '#166534' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar
+        </button>
+      </div>
       {blocks.length === 0 && (
         <div className="flex flex-col items-center justify-center py-10 rounded-2xl border-2 border-dashed text-center" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
           <Layers style={{ width: 36, height: 36, color: '#c7c7cc', marginBottom: 10 }} />
@@ -1541,7 +1670,7 @@ export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
       {blocks.map((block, i) => (
         <React.Fragment key={block.id}>
           <BlockCard block={block} index={i} total={blocks.length}
-            onChange={b => upd(i, b)} onRemove={() => rem(i)} onMoveUp={() => mov(i, -1)} onMoveDown={() => mov(i, 1)} />
+            onChange={b => upd(i, b)} onRemove={() => rem(i)} onMoveUp={() => mov(i, -1)} onMoveDown={() => mov(i, 1)} onDuplicate={() => dup(i)} />
           {/* Between-block inserter */}
           <div className="flex items-center gap-2 px-1 group/inserter" style={{ height: 28 }}>
             <div className="flex-1 h-px transition-all" style={{ background: 'rgba(0,0,0,.06)' }} />

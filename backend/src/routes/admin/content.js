@@ -1,46 +1,61 @@
 const router = require('express').Router();
-const { db, parseArr } = require('../../db/database');
+const { db } = require('../../db/database');
+const { validateBody } = require('../../middleware/validate');
+const { contentRecordSchema } = require('../../validation/admin');
+const { logAudit } = require('../../utils/audit');
 
 const queryAll = (sql) => new Promise((resolve, reject) => {
   db.all(sql, [], (err, rows) => err ? reject(err) : resolve(rows || []));
 });
 
-router.put('/content', (req, res) => {
-  const updates = req.body || {};
+router.put('/content', validateBody(contentRecordSchema), (req, res) => {
+  const updates = req.validatedBody;
   const entries = Object.entries(updates);
-  if (entries.length === 0) return res.json({ message: 'Nada para atualizar' });
 
   db.serialize(() => {
     const stmt = db.prepare('INSERT OR REPLACE INTO site_content (section, key, value) VALUES (?, ?, ?)');
     entries.forEach(([key, value]) => {
       const section = String(key).split('.')[0];
-      stmt.run(section, key, value == null ? '' : String(value));
+      stmt.run(section, key, value);
     });
-    stmt.finalize((err) => {
+    stmt.finalize(async (err) => {
       if (err) {
         console.error('Erro ao salvar conteúdo:', err);
         return res.status(500).json({ error: 'Erro ao salvar conteúdo' });
       }
+
+      await logAudit(req, {
+        userId: req.user?.id,
+        action: 'update_content',
+        entity: 'site_content',
+        details: { keys: entries.map(([key]) => key), total: entries.length },
+      });
       res.json({ message: 'Conteúdo atualizado' });
     });
   });
 });
 
-router.put('/settings', (req, res) => {
-  const updates = req.body || {};
+router.put('/settings', validateBody(contentRecordSchema), (req, res) => {
+  const updates = req.validatedBody;
   const entries = Object.entries(updates);
-  if (entries.length === 0) return res.json({ message: 'Nada para atualizar' });
 
   db.serialize(() => {
     const stmt = db.prepare('INSERT OR REPLACE INTO site_settings (key, value) VALUES (?, ?)');
     entries.forEach(([key, value]) => {
-      stmt.run(key, value == null ? '' : String(value));
+      stmt.run(key, value);
     });
-    stmt.finalize((err) => {
+    stmt.finalize(async (err) => {
       if (err) {
         console.error('Erro ao salvar configurações:', err);
         return res.status(500).json({ error: 'Erro ao salvar configurações' });
       }
+
+      await logAudit(req, {
+        userId: req.user?.id,
+        action: 'update_settings',
+        entity: 'site_settings',
+        details: { keys: entries.map(([key]) => key), total: entries.length },
+      });
       res.json({ message: 'Configurações atualizadas' });
     });
   });

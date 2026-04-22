@@ -825,3 +825,11 @@ section {
 .snap-section {
   scroll-snap-align: start;
 }
+/* ── Page transition animations ── */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-transition {
+  animation: pageFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}

@@ -6,7 +6,7 @@ import {
   BarChart3, Globe, Settings, Zap, Package, Star, Layers,
   Hash, AlignLeft, Link2, BarChart2, Phone, Search, AlertCircle,
   HelpCircle, PlayCircle, Camera, Quote, Sparkles,
-  Shield, Clock, HeadphonesIcon, Award, Rocket, Target, 
+  Shield, Clock, HeadphonesIcon, Award, Rocket, Target,
   TrendingUp, Lock, Users, Wifi, Database, Code,
   ChevronUp, ChevronDown, GripVertical,
 } from 'lucide-react';
@@ -23,10 +23,10 @@ const BASE_URL = API_URL.replace('/api', '');
 const resolveImg = (p?: string) => !p ? null : p.startsWith('http') ? p : `${BASE_URL}${p}`;
 
 // ── Types ──────────────────────────────────────────────────────────────────
-interface Stat          { label: string; value: string; }
-interface FaqItem       { question: string; answer: string; }
-interface StepItem      { title: string; description: string; }
-interface DiffItem      { icon: string; title: string; description: string; }
+interface Stat { label: string; value: string; }
+interface FaqItem { question: string; answer: string; }
+interface StepItem { title: string; description: string; }
+interface DiffItem { icon: string; title: string; description: string; }
 
 interface SolutionPage {
   id: number;
@@ -86,50 +86,50 @@ const EMPTY: SolutionPage = {
 };
 
 const ICON_OPTIONS = [
-  { v: 'Building2',      label: 'Empresa',     I: Building2 },
-  { v: 'ShoppingCart',   label: 'Carrinho',    I: ShoppingCart },
-  { v: 'CreditCard',     label: 'Pagamento',   I: CreditCard },
-  { v: 'Truck',          label: 'Entrega',     I: Truck },
-  { v: 'FileText',       label: 'Documento',   I: FileText },
-  { v: 'BarChart3',      label: 'Gráfico',     I: BarChart3 },
-  { v: 'Globe',          label: 'Web',         I: Globe },
-  { v: 'Monitor',        label: 'Monitor',     I: Monitor },
-  { v: 'Settings',       label: 'Config',      I: Settings },
-  { v: 'Zap',            label: 'Rápido',      I: Zap },
-  { v: 'Package',        label: 'Pacote',      I: Package },
-  { v: 'Star',           label: 'Destaque',    I: Star },
-  { v: 'Layers',         label: 'Camadas',     I: Layers },
-  { v: 'Database',       label: 'Dados',       I: Database },
-  { v: 'Code',           label: 'Dev',         I: Code },
-  { v: 'Users',          label: 'Usuários',    I: Users },
+  { v: 'Building2', label: 'Empresa', I: Building2 },
+  { v: 'ShoppingCart', label: 'Carrinho', I: ShoppingCart },
+  { v: 'CreditCard', label: 'Pagamento', I: CreditCard },
+  { v: 'Truck', label: 'Entrega', I: Truck },
+  { v: 'FileText', label: 'Documento', I: FileText },
+  { v: 'BarChart3', label: 'Gráfico', I: BarChart3 },
+  { v: 'Globe', label: 'Web', I: Globe },
+  { v: 'Monitor', label: 'Monitor', I: Monitor },
+  { v: 'Settings', label: 'Config', I: Settings },
+  { v: 'Zap', label: 'Rápido', I: Zap },
+  { v: 'Package', label: 'Pacote', I: Package },
+  { v: 'Star', label: 'Destaque', I: Star },
+  { v: 'Layers', label: 'Camadas', I: Layers },
+  { v: 'Database', label: 'Dados', I: Database },
+  { v: 'Code', label: 'Dev', I: Code },
+  { v: 'Users', label: 'Usuários', I: Users },
 ];
 
 const DIFF_ICONS = [
-  { v: 'Zap',         I: Zap },         { v: 'Shield',     I: Shield },
-  { v: 'Clock',       I: Clock },       { v: 'HeadphonesIcon', I: HeadphonesIcon },
-  { v: 'Award',       I: Award },       { v: 'Rocket',     I: Rocket },
-  { v: 'Target',      I: Target },      { v: 'TrendingUp', I: TrendingUp },
-  { v: 'Lock',        I: Lock },        { v: 'Users',      I: Users },
-  { v: 'Wifi',        I: Wifi },        { v: 'Star',       I: Star },
-  { v: 'Globe',       I: Globe },       { v: 'Database',   I: Database },
-  { v: 'Settings',    I: Settings },    { v: 'BarChart3',  I: BarChart3 },
+  { v: 'Zap', I: Zap }, { v: 'Shield', I: Shield },
+  { v: 'Clock', I: Clock }, { v: 'HeadphonesIcon', I: HeadphonesIcon },
+  { v: 'Award', I: Award }, { v: 'Rocket', I: Rocket },
+  { v: 'Target', I: Target }, { v: 'TrendingUp', I: TrendingUp },
+  { v: 'Lock', I: Lock }, { v: 'Users', I: Users },
+  { v: 'Wifi', I: Wifi }, { v: 'Star', I: Star },
+  { v: 'Globe', I: Globe }, { v: 'Database', I: Database },
+  { v: 'Settings', I: Settings }, { v: 'BarChart3', I: BarChart3 },
 ];
 
 const COLOR_OPTIONS = [
   { v: 'orange', label: 'Laranja', hex: '#f97316' },
-  { v: 'blue',   label: 'Azul',   hex: '#2563eb' },
-  { v: 'green',  label: 'Verde',  hex: '#16a34a' },
-  { v: 'purple', label: 'Roxo',   hex: '#9333ea' },
-  { v: 'black',  label: 'Preto',  hex: '#1f2937' },
-  { v: 'white',  label: 'Branco', hex: '#94a3b8' },
+  { v: 'blue', label: 'Azul', hex: '#2563eb' },
+  { v: 'green', label: 'Verde', hex: '#16a34a' },
+  { v: 'purple', label: 'Roxo', hex: '#9333ea' },
+  { v: 'black', label: 'Preto', hex: '#1f2937' },
+  { v: 'white', label: 'Branco', hex: '#94a3b8' },
 ];
 
 const TABS = [
-  { id: 'identity', label: 'Identidade',   icon: '🎨' },
-  { id: 'content',  label: 'Conteúdo',     icon: '📝' },
-  { id: 'proof',    label: 'Prova Social', icon: '⭐' },
-  { id: 'media',    label: 'Mídia',        icon: '🎬' },
-  { id: 'cta',      label: 'CTA & SEO',    icon: '🚀' },
+  { id: 'identity', label: 'Identidade', icon: '🎨' },
+  { id: 'content', label: 'Conteúdo', icon: '📝' },
+  { id: 'proof', label: 'Prova Social', icon: '⭐' },
+  { id: 'media', label: 'Mídia', icon: '🎬' },
+  { id: 'cta', label: 'CTA & SEO', icon: '🚀' },
 ];
 
 // ── String list editor ─────────────────────────────────────────────────────
@@ -150,13 +150,13 @@ function StringListEditor({ items, onChange, placeholder }: {
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
               {i > 0 && (
-                <button onClick={() => { const a = [...items]; [a[i-1],a[i]]=[a[i],a[i-1]]; onChange(a); }}
+                <button onClick={() => { const a = [...items];[a[i - 1], a[i]] = [a[i], a[i - 1]]; onChange(a); }}
                   className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100">
                   <ChevronUp className="w-3 h-3" />
                 </button>
               )}
               {i < items.length - 1 && (
-                <button onClick={() => { const a = [...items]; [a[i],a[i+1]]=[a[i+1],a[i]]; onChange(a); }}
+                <button onClick={() => { const a = [...items];[a[i], a[i + 1]] = [a[i + 1], a[i]]; onChange(a); }}
                   className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100">
                   <ChevronDown className="w-3 h-3" />
                 </button>
@@ -843,14 +843,14 @@ function PageEditor({ page, isNew, onSave, onCancel }: {
             <div className="bg-white rounded-xl border p-3 space-y-2" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
               <p className="text-[10px] font-bold text-[#98989d] uppercase tracking-widest mb-2">Conteúdo</p>
               {[
-                { label: 'Stats',          count: (form.stats_json || []).length },
+                { label: 'Stats', count: (form.stats_json || []).length },
                 { label: 'Funcionalidades', count: form.features.length },
-                { label: 'Benefícios',      count: form.benefits.length },
-                { label: 'Diferenciais',    count: (form.differentials_json || []).length },
-                { label: 'Passos',          count: (form.steps_json || []).length },
-                { label: 'Integrações',     count: form.integrations.length },
-                { label: 'Screenshots',     count: (form.screenshots_json || []).length },
-                { label: 'FAQ',             count: (form.faq_json || []).length },
+                { label: 'Benefícios', count: form.benefits.length },
+                { label: 'Diferenciais', count: (form.differentials_json || []).length },
+                { label: 'Passos', count: (form.steps_json || []).length },
+                { label: 'Integrações', count: form.integrations.length },
+                { label: 'Screenshots', count: (form.screenshots_json || []).length },
+                { label: 'FAQ', count: (form.faq_json || []).length },
               ].map(({ label, count }) => (
                 <div key={label} className="flex items-center justify-between">
                   <span className="text-xs text-[#6e6e73]">{label}</span>
@@ -860,10 +860,10 @@ function PageEditor({ page, isNew, onSave, onCancel }: {
                 </div>
               ))}
               {[
-                { label: 'Vídeo',       has: !!form.video_url },
-                { label: 'Depoimento',  has: !!form.testimonial_quote },
-                { label: 'Destaque',    has: !!(form.highlight_title || form.highlight_text) },
-                { label: 'CTA 2º',      has: !!form.secondary_cta_label },
+                { label: 'Vídeo', has: !!form.video_url },
+                { label: 'Depoimento', has: !!form.testimonial_quote },
+                { label: 'Destaque', has: !!(form.highlight_title || form.highlight_text) },
+                { label: 'CTA 2º', has: !!form.secondary_cta_label },
               ].map(({ label, has }) => (
                 <div key={label} className="flex items-center justify-between">
                   <span className="text-xs text-[#6e6e73]">{label}</span>
@@ -885,6 +885,8 @@ export default function SolutionPagesManager() {
   const [isNew, setIsNew] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [spPage, setSpPage] = useState(1);
+  const SP_PAGE_SIZE = 10;
   const [error, setError] = useState(false);
   const { toast } = useToast();
 
@@ -905,14 +907,14 @@ export default function SolutionPagesManager() {
         };
         return {
           ...p,
-          features:            parseArr(p.features),
-          benefits:            parseArr(p.benefits),
-          integrations:        parseArr(p.integrations),
-          stats_json:          parseArr(p.stats_json),
-          faq_json:            parseArr(p.faq_json),
-          steps_json:          parseArr(p.steps_json),
-          differentials_json:  parseArr(p.differentials_json),
-          screenshots_json:    parseArr(p.screenshots_json),
+          features: parseArr(p.features),
+          benefits: parseArr(p.benefits),
+          integrations: parseArr(p.integrations),
+          stats_json: parseArr(p.stats_json),
+          faq_json: parseArr(p.faq_json),
+          steps_json: parseArr(p.steps_json),
+          differentials_json: parseArr(p.differentials_json),
+          screenshots_json: parseArr(p.screenshots_json),
           is_active: !!p.is_active,
         };
       });
@@ -949,6 +951,8 @@ export default function SolutionPagesManager() {
     p.title.toLowerCase().includes(search.toLowerCase()) ||
     p.slug.toLowerCase().includes(search.toLowerCase())
   );
+  const spTotalPages = Math.ceil(filtered.length / SP_PAGE_SIZE);
+  const pagedSP = filtered.slice((spPage - 1) * SP_PAGE_SIZE, spPage * SP_PAGE_SIZE);
 
   if (editing) {
     return (
@@ -1003,78 +1007,95 @@ export default function SolutionPagesManager() {
               )}
             </div>
           ) : (
-            <div className="space-y-3">
-              {filtered.map((p) => {
-                const themeHex = COLOR_OPTIONS.find((c) => c.v === p.color_theme)?.hex || '#f97316';
-                const sections = [
-                  p.features.length > 0 && 'Funcionalidades',
-                  p.benefits.length > 0 && 'Benefícios',
-                  (p.differentials_json || []).length > 0 && 'Diferenciais',
-                  (p.steps_json || []).length > 0 && 'Passos',
-                  p.integrations.length > 0 && 'Integrações',
-                  p.video_url && 'Vídeo',
-                  (p.screenshots_json || []).length > 0 && 'Screenshots',
-                  (p.faq_json || []).length > 0 && 'FAQ',
-                  p.testimonial_quote && 'Depoimento',
-                ].filter(Boolean);
+            <>
+              <div className="space-y-3">
+                {pagedSP.map((p) => {
+                  const themeHex = COLOR_OPTIONS.find((c) => c.v === p.color_theme)?.hex || '#f97316';
+                  const sections = [
+                    p.features.length > 0 && 'Funcionalidades',
+                    p.benefits.length > 0 && 'Benefícios',
+                    (p.differentials_json || []).length > 0 && 'Diferenciais',
+                    (p.steps_json || []).length > 0 && 'Passos',
+                    p.integrations.length > 0 && 'Integrações',
+                    p.video_url && 'Vídeo',
+                    (p.screenshots_json || []).length > 0 && 'Screenshots',
+                    (p.faq_json || []).length > 0 && 'FAQ',
+                    p.testimonial_quote && 'Depoimento',
+                  ].filter(Boolean);
 
-                return (
-                  <div key={p.id}
-                    className="bg-white rounded-2xl border overflow-hidden hover:shadow-md transition-all duration-200"
-                    style={{ borderColor: 'rgba(0,0,0,.06)' }}>
-                    <div className="flex items-center gap-4 p-4">
-                      <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ background: themeHex }} />
-                      <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0"
-                        style={{ background: `linear-gradient(135deg,${themeHex}22,${themeHex}44)` }}>
-                        {p.hero_image && resolveImg(p.hero_image)
-                          ? <img src={resolveImg(p.hero_image)!} alt="" className="w-full h-full object-cover" />
-                          : <div className="w-full h-full flex items-center justify-center">
+                  return (
+                    <div key={p.id}
+                      className="bg-white rounded-2xl border overflow-hidden hover:shadow-md transition-all duration-200"
+                      style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+                      <div className="flex items-center gap-4 p-4">
+                        <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ background: themeHex }} />
+                        <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0"
+                          style={{ background: `linear-gradient(135deg,${themeHex}22,${themeHex}44)` }}>
+                          {p.hero_image && resolveImg(p.hero_image)
+                            ? <img src={resolveImg(p.hero_image)!} alt="" className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center">
                               <Layers className="w-6 h-6" style={{ color: themeHex }} />
                             </div>
-                        }
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                          <h3 className="font-bold text-[#1d1d1f] text-sm" style={{ fontFamily: "'Outfit',sans-serif" }}>{p.title}</h3>
-                          <Badge className={`text-[11px] border-0 ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                            {p.is_active ? 'Ativa' : 'Inativa'}
-                          </Badge>
+                          }
                         </div>
-                        <p className="text-xs text-[#98989d] mb-1.5">/solucao-page/{p.slug}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {sections.slice(0, 6).map((s) => (
-                            <span key={String(s)} className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-                              style={{ background: `${themeHex}10`, color: themeHex }}>
-                              {s}
-                            </span>
-                          ))}
-                          {sections.length > 6 && (
-                            <span className="text-[10px] text-[#98989d]">+{sections.length - 6}</span>
-                          )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                            <h3 className="font-bold text-[#1d1d1f] text-sm" style={{ fontFamily: "'Outfit',sans-serif" }}>{p.title}</h3>
+                            <Badge className={`text-[11px] border-0 ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                              {p.is_active ? 'Ativa' : 'Inativa'}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-[#98989d] mb-1.5">/solucao-page/{p.slug}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {sections.slice(0, 6).map((s) => (
+                              <span key={String(s)} className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                                style={{ background: `${themeHex}10`, color: themeHex }}>
+                                {s}
+                              </span>
+                            ))}
+                            {sections.length > 6 && (
+                              <span className="text-[10px] text-[#98989d]">+{sections.length - 6}</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <a href={`/solucao-page/${p.slug}`} target="_blank" rel="noreferrer"
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-[#98989d] hover:text-[#1d1d1f] hover:bg-gray-100 transition">
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                        <button onClick={() => { setEditing(p); setIsNew(false); }}
-                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition"
-                          style={{ background: `${themeHex}10`, color: themeHex }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = `${themeHex}20`)}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = `${themeHex}10`)}>
-                          <Pencil className="w-3.5 h-3.5" /> Editar
-                        </button>
-                        <button onClick={() => handleDelete(p.id, p.title)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-red-400 hover:bg-red-50 transition">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <a href={`/solucao-page/${p.slug}`} target="_blank" rel="noreferrer"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#98989d] hover:text-[#1d1d1f] hover:bg-gray-100 transition">
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                          <button onClick={() => { setEditing(p); setIsNew(false); }}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition"
+                            style={{ background: `${themeHex}10`, color: themeHex }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = `${themeHex}20`)}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = `${themeHex}10`)}>
+                            <Pencil className="w-3.5 h-3.5" /> Editar
+                          </button>
+                          <button onClick={() => handleDelete(p.id, p.title)}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-red-400 hover:bg-red-50 transition">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
+              {spTotalPages > 1 && (
+                <div className="flex items-center justify-between px-1 pt-4">
+                  <p className="text-xs text-[#98989d]">
+                    {filtered.length} página{filtered.length !== 1 ? 's' : ''} · {spPage} de {spTotalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" disabled={spPage === 1}
+                      onClick={() => setSpPage(p => Math.max(1, p - 1))}
+                      className="text-xs rounded-xl">← Anterior</Button>
+                    <Button size="sm" variant="outline" disabled={spPage === spTotalPages}
+                      onClick={() => setSpPage(p => Math.min(spTotalPages, p + 1))}
+                      className="text-xs rounded-xl">Próxima →</Button>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

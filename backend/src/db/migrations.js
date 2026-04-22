@@ -385,6 +385,41 @@ function addAnalyticsTables() {
 
 addAnalyticsTables();
 
+function addSecurityColumns() {
+  // Brute force protection columns
+  [
+    'ALTER TABLE users ADD COLUMN failed_attempts INTEGER DEFAULT 0',
+    'ALTER TABLE users ADD COLUMN locked_until DATETIME',
+    'ALTER TABLE users ADD COLUMN role TEXT DEFAULT \'admin\'',
+  ].forEach(sql => db.run(sql, [], () => {}));
+
+  // Banner scheduling
+  [
+    'ALTER TABLE banners ADD COLUMN starts_at DATETIME',
+    'ALTER TABLE banners ADD COLUMN ends_at DATETIME',
+  ].forEach(sql => db.run(sql, [], () => {}));
+
+  // Audit log table
+  db.run(`CREATE TABLE IF NOT EXISTS audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    action TEXT NOT NULL,
+    entity TEXT,
+    entity_id TEXT,
+    details TEXT,
+    ip TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  // Leads: add company and subject if not present
+  [
+    'ALTER TABLE leads ADD COLUMN company TEXT DEFAULT \'\'',
+    'ALTER TABLE leads ADD COLUMN subject TEXT DEFAULT \'\'',
+  ].forEach(sql => db.run(sql, [], () => {}));
+}
+
+addSecurityColumns();
+
 // Adiciona coluna unsubscribe_token em bancos existentes (idempotente)
 db.run(`ALTER TABLE newsletter_subscribers ADD COLUMN unsubscribe_token TEXT UNIQUE`, [], () => {
   // Preenche tokens para inscritos que ainda não têm
