@@ -34,7 +34,7 @@ export const THEME: Record<string, typeof DEFAULT_T> = {
   white: { from: '#f8fafc', to: '#e2e8f0', text: '#475569', glow: 'rgba(248,250,252,.5)' },
 };
 
-import type { PageBlock } from '@/types';
+import type { PageBlock, SectionShape } from '@/types';
 import { AnimatedBgLayer } from '@/components/AnimatedBgLayer';
 import { BannerSlide } from '@/components/PageBanner';
 
@@ -254,8 +254,100 @@ function BenefitsBlock({ block, t }: { block: any; t: any }) {
 
 // ── BlockRenderer ─────────────────────────────────────────────────────────────
 
+// ── Continuous Background Helpers ────────────────────────────────────────────
+
+function buildContinuousBgCSS(block: PageBlock): string {
+  const type = block.continuousBgType || 'gradient';
+  const c1 = block.continuousBgColor1 || '#07101f';
+  const c2 = block.continuousBgColor2 || '#1a4a7a';
+  const angle = block.continuousBgAngle ?? 160;
+  if (type === 'solid') return c1;
+  if (type === 'image') return block.continuousBgImage ? `url(${block.continuousBgImage})` : c1;
+  return `linear-gradient(${angle}deg, ${c1}, ${c2})`;
+}
+
+
+// ── Section Shape Helpers ─────────────────────────────────────────────────────
+
+const SECTION_SHAPE_PATHS: Record<string, { top: string; bottom: string }> = {
+  'wave': { top: 'M0,60 C15,40 35,80 50,60 C65,40 85,80 100,60 L100,0 L0,0 Z', bottom: 'M0,40 C15,60 35,20 50,40 C65,60 85,20 100,40 L100,100 L0,100 Z' },
+  'wave-soft': { top: 'M0,70 C25,50 75,90 100,70 L100,0 L0,0 Z', bottom: 'M0,30 C25,50 75,10 100,30 L100,100 L0,100 Z' },
+  'diagonal-right': { top: 'M0,0 L100,0 L100,30 L0,100 Z', bottom: 'M0,0 L100,70 L100,100 L0,100 Z' },
+  'diagonal-left': { top: 'M0,30 L100,0 L100,0 L0,0 Z', bottom: 'M0,100 L100,100 L100,70 L0,100 Z' },
+  'arc-down': { top: 'M0,0 L100,0 Q50,100 0,0 Z', bottom: 'M0,100 L100,100 Q50,0 0,100 Z' },
+  'arc-up': { top: 'M0,100 Q50,0 100,100 L100,0 L0,0 Z', bottom: 'M0,0 Q50,100 100,0 L100,100 L0,100 Z' },
+  'zigzag': { top: 'M0,50 L12.5,0 L25,50 L37.5,0 L50,50 L62.5,0 L75,50 L87.5,0 L100,50 L100,0 L0,0 Z', bottom: 'M0,50 L12.5,100 L25,50 L37.5,100 L50,50 L62.5,100 L75,50 L87.5,100 L100,50 L100,100 L0,100 Z' },
+  'slant-both': { top: 'M0,60 L100,0 L100,0 L0,0 Z', bottom: 'M0,100 L100,100 L100,40 L0,100 Z' },
+};
+
+function SectionShapeLayer({ block }: { block: PageBlock }) {
+  const shapeTop = (block.sectionShapeTop || 'none') as SectionShape;
+  const shapeBottom = (block.sectionShapeBottom || 'none') as SectionShape;
+  const color = block.sectionShapeColor || '#ffffff';
+  const size = block.sectionShapeSize ?? 3;
+  const heightPx = 40 + size * 16; // 56..120px
+
+  const topPaths = shapeTop !== 'none' ? SECTION_SHAPE_PATHS[shapeTop] : null;
+  const bottomPaths = shapeBottom !== 'none' ? SECTION_SHAPE_PATHS[shapeBottom] : null;
+
+  if (!topPaths && !bottomPaths) return null;
+
+  return (
+    <>
+      {topPaths && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          height: heightPx, zIndex: 3, overflow: 'hidden', pointerEvents: 'none',
+        }}>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none"
+            style={{ position: 'absolute', bottom: 0, width: '100%', height: '100%' }}>
+            <path d={topPaths.top} fill={color} />
+          </svg>
+        </div>
+      )}
+      {bottomPaths && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          height: heightPx, zIndex: 3, overflow: 'hidden', pointerEvents: 'none',
+        }}>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none"
+            style={{ position: 'absolute', top: 0, width: '100%', height: '100%' }}>
+            <path d={bottomPaths.bottom} fill={color} />
+          </svg>
+        </div>
+      )}
+    </>
+  );
+}
+
+// Hook para modo JS Offset: calcula o offsetTop do bloco em relação ao total da página
+function useJsOffsetBg(ref: React.RefObject<HTMLDivElement | null>, active: boolean) {
+  useEffect(() => {
+    if (!active || !ref.current) return;
+    const el = ref.current;
+    const apply = () => {
+      const pageHeight = document.body.scrollHeight;
+      const offsetTop = el.getBoundingClientRect().top + window.scrollY;
+      el.style.backgroundSize = `100% ${pageHeight}px`;
+      el.style.backgroundPosition = `0px -${offsetTop}px`;
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    ro.observe(document.body);
+    window.addEventListener('resize', apply);
+    return () => { ro.disconnect(); window.removeEventListener('resize', apply); };
+  }, [ref, active]);
+}
+
 export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: typeof DEFAULT_T }) {
   const [videoOpen, setVideoOpen] = useState(false);
+  const jsOffsetRef = useRef<HTMLDivElement>(null);
+  const mode = block.continuousBgMode || 'none';
+  const isJsOffset = mode === 'js_offset';
+  useJsOffsetBg(jsOffsetRef, isJsOffset);
+  const hasShape = (block.sectionShapeTop && block.sectionShapeTop !== 'none') ||
+    (block.sectionShapeBottom && block.sectionShapeBottom !== 'none');
 
   if (!block.visible) return null;
 
@@ -273,12 +365,12 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
     return (
       <div style={{ position: 'relative', isolation: 'isolate', marginTop: 60, padding: '0 20px' }}>
         {/* O Formato de Aba Oxpay (Folder Tab) */}
-        <div style={{ 
-          position: 'absolute', 
-          top: -40, 
-          right: 20, 
-          width: '280px', 
-          height: 41, 
+        <div style={{
+          position: 'absolute',
+          top: -40,
+          right: 20,
+          width: '280px',
+          height: 41,
           background: bgColor,
           borderRadius: '24px 24px 0 0',
           display: 'flex',
@@ -291,9 +383,9 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
           <div style={{ width: 40, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
           <div style={{ width: 40, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
         </div>
-        <div style={{ 
-          position: 'relative', 
-          zIndex: 1, 
+        <div style={{
+          position: 'relative',
+          zIndex: 1,
           background: bgColor,
           borderRadius: '48px 0 48px 48px',
           overflow: 'hidden',
@@ -305,10 +397,58 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
     );
   }
 
-  if (!hasAnim) return <>{inner}</>;
+  // ── Fundo Contínuo: modos fixed e js_offset ─────────────────────────────
+  if (mode === 'fixed' || mode === 'js_offset') {
+    const bgCSS = buildContinuousBgCSS(block);
+    const bgOpacity = (block.continuousBgOpacity ?? 100) / 100;
+    const bgType = block.continuousBgType || 'gradient';
+    const isImage = bgType === 'image';
+
+    // Usamos um div absoluto para o background para NÃO afetar a opacidade do conteúdo
+    const bgLayerStyle: React.CSSProperties = {
+      position: 'absolute', inset: 0, zIndex: 0,
+      backgroundImage: isImage ? bgCSS : undefined,
+      background: !isImage ? bgCSS : undefined,
+      backgroundAttachment: mode === 'fixed' ? 'fixed' : 'scroll',
+      backgroundSize: mode === 'fixed' ? 'cover' : undefined,
+      backgroundRepeat: 'no-repeat',
+      opacity: bgOpacity,
+    };
+
+    return (
+      <div ref={isJsOffset ? jsOffsetRef : undefined} style={{ position: 'relative', isolation: 'isolate' }}>
+        <div style={bgLayerStyle} />
+        {hasAnim && <AnimatedBgLayer type={block.animatedBg} color={block.animatedBgColor || t.from} />}
+        {hasShape && <SectionShapeLayer block={block} />}
+        <div style={{ position: 'relative', zIndex: 1 }}>{inner}</div>
+      </div>
+    );
+  }
+
+  // ── Modo parent: section transparente — wrapper pai fornece o fundo ──────
+  if (mode === 'parent') {
+    if (!hasAnim) {
+      if (!hasShape) return <>{inner}</>;
+      return <div style={{ position: 'relative' }}><SectionShapeLayer block={block} />{inner}</div>;
+    }
+    return (
+      <div style={{ position: 'relative', isolation: 'isolate' }}>
+        <AnimatedBgLayer type={block.animatedBg} color={block.animatedBgColor || t.from} />
+        {hasShape && <SectionShapeLayer block={block} />}
+        <div style={{ position: 'relative', zIndex: 1 }}>{inner}</div>
+      </div>
+    );
+  }
+
+  // ── Sem fundo contínuo (padrão) ──────────────────────────────────────────
+  if (!hasAnim) {
+    if (!hasShape) return <>{inner}</>;
+    return <div style={{ position: 'relative' }}><SectionShapeLayer block={block} />{inner}</div>;
+  }
   return (
     <div style={{ position: 'relative', isolation: 'isolate' }}>
       <AnimatedBgLayer type={block.animatedBg} color={block.animatedBgColor || t.from} />
+      {hasShape && <SectionShapeLayer block={block} />}
       <div style={{ position: 'relative', zIndex: 1 }}>{inner}</div>
     </div>
   );
@@ -937,7 +1077,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
       if (block.dividerStyle === 'wave') return (
         <div className="flex items-center justify-center py-4">
           <svg viewBox="0 0 300 20" height="20" width="300" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 10 Q25 2 50 10 Q75 18 100 10 Q125 2 150 10 Q175 18 200 10 Q225 2 250 10 Q275 18 300 10" fill="none" stroke="rgba(0,0,0,.15)" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M0 10 Q25 2 50 10 Q75 18 100 10 Q125 2 150 10 Q175 18 200 10 Q225 2 250 10 Q275 18 300 10" fill="none" stroke="rgba(0,0,0,.15)" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
       );
@@ -945,7 +1085,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
         <div className="flex items-center justify-center gap-4 py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,.1)' }} />
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z" fill="rgba(0,0,0,.18)"/>
+            <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z" fill="rgba(0,0,0,.18)" />
           </svg>
           <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,.1)' }} />
         </div>
@@ -955,29 +1095,29 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
         if (block.dividerStyle === 'triangle') return (
           <div style={{ lineHeight: 0, overflow: 'hidden' }}>
             <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="0,0 1440,0 1440,80 0,30" fill={c}/>
+              <polygon points="0,0 1440,0 1440,80 0,30" fill={c} />
             </svg>
           </div>
         );
         if (block.dividerStyle === 'clouds') return (
           <div style={{ lineHeight: 0, overflow: 'hidden' }}>
             <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 80 Q60 20 130 50 Q200 10 290 50 Q360 5 450 50 Q520 15 610 50 Q680 10 770 50 Q840 15 930 50 Q1000 8 1090 50 Q1160 15 1250 50 Q1320 20 1440 40 L1440 80 Z" fill={c}/>
+              <path d="M0 80 Q60 20 130 50 Q200 10 290 50 Q360 5 450 50 Q520 15 610 50 Q680 10 770 50 Q840 15 930 50 Q1000 8 1090 50 Q1160 15 1250 50 Q1320 20 1440 40 L1440 80 Z" fill={c} />
             </svg>
           </div>
         );
         if (block.dividerStyle === 'waves_fill') return (
           <div style={{ lineHeight: 0, overflow: 'hidden' }}>
             <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 50 Q180 10 360 50 Q540 90 720 50 Q900 10 1080 50 Q1260 90 1440 50 L1440 80 L0 80 Z" fill={c} opacity="0.45"/>
-              <path d="M0 60 Q180 30 360 60 Q540 90 720 60 Q900 30 1080 60 Q1260 90 1440 60 L1440 80 L0 80 Z" fill={c}/>
+              <path d="M0 50 Q180 10 360 50 Q540 90 720 50 Q900 10 1080 50 Q1260 90 1440 50 L1440 80 L0 80 Z" fill={c} opacity="0.45" />
+              <path d="M0 60 Q180 30 360 60 Q540 90 720 60 Q900 30 1080 60 Q1260 90 1440 60 L1440 80 L0 80 Z" fill={c} />
             </svg>
           </div>
         );
         if (block.dividerStyle === 'mountains') return (
           <div style={{ lineHeight: 0, overflow: 'hidden' }}>
             <svg viewBox="0 0 1440 80" width="100%" height="80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="0,80 240,15 480,55 720,5 960,45 1200,20 1440,50 1440,80" fill={c}/>
+              <polygon points="0,80 240,15 480,55 720,5 960,45 1200,20 1440,50 1440,80" fill={c} />
             </svg>
           </div>
         );

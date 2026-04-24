@@ -138,6 +138,11 @@ export type BenefitsLayout = 'grid_cards' | 'side_image' | 'carousel';
 export type BlockSpacing = 'compact' | 'normal' | 'spacious';
 export type BlockRadius = 'none' | 'medium' | 'large';
 
+// Fundo contínuo entre blocos
+export type ContinuousBgMode = 'none' | 'parent' | 'fixed' | 'js_offset';
+export type ContinuousBgType = 'gradient' | 'solid' | 'image';
+export type SectionShape = 'none' | 'wave' | 'wave-soft' | 'diagonal-right' | 'diagonal-left' | 'arc-down' | 'arc-up' | 'zigzag' | 'slant-both';
+
 export interface PageBlock {
   id: string;
   type: BlockType;
@@ -211,6 +216,19 @@ export interface PageBlock {
   communityMutedColor?: string;
   communityEyebrow?: string;
   communityCards?: { title: string; desc: string; linkLabel: string; linkUrl: string }[];
+  // ── Fundo contínuo entre blocos ──────────────────────────────────────────
+  continuousBgMode?: ContinuousBgMode;
+  continuousBgType?: ContinuousBgType;
+  continuousBgColor1?: string;
+  continuousBgColor2?: string;
+  continuousBgAngle?: number;
+  continuousBgImage?: string;
+  continuousBgOpacity?: number;
+  // ── Forma da seção (corte SVG no topo/base) ──────────────────────────────
+  sectionShapeTop?: SectionShape;
+  sectionShapeBottom?: SectionShape;
+  sectionShapeColor?: string;
+  sectionShapeSize?: number; // 1–5, default 3
 }
 
 // ─── Solution Pages (lean — conteúdo vive em blocks_json) ────────────────────

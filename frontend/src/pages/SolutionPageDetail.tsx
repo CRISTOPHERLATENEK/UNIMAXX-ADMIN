@@ -63,11 +63,63 @@ export default function SolutionPageDetail() {
     ? page.blocks_json.filter((b: PageBlock) => b.visible)
     : [];
 
+  // ── Agrupa blocos consecutivos com modo 'parent' e mesmo fundo ──────────
+  type RenderGroup = 
+    | { kind: 'single'; block: PageBlock }
+    | { kind: 'parent'; blocks: PageBlock[]; bgCSS: string; bgType: string; opacity: number };
+
+  function buildBgCSS(block: PageBlock): string {
+    const type = block.continuousBgType || 'gradient';
+    const c1 = block.continuousBgColor1 || '#07101f';
+    const c2 = block.continuousBgColor2 || '#1a4a7a';
+    const angle = block.continuousBgAngle ?? 160;
+    if (type === 'solid') return c1;
+    if (type === 'image') return block.continuousBgImage ? `url(${block.continuousBgImage})` : c1;
+    return `linear-gradient(${angle}deg, ${c1}, ${c2})`;
+  }
+
+  const groups: RenderGroup[] = [];
+  for (const block of blocks) {
+    if (block.continuousBgMode === 'parent') {
+      const bgCSS = buildBgCSS(block);
+      const last = groups[groups.length - 1];
+      if (last && last.kind === 'parent' && last.bgCSS === bgCSS) {
+        last.blocks.push(block);
+      } else {
+        groups.push({ kind: 'parent', blocks: [block], bgCSS, bgType: block.continuousBgType || 'gradient', opacity: (block.continuousBgOpacity ?? 100) / 100 });
+      }
+    } else {
+      groups.push({ kind: 'single', block });
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f5f7]" style={{ fontFamily: "'DM Sans',sans-serif" }}>
       <Header />
       {blocks.length > 0
-        ? blocks.map((block) => <BlockRenderer key={block.id} block={block} t={t} />)
+        ? groups.map((g, gi) => {
+            if (g.kind === 'single') {
+              return <BlockRenderer key={g.block.id} block={g.block} t={t} />;
+            }
+            // Parent group: shared background wrapper
+            const isImage = g.bgType === 'image';
+            return (
+              <div key={`pg-${gi}`} style={{ position: 'relative' }}>
+                {/* bg layer — opacidade só afeta o fundo, não o conteúdo */}
+                <div style={{
+                  position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+                  background: !isImage ? g.bgCSS : undefined,
+                  backgroundImage: isImage ? g.bgCSS : undefined,
+                  backgroundSize: 'cover',
+                  backgroundRepeat: 'no-repeat',
+                  opacity: g.opacity,
+                }} />
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  {g.blocks.map(block => <BlockRenderer key={block.id} block={block} t={t} />)}
+                </div>
+              </div>
+            );
+          })
         : (
           <div className="min-h-[60vh] flex items-center justify-center px-4">
             <div className="text-center max-w-md">

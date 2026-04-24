@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ImageUploadField } from '@/components/ImageUploadField';
-import type { PageBlock, BlockType, FeaturesLayout, BenefitsLayout, BlockSpacing, BlockRadius } from '@/types';
+import type { PageBlock, BlockType, FeaturesLayout, BenefitsLayout, BlockSpacing, BlockRadius, ContinuousBgMode, ContinuousBgType, SectionShape } from '@/types';
 
 export type { PageBlock, BlockType };
 
@@ -245,7 +245,7 @@ function SpacingRadiusControls({ block, onChange }: { block: PageBlock; onChange
         <div>
           <FL hint="Cor base das partículas / ondas / aurora">Cor do efeito</FL>
           <div className="flex flex-wrap gap-1.5 mb-1.5">
-            {['#f97316','#6366f1','#10b981','#3b82f6','#ec4899','#8b5cf6','#14b8a6','#ef4444','#ffffff','#1e293b'].map(c => (
+            {['#f97316', '#6366f1', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6', '#ef4444', '#ffffff', '#1e293b'].map(c => (
               <button key={c} onClick={() => set('animatedBgColor', c)}
                 className="w-7 h-7 rounded-lg border-2 transition"
                 style={{ background: c, borderColor: (block.animatedBgColor || '#f97316') === c ? '#f97316' : 'transparent', boxShadow: (block.animatedBgColor || '#f97316') === c ? '0 0 0 2px #fff,0 0 0 4px #f97316' : 'none' }} />
@@ -257,6 +257,604 @@ function SpacingRadiusControls({ block, onChange }: { block: PageBlock; onChange
             </label>
           </div>
         </div>
+      )}
+      <ContinuousBgControls block={block} onChange={onChange} />
+      <SectionShapeControls block={block} onChange={onChange} />
+    </>
+  );
+}
+
+
+// ── Controles de Fundo Contínuo ───────────────────────────────────────────────
+
+export function buildBgCSS(block: PageBlock): string {
+  const mode = block.continuousBgMode || 'none';
+  if (mode === 'none') return '';
+  const type = block.continuousBgType || 'gradient';
+  const c1 = block.continuousBgColor1 || '#07101f';
+  const c2 = block.continuousBgColor2 || '#1a4a7a';
+  const angle = block.continuousBgAngle ?? 160;
+  if (type === 'solid') return c1;
+  if (type === 'image') return block.continuousBgImage ? `url(${block.continuousBgImage})` : c1;
+  return `linear-gradient(${angle}deg, ${c1}, ${c2})`;
+}
+
+// Paletas predefinidas para gradientes
+const GRADIENT_PRESETS = [
+  { label: 'Oceano', c1: '#07101f', c2: '#1a4a7a', angle: 160 },
+  { label: 'Noite', c1: '#0a0a0c', c2: '#1e1b4b', angle: 135 },
+  { label: 'Floresta', c1: '#042f2e', c2: '#065f46', angle: 150 },
+  { label: 'Crepúsculo', c1: '#1a0a00', c2: '#7c2d12', angle: 145 },
+  { label: 'Aurora', c1: '#0d1117', c2: '#7c3aed', angle: 135 },
+  { label: 'Cosmos', c1: '#020617', c2: '#1d4ed8', angle: 160 },
+  { label: 'Brasa', c1: '#1c0a00', c2: '#c2410c', angle: 150 },
+  { label: 'Rosa Escuro', c1: '#0f0014', c2: '#86198f', angle: 140 },
+  { label: 'Grafite', c1: '#111111', c2: '#374151', angle: 160 },
+  { label: 'Limpo', c1: '#f8fafc', c2: '#e2e8f0', angle: 160 },
+];
+
+const SOLID_PRESETS = [
+  '#07101f', '#0a0a0c', '#0d1117', '#111827', '#1e1b4b',
+  '#042f2e', '#1a0a00', '#0c0a09', '#f8fafc', '#ffffff',
+];
+
+function ColorSwatch({ color, selected, onClick }: { color: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      title={color}
+      style={{
+        width: 28, height: 28, borderRadius: 8,
+        background: color,
+        border: selected ? '2px solid #f97316' : '2px solid rgba(0,0,0,.1)',
+        boxShadow: selected ? '0 0 0 3px #fff, 0 0 0 5px #f97316' : 'none',
+        cursor: 'pointer',
+        transition: 'all .15s',
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+function ColorPickerRow({
+  label, hint, value, onChange, presets,
+}: {
+  label: string; hint: string; value: string;
+  onChange: (v: string) => void; presets: string[];
+}) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 10, color: '#98989d', marginBottom: 6 }}>{hint}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        {presets.map(c => (
+          <ColorSwatch key={c} color={c} selected={value === c} onClick={() => onChange(c)} />
+        ))}
+        {/* Custom color picker */}
+        <label
+          title="Cor personalizada"
+          style={{
+            width: 28, height: 28, borderRadius: 8,
+            border: '2px dashed rgba(0,0,0,.2)',
+            cursor: 'pointer', position: 'relative', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden',
+            background: 'linear-gradient(135deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff)',
+          }}
+        >
+          <input
+            type="color"
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }}
+          />
+          <span style={{ fontSize: 12, color: '#fff', fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,.8)', pointerEvents: 'none' }}>+</span>
+        </label>
+        {/* Hex input */}
+        <input
+          type="text"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          maxLength={7}
+          style={{
+            width: 72, height: 28, borderRadius: 8, border: '1.5px solid rgba(0,0,0,.12)',
+            fontSize: 11, fontFamily: 'monospace', paddingLeft: 8, color: '#1d1d1f',
+            background: '#fafafa',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Preview ao vivo do fundo contínuo — simula 3 seções empilhadas
+function LiveBgPreview({ block }: { block: PageBlock }) {
+  const mode = block.continuousBgMode || 'none';
+  const bgCSS = buildBgCSS(block);
+  const opacity = (block.continuousBgOpacity ?? 100) / 100;
+  const bgType = block.continuousBgType || 'gradient';
+  const isImage = bgType === 'image';
+
+  const sectionLabels = ['Hero', 'Funcionalidades', 'CTA'];
+  const sectionHeights = [52, 64, 44];
+
+  if (mode === 'none') {
+    return (
+      <div style={{
+        borderRadius: 12, overflow: 'hidden',
+        border: '1.5px solid rgba(0,0,0,.08)',
+        background: '#f5f5f7',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        height: 80, marginBottom: 12,
+      }}>
+        <span style={{ fontSize: 11, color: '#aaa' }}>Fundo desativado</span>
+      </div>
+    );
+  }
+
+  if (mode === 'parent') {
+    // Todos os blocos dentro de um wrapper com o fundo
+    return (
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 10, color: '#98989d', marginBottom: 4, fontWeight: 600 }}>
+          PREVIEW · MODO PARENT
+        </div>
+        <div style={{
+          borderRadius: 12, overflow: 'hidden',
+          border: '1.5px solid rgba(0,0,0,.08)',
+          backgroundImage: isImage ? bgCSS : undefined,
+          background: !isImage ? bgCSS : undefined,
+          backgroundSize: 'cover', backgroundPosition: 'center',
+          opacity,
+        }}>
+          {sectionLabels.map((label, i) => (
+            <div key={i} style={{
+              height: sectionHeights[i],
+              borderBottom: i < 2 ? '1px solid rgba(255,255,255,.1)' : 'none',
+              display: 'flex', alignItems: 'center', paddingLeft: 12,
+              position: 'relative',
+            }}>
+              <span style={{
+                fontSize: 10, fontWeight: 700,
+                color: 'rgba(255,255,255,.55)',
+                letterSpacing: '.04em',
+                textTransform: 'uppercase' as const,
+              }}>{label}</span>
+              {/* decorative nav dots */}
+              <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', display: 'flex', gap: 3 }}>
+                {[14, 10, 6].map((w, j) => (
+                  <div key={j} style={{ width: w, height: 3, borderRadius: 2, background: 'rgba(100,200,255,.35)' }} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 10, color: '#3b82f6', background: '#eff6ff', borderRadius: 8, padding: '5px 8px', marginTop: 6 }}>
+          💡 Blocos consecutivos com o mesmo fundo compartilham um wrapper contínuo.
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'fixed') {
+    // Cada bloco tem o fundo fixo ao viewport
+    return (
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 10, color: '#98989d', marginBottom: 4, fontWeight: 600 }}>
+          PREVIEW · MODO FIXED
+        </div>
+        <div style={{ borderRadius: 12, overflow: 'hidden', border: '1.5px solid rgba(0,0,0,.08)' }}>
+          {sectionLabels.map((label, i) => (
+            <div key={i} style={{
+              height: sectionHeights[i],
+              backgroundImage: isImage ? bgCSS : undefined,
+              background: !isImage ? bgCSS : undefined,
+              backgroundSize: 'cover', backgroundPosition: 'center',
+              opacity,
+              borderBottom: i < 2 ? '1px solid rgba(255,255,255,.1)' : 'none',
+              display: 'flex', alignItems: 'center', paddingLeft: 12,
+            }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.55)', letterSpacing: '.04em', textTransform: 'uppercase' as const }}>{label}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 10, color: '#b45309', background: '#fffbeb', borderRadius: 8, padding: '5px 8px', marginTop: 6 }}>
+          ⚠️ Não funciona em iOS Safari. Prefira Parent ou JS Offset em mobile.
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'js_offset') {
+    // Mostra o efeito de fatia: cada seção exibe uma "janela" diferente do mesmo gradiente
+    const totalH = sectionHeights.reduce((a, b) => a + b, 0);
+    let accH = 0;
+    return (
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 10, color: '#98989d', marginBottom: 4, fontWeight: 600 }}>
+          PREVIEW · MODO JS OFFSET
+        </div>
+        <div style={{ borderRadius: 12, overflow: 'hidden', border: '1.5px solid rgba(0,0,0,.08)' }}>
+          {sectionLabels.map((label, i) => {
+            const offsetPct = (accH / totalH) * 100;
+            const h = sectionHeights[i];
+            accH += h;
+            return (
+              <div key={i} style={{
+                height: h,
+                backgroundImage: isImage ? bgCSS : undefined,
+                background: !isImage ? bgCSS : undefined,
+                backgroundSize: `100% ${totalH * 2.5}px`,
+                backgroundPosition: `0px -${(accH - h)}px`,
+                backgroundRepeat: 'no-repeat',
+                opacity,
+                borderBottom: i < 2 ? '1px solid rgba(255,255,255,.1)' : 'none',
+                display: 'flex', alignItems: 'center', paddingLeft: 12,
+                position: 'relative',
+              }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.55)', letterSpacing: '.04em', textTransform: 'uppercase' as const }}>{label}</span>
+                <span style={{ position: 'absolute', right: 8, fontSize: 9, color: 'rgba(255,255,255,.3)', fontFamily: 'monospace' }}>
+                  offset: {Math.round(offsetPct)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: 10, color: '#15803d', background: '#f0fdf4', borderRadius: 8, padding: '5px 8px', marginTop: 6 }}>
+          ✅ Precisão máxima. Funciona em todos os browsers incluindo iOS Safari.
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+
+// ─── Forma da Seção ────────────────────────────────────────────────────────────
+
+const SECTION_SHAPES: { v: SectionShape; label: string; topPath: string; bottomPath: string }[] = [
+  { v: 'none', label: 'Nenhum', topPath: 'M0,0 L100,0 L100,100 L0,100 Z', bottomPath: 'M0,0 L100,0 L100,100 L0,100 Z' },
+  { v: 'wave', label: 'Onda', topPath: 'M0,60 C15,40 35,80 50,60 C65,40 85,80 100,60 L100,0 L0,0 Z', bottomPath: 'M0,40 C15,60 35,20 50,40 C65,60 85,20 100,40 L100,100 L0,100 Z' },
+  { v: 'wave-soft', label: 'Onda Suave', topPath: 'M0,70 C25,50 75,90 100,70 L100,0 L0,0 Z', bottomPath: 'M0,30 C25,50 75,10 100,30 L100,100 L0,100 Z' },
+  { v: 'diagonal-right', label: 'Diagonal /', topPath: 'M0,0 L100,0 L100,30 L0,100 Z', bottomPath: 'M0,0 L100,70 L100,100 L0,100 Z' },
+  { v: 'diagonal-left', label: 'Diagonal \\', topPath: 'M0,30 L100,0 L100,0 L0,0 Z', bottomPath: 'M0,100 L100,100 L100,70 L0,100 Z' },
+  { v: 'arc-down', label: 'Arco Down', topPath: 'M0,0 L100,0 Q50,100 0,0 Z', bottomPath: 'M0,100 L100,100 Q50,0 0,100 Z' },
+  { v: 'arc-up', label: 'Arco Up', topPath: 'M0,100 Q50,0 100,100 L100,0 L0,0 Z', bottomPath: 'M0,0 Q50,100 100,0 L100,100 L0,100 Z' },
+  { v: 'zigzag', label: 'Zigzag', topPath: 'M0,50 L12.5,0 L25,50 L37.5,0 L50,50 L62.5,0 L75,50 L87.5,0 L100,50 L100,0 L0,0 Z', bottomPath: 'M0,50 L12.5,100 L25,50 L37.5,100 L50,50 L62.5,100 L75,50 L87.5,100 L100,50 L100,100 L0,100 Z' },
+  { v: 'slant-both', label: 'Inclinado', topPath: 'M0,60 L100,0 L100,0 L0,0 Z', bottomPath: 'M0,100 L100,100 L100,40 L0,100 Z' },
+];
+
+export function buildSectionShapeCSS(shape: SectionShape, position: 'top' | 'bottom', color: string, size: number): string {
+  if (shape === 'none') return '';
+  const found = SECTION_SHAPES.find(s => s.v === shape);
+  if (!found) return '';
+  const path = position === 'top' ? found.topPath : found.bottomPath;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><path d='${path}' fill='${color.replace('#', '%23')}'/></svg>`;
+  return `url("data:image/svg+xml,${svg}")`;
+}
+
+function ShapePreviewSVG({ path, active }: { path: string; active: boolean }) {
+  return (
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none"
+      style={{ width: '100%', height: 34, display: 'block' }}>
+      <rect width="100" height="100" fill={active ? '#fff7ed' : '#f0f0f2'} />
+      <path d={path} fill={active ? '#f97316' : '#c7c7cc'} />
+    </svg>
+  );
+}
+
+function SectionShapeControls({ block, onChange }: { block: PageBlock; onChange: (b: PageBlock) => void }) {
+  const set = <K extends keyof PageBlock>(k: K, v: PageBlock[K]) => onChange({ ...block, [k]: v });
+  const shapeTop = (block.sectionShapeTop || 'none') as SectionShape;
+  const shapeBottom = (block.sectionShapeBottom || 'none') as SectionShape;
+  const shapeColor = block.sectionShapeColor || '#ffffff';
+  const shapeSize = block.sectionShapeSize ?? 3;
+  const [tab, setTab] = React.useState<'top' | 'bottom'>('top');
+  const activeShape = tab === 'top' ? shapeTop : shapeBottom;
+  const hasAny = shapeTop !== 'none' || shapeBottom !== 'none';
+
+  return (
+    <>
+      <SectionDivider label="Forma da Seção" />
+      <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+        {(['top', 'bottom'] as const).map(t => {
+          const hasShape = t === 'top' ? shapeTop !== 'none' : shapeBottom !== 'none';
+          return (
+            <button key={t} onClick={() => setTab(t)} style={{
+              flex: 1, height: 30, borderRadius: 8, fontSize: 11, fontWeight: 700,
+              border: tab === t ? '2px solid #f97316' : '2px solid rgba(0,0,0,.1)',
+              background: tab === t ? '#fff7ed' : '#f5f5f7',
+              color: tab === t ? '#f97316' : '#6e6e73',
+              cursor: 'pointer', position: 'relative' as const,
+            }}>
+              {t === 'top' ? '↑ Topo' : '↓ Base'}
+              {hasShape && <span style={{ position: 'absolute', top: 4, right: 6, width: 6, height: 6, borderRadius: '50%', background: '#f97316' }} />}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5, marginBottom: 12 }}>
+        {SECTION_SHAPES.map(s => {
+          const active = activeShape === s.v;
+          const path = tab === 'top' ? s.topPath : s.bottomPath;
+          return (
+            <button key={s.v}
+              onClick={() => set(tab === 'top' ? 'sectionShapeTop' : 'sectionShapeBottom', s.v)}
+              title={s.label}
+              style={{
+                borderRadius: 10, overflow: 'hidden', padding: 0,
+                border: active ? '2px solid #f97316' : '2px solid rgba(0,0,0,.08)',
+                cursor: 'pointer', display: 'flex', flexDirection: 'column' as const,
+                alignItems: 'center', transition: 'all .15s', background: 'transparent',
+              }}>
+              <ShapePreviewSVG path={path} active={active} />
+              <span style={{ fontSize: 9, fontWeight: 700, padding: '3px 0 4px', color: active ? '#f97316' : '#6e6e73' }}>{s.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      {hasAny && (
+        <>
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f' }}>Cor da Forma</div>
+            </div>
+            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' as const, alignItems: 'center' }}>
+              {['#ffffff', '#f5f5f7', '#07101f', '#0a0a0c', '#f97316', '#1a4a7a', '#312e81', '#065f46'].map(c => (
+                <button key={c} onClick={() => set('sectionShapeColor', c)} style={{
+                  width: 24, height: 24, borderRadius: 6, background: c,
+                  border: shapeColor === c ? '2px solid #f97316' : '2px solid rgba(0,0,0,.12)',
+                  boxShadow: shapeColor === c ? '0 0 0 2px #fff,0 0 0 4px #f97316' : 'none',
+                  cursor: 'pointer',
+                }} />
+              ))}
+              <label style={{ width: 24, height: 24, borderRadius: 6, border: '1.5px solid rgba(0,0,0,.1)', overflow: 'hidden', cursor: 'pointer', display: 'block', position: 'relative' as const }}>
+                <input type="color" value={shapeColor} onChange={e => set('sectionShapeColor', e.target.value)}
+                  style={{ position: 'absolute', inset: 0, opacity: 0, width: '200%', height: '200%', cursor: 'pointer' }} />
+                <div style={{ width: '100%', height: '100%', background: shapeColor }} />
+              </label>
+            </div>
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f' }}>Tamanho</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#f97316', background: '#fff7ed', borderRadius: 6, padding: '2px 8px', border: '1px solid #fed7aa' }}>
+                {['XS', 'SM', 'MD', 'LG', 'XL'][shapeSize - 1]}
+              </div>
+            </div>
+            <input type="range" min={1} max={5} step={1} value={shapeSize}
+              onChange={e => set('sectionShapeSize', Number(e.target.value))}
+              style={{ width: '100%', accentColor: '#f97316' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#98989d', marginTop: 2 }}>
+              <span>XS</span><span>SM</span><span>MD</span><span>LG</span><span>XL</span>
+            </div>
+          </div>
+          <div style={{ fontSize: 10, color: '#15803d', background: '#f0fdf4', borderRadius: 8, padding: '6px 8px', marginBottom: 4 }}>
+            💡 Use a cor da seção adjacente para o efeito de corte visual perfeito.
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+function ContinuousBgControls({ block, onChange }: { block: PageBlock; onChange: (b: PageBlock) => void }) {
+  const set = <K extends keyof PageBlock>(k: K, v: PageBlock[K]) => onChange({ ...block, [k]: v });
+  const mode = block.continuousBgMode || 'none';
+  const bgType = block.continuousBgType || 'gradient';
+  const c1 = block.continuousBgColor1 || '#07101f';
+  const c2 = block.continuousBgColor2 || '#1a4a7a';
+  const angle = block.continuousBgAngle ?? 160;
+  const opacity = block.continuousBgOpacity ?? 100;
+
+  const modeOpts: { v: ContinuousBgMode; label: string; icon: string }[] = [
+    { v: 'none', label: 'Desativado', icon: '○' },
+    { v: 'parent', label: 'Parent', icon: '⊡' },
+    { v: 'fixed', label: 'Fixed', icon: '⊞' },
+    { v: 'js_offset', label: 'JS Offset', icon: '⊟' },
+  ];
+
+  const typeOpts: { v: ContinuousBgType; label: string; icon: string }[] = [
+    { v: 'gradient', label: 'Gradiente', icon: '▣' },
+    { v: 'solid', label: 'Sólido', icon: '■' },
+    { v: 'image', label: 'Imagem', icon: '▨' },
+  ];
+
+  return (
+    <>
+      <SectionDivider label="Fundo Contínuo" />
+
+      {/* Seletor de modo — cards visuais */}
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f', marginBottom: 2 }}>Modo</div>
+        <div style={{ fontSize: 10, color: '#98989d', marginBottom: 8 }}>Como o fundo é aplicado neste bloco</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {modeOpts.map(o => (
+            <button key={o.v} onClick={() => set('continuousBgMode', o.v)}
+              style={{
+                padding: '8px 6px',
+                borderRadius: 10,
+                border: mode === o.v ? '2px solid #f97316' : '2px solid rgba(0,0,0,.08)',
+                background: mode === o.v ? '#fff7ed' : '#f5f5f7',
+                cursor: 'pointer',
+                display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 3,
+                transition: 'all .15s',
+              }}>
+              <span style={{ fontSize: 16, lineHeight: 1 }}>{o.icon}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: mode === o.v ? '#f97316' : '#6e6e73' }}>{o.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Preview ao vivo */}
+      <LiveBgPreview block={block} />
+
+      {mode !== 'none' && (
+        <>
+          {/* Tipo */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f', marginBottom: 6 }}>Tipo de Fundo</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+              {typeOpts.map(o => (
+                <button key={o.v} onClick={() => set('continuousBgType', o.v)}
+                  style={{
+                    padding: '7px 4px',
+                    borderRadius: 10,
+                    border: bgType === o.v ? '2px solid #f97316' : '2px solid rgba(0,0,0,.08)',
+                    background: bgType === o.v ? '#fff7ed' : '#f5f5f7',
+                    cursor: 'pointer',
+                    display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 2,
+                    transition: 'all .15s',
+                  }}>
+                  <span style={{ fontSize: 14 }}>{o.icon}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: bgType === o.v ? '#f97316' : '#6e6e73' }}>{o.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Presets de gradiente */}
+          {bgType === 'gradient' && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f', marginBottom: 6 }}>Presets</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 5 }}>
+                {GRADIENT_PRESETS.map(p => {
+                  const isSelected = c1 === p.c1 && c2 === p.c2 && angle === p.angle;
+                  return (
+                    <button key={p.label}
+                      title={p.label}
+                      onClick={() => onChange({ ...block, continuousBgColor1: p.c1, continuousBgColor2: p.c2, continuousBgAngle: p.angle })}
+                      style={{
+                        height: 32, borderRadius: 8,
+                        background: `linear-gradient(${p.angle}deg, ${p.c1}, ${p.c2})`,
+                        border: isSelected ? '2px solid #f97316' : '2px solid transparent',
+                        boxShadow: isSelected ? '0 0 0 3px #fff, 0 0 0 5px #f97316' : '0 1px 3px rgba(0,0,0,.2)',
+                        cursor: 'pointer', padding: 0,
+                        transition: 'all .15s',
+                      }} />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Cor 1 */}
+          {(bgType === 'gradient' || bgType === 'solid') && (
+            <ColorPickerRow
+              label={bgType === 'solid' ? 'Cor' : 'Cor inicial'}
+              hint={bgType === 'solid' ? 'Cor sólida do fundo' : 'Cor de início do gradiente'}
+              value={c1}
+              onChange={v => set('continuousBgColor1', v)}
+              presets={SOLID_PRESETS}
+            />
+          )}
+
+          {/* Cor 2 + ângulo */}
+          {bgType === 'gradient' && (
+            <>
+              <ColorPickerRow
+                label="Cor final"
+                hint="Cor de término do gradiente"
+                value={c2}
+                onChange={v => set('continuousBgColor2', v)}
+                presets={['#1a4a7a', '#312e81', '#065f46', '#7c3aed', '#1d4ed8', '#0891b2', '#c2410c', '#dc2626', '#f97316', '#be185d']}
+              />
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f' }}>Ângulo</div>
+                  <div style={{
+                    fontSize: 11, fontWeight: 700, color: '#f97316',
+                    background: '#fff7ed', borderRadius: 6, padding: '2px 8px',
+                    border: '1px solid #fed7aa',
+                  }}>{angle}°</div>
+                </div>
+                <input type="range" min={0} max={360} step={5} value={angle}
+                  onChange={e => set('continuousBgAngle', Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#f97316' }}
+                />
+                {/* Ângulos rápidos */}
+                <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+                  {[0, 45, 90, 135, 160, 180].map(a => (
+                    <button key={a} onClick={() => set('continuousBgAngle', a)}
+                      style={{
+                        flex: 1, height: 24, borderRadius: 6, fontSize: 9, fontWeight: 700,
+                        border: angle === a ? '1.5px solid #f97316' : '1.5px solid rgba(0,0,0,.1)',
+                        background: angle === a ? '#fff7ed' : '#f5f5f7',
+                        color: angle === a ? '#f97316' : '#6e6e73',
+                        cursor: 'pointer',
+                      }}>{a}°</button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Imagem URL */}
+          {bgType === 'image' && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f', marginBottom: 4 }}>URL da Imagem</div>
+              <input
+                type="text"
+                value={block.continuousBgImage || ''}
+                onChange={e => set('continuousBgImage', e.target.value)}
+                placeholder="https://exemplo.com/imagem.jpg"
+                style={{
+                  width: '100%', height: 36, borderRadius: 8,
+                  border: '1.5px solid rgba(0,0,0,.12)',
+                  fontSize: 11, paddingLeft: 10, color: '#1d1d1f',
+                  background: '#fafafa', outline: 'none',
+                }}
+              />
+              {block.continuousBgImage && (
+                <div style={{
+                  marginTop: 6, height: 60, borderRadius: 8, overflow: 'hidden',
+                  backgroundImage: `url(${block.continuousBgImage})`,
+                  backgroundSize: 'cover', backgroundPosition: 'center',
+                  border: '1px solid rgba(0,0,0,.08)',
+                }} />
+              )}
+            </div>
+          )}
+
+          {/* Opacidade */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#1d1d1f' }}>Opacidade</div>
+              <div style={{
+                fontSize: 11, fontWeight: 700, color: '#f97316',
+                background: '#fff7ed', borderRadius: 6, padding: '2px 8px',
+                border: '1px solid #fed7aa',
+              }}>{opacity}%</div>
+            </div>
+            {/* Barra de opacidade com preview de cor */}
+            <div style={{ position: 'relative', height: 20, borderRadius: 8, overflow: 'hidden', marginBottom: 6 }}>
+              <div style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: `linear-gradient(90deg, transparent, ${c1})`,
+                borderRadius: 8,
+              }} />
+              <input type="range" min={0} max={100} step={5} value={opacity}
+                onChange={e => set('continuousBgOpacity', Number(e.target.value))}
+                style={{ position: 'absolute', inset: 0, width: '100%', opacity: 0, cursor: 'pointer', height: '100%' }}
+              />
+              {/* Thumb indicator */}
+              <div style={{
+                position: 'absolute', top: '50%', transform: 'translateY(-50%)',
+                left: `calc(${opacity}% - 8px)`,
+                width: 16, height: 16, borderRadius: '50%',
+                background: '#fff', border: '2px solid #f97316',
+                boxShadow: '0 1px 4px rgba(0,0,0,.2)',
+                pointerEvents: 'none', transition: 'left .05s',
+              }} />
+            </div>
+            <input type="range" min={0} max={100} step={5} value={opacity}
+              onChange={e => set('continuousBgOpacity', Number(e.target.value))}
+              style={{ width: '100%', accentColor: '#f97316' }}
+            />
+          </div>
+        </>
       )}
     </>
   );
@@ -1282,19 +1880,19 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
   }
   if (block.type === 'divider') {
     const dc = block.dividerColor || '#3b82f6';
-    const SHAPE_COLORS = ['#3b82f6','#10b981','#8b5cf6','#f97316','#ef4444','#0ea5e9','#ec4899','#14b8a6','#1e293b','#6366f1'];
-    const isShape = ['triangle','clouds','waves_fill','mountains'].includes(block.dividerStyle || '');
+    const SHAPE_COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f97316', '#ef4444', '#0ea5e9', '#ec4899', '#14b8a6', '#1e293b', '#6366f1'];
+    const isShape = ['triangle', 'clouds', 'waves_fill', 'mountains'].includes(block.dividerStyle || '');
 
     type DivOpt = { value: string; label: string; preview: React.ReactNode };
     const SIMPLE_OPTIONS: DivOpt[] = [
-      { value: 'line',     label: 'Linha',      preview: <div style={{ width:'100%',height:1,background:'rgba(0,0,0,.2)',margin:'6px 0' }}/> },
-      { value: 'space',    label: 'Espaço',     preview: <div style={{ width:'100%',height:8,background:'repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0,rgba(0,0,0,.06) 4px,transparent 4px,transparent 8px)',borderRadius:2 }}/> },
-      { value: 'dots',     label: 'Pontos',     preview: <div style={{display:'flex',gap:4,justifyContent:'center'}}>{[0,1,2].map(i=><span key={i} style={{width:5,height:5,borderRadius:'50%',background:'rgba(0,0,0,.25)',display:'block'}}/>)}</div> },
-      { value: 'gradient', label: 'Gradiente',  preview: <div style={{ width:'100%',height:2,background:'linear-gradient(90deg,transparent,rgba(0,0,0,.25),transparent)',margin:'6px 0' }}/> },
-      { value: 'dashed',   label: 'Tracejado',  preview: <div style={{ width:'100%',borderTop:'2px dashed rgba(0,0,0,.2)',margin:'6px 0' }}/> },
-      { value: 'double',   label: 'Duplo',      preview: <div style={{display:'flex',flexDirection:'column',gap:3,margin:'4px 0'}}><div style={{height:1,background:'rgba(0,0,0,.2)'}}/><div style={{height:1,background:'rgba(0,0,0,.12)'}}/></div> },
-      { value: 'wave',     label: 'Onda',       preview: <svg viewBox="0 0 80 12" height="12" width="80" style={{display:'block',margin:'2px auto'}}><path d="M0 6 Q10 0 20 6 Q30 12 40 6 Q50 0 60 6 Q70 12 80 6" fill="none" stroke="rgba(0,0,0,.25)" strokeWidth="1.5"/></svg> },
-      { value: 'ornament', label: 'Ornamento',  preview: <div style={{display:'flex',alignItems:'center',gap:4,justifyContent:'center'}}><div style={{flex:1,height:1,background:'rgba(0,0,0,.18)'}}/><span style={{fontSize:10,color:'rgba(0,0,0,.3)'}}>◆</span><div style={{flex:1,height:1,background:'rgba(0,0,0,.18)'}}/></div> },
+      { value: 'line', label: 'Linha', preview: <div style={{ width: '100%', height: 1, background: 'rgba(0,0,0,.2)', margin: '6px 0' }} /> },
+      { value: 'space', label: 'Espaço', preview: <div style={{ width: '100%', height: 8, background: 'repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0,rgba(0,0,0,.06) 4px,transparent 4px,transparent 8px)', borderRadius: 2 }} /> },
+      { value: 'dots', label: 'Pontos', preview: <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>{[0, 1, 2].map(i => <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(0,0,0,.25)', display: 'block' }} />)}</div> },
+      { value: 'gradient', label: 'Gradiente', preview: <div style={{ width: '100%', height: 2, background: 'linear-gradient(90deg,transparent,rgba(0,0,0,.25),transparent)', margin: '6px 0' }} /> },
+      { value: 'dashed', label: 'Tracejado', preview: <div style={{ width: '100%', borderTop: '2px dashed rgba(0,0,0,.2)', margin: '6px 0' }} /> },
+      { value: 'double', label: 'Duplo', preview: <div style={{ display: 'flex', flexDirection: 'column', gap: 3, margin: '4px 0' }}><div style={{ height: 1, background: 'rgba(0,0,0,.2)' }} /><div style={{ height: 1, background: 'rgba(0,0,0,.12)' }} /></div> },
+      { value: 'wave', label: 'Onda', preview: <svg viewBox="0 0 80 12" height="12" width="80" style={{ display: 'block', margin: '2px auto' }}><path d="M0 6 Q10 0 20 6 Q30 12 40 6 Q50 0 60 6 Q70 12 80 6" fill="none" stroke="rgba(0,0,0,.25)" strokeWidth="1.5" /></svg> },
+      { value: 'ornament', label: 'Ornamento', preview: <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}><div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,.18)' }} /><span style={{ fontSize: 10, color: 'rgba(0,0,0,.3)' }}>◆</span><div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,.18)' }} /></div> },
     ];
 
     const SHAPE_OPTIONS: DivOpt[] = [
@@ -1302,8 +1900,8 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
         value: 'triangle',
         label: 'Triângulo',
         preview: (
-          <svg viewBox="0 0 80 28" height="28" width="80" style={{display:'block'}}>
-            <polygon points="0,0 80,0 80,28 0,12" fill={dc}/>
+          <svg viewBox="0 0 80 28" height="28" width="80" style={{ display: 'block' }}>
+            <polygon points="0,0 80,0 80,28 0,12" fill={dc} />
           </svg>
         ),
       },
@@ -1311,8 +1909,8 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
         value: 'clouds',
         label: 'Nuvens',
         preview: (
-          <svg viewBox="0 0 80 28" height="28" width="80" style={{display:'block'}}>
-            <path d="M0 28 Q5 10 12 18 Q18 6 26 18 Q32 4 40 18 Q46 6 54 18 Q60 8 68 18 Q74 10 80 14 L80 28 Z" fill={dc}/>
+          <svg viewBox="0 0 80 28" height="28" width="80" style={{ display: 'block' }}>
+            <path d="M0 28 Q5 10 12 18 Q18 6 26 18 Q32 4 40 18 Q46 6 54 18 Q60 8 68 18 Q74 10 80 14 L80 28 Z" fill={dc} />
           </svg>
         ),
       },
@@ -1320,9 +1918,9 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
         value: 'waves_fill',
         label: 'Ondas',
         preview: (
-          <svg viewBox="0 0 80 28" height="28" width="80" style={{display:'block'}}>
-            <path d="M0 18 Q10 8 20 18 Q30 28 40 18 Q50 8 60 18 Q70 28 80 18 L80 28 L0 28 Z" fill={dc} opacity="0.5"/>
-            <path d="M0 22 Q10 14 20 22 Q30 30 40 22 Q50 14 60 22 Q70 30 80 22 L80 28 L0 28 Z" fill={dc}/>
+          <svg viewBox="0 0 80 28" height="28" width="80" style={{ display: 'block' }}>
+            <path d="M0 18 Q10 8 20 18 Q30 28 40 18 Q50 8 60 18 Q70 28 80 18 L80 28 L0 28 Z" fill={dc} opacity="0.5" />
+            <path d="M0 22 Q10 14 20 22 Q30 30 40 22 Q50 14 60 22 Q70 30 80 22 L80 28 L0 28 Z" fill={dc} />
           </svg>
         ),
       },
@@ -1330,8 +1928,8 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
         value: 'mountains',
         label: 'Montanhas',
         preview: (
-          <svg viewBox="0 0 80 28" height="28" width="80" style={{display:'block'}}>
-            <polygon points="0,28 20,8 40,22 60,4 80,18 80,28" fill={dc}/>
+          <svg viewBox="0 0 80 28" height="28" width="80" style={{ display: 'block' }}>
+            <polygon points="0,28 20,8 40,22 60,4 80,18 80,28" fill={dc} />
           </svg>
         ),
       },
@@ -1348,7 +1946,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
                 <button key={opt.value} onClick={() => set('dividerStyle', opt.value as PageBlock['dividerStyle'])}
                   className="rounded-xl border-2 transition px-2 py-1.5"
                   style={{ borderColor: active ? '#f97316' : 'rgba(0,0,0,.08)', background: active ? '#fff7ed' : '#f5f5f7' }}>
-                  <div style={{ pointerEvents:'none' }}>{opt.preview}</div>
+                  <div style={{ pointerEvents: 'none' }}>{opt.preview}</div>
                   <div className="text-[10px] font-bold mt-1 text-center" style={{ color: active ? '#f97316' : '#6e6e73' }}>{opt.label}</div>
                 </button>
               );
@@ -1365,7 +1963,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
                 <button key={opt.value} onClick={() => set('dividerStyle', opt.value as PageBlock['dividerStyle'])}
                   className="rounded-xl border-2 transition px-2 py-1.5 overflow-hidden"
                   style={{ borderColor: active ? '#f97316' : 'rgba(0,0,0,.08)', background: active ? '#fff7ed' : '#f5f5f7' }}>
-                  <div style={{ pointerEvents:'none', borderRadius:6, overflow:'hidden', background:'#e5e7eb' }}>{opt.preview}</div>
+                  <div style={{ pointerEvents: 'none', borderRadius: 6, overflow: 'hidden', background: '#e5e7eb' }}>{opt.preview}</div>
                   <div className="text-[10px] font-bold mt-1 text-center" style={{ color: active ? '#f97316' : '#6e6e73' }}>{opt.label}</div>
                 </button>
               );
@@ -1459,7 +2057,7 @@ function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDo
           </button>
           <button onClick={onDuplicate} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-blue-400 hover:bg-blue-50 transition" title="Duplicar bloco">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+              <rect x="8" y="8" width="13" height="13" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
             </svg>
           </button>
           <button onClick={() => { if (window.confirm('Excluir este bloco?')) onRemove(); }} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-red-400 hover:bg-red-50 transition" title="Excluir bloco"><X style={{ width: 13, height: 13 }} /></button>
@@ -1625,7 +2223,7 @@ export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
           className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition disabled:opacity-30"
           style={{ background: '#fff', borderColor: '#e5e7eb', color: '#374151' }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 14L4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 010 11H11" /></svg>
           Desfazer
         </button>
         <button
@@ -1634,7 +2232,7 @@ export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
           className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition disabled:opacity-30"
           style={{ background: '#fff', borderColor: '#e5e7eb', color: '#374151' }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 000 11H13"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 14l5-5-5-5" /><path d="M20 9H9.5a5.5 5.5 0 000 11H13" /></svg>
           Refazer
         </button>
         <div className="flex-1" />
@@ -1644,7 +2242,7 @@ export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
           className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition"
           style={{ background: '#fff', borderColor: '#e5e7eb', color: '#374151' }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
           Importar
         </button>
         <button
@@ -1653,7 +2251,7 @@ export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
           className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition disabled:opacity-30"
           style={{ background: '#f0fdf4', borderColor: '#bbf7d0', color: '#166534' }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
           Exportar
         </button>
       </div>
