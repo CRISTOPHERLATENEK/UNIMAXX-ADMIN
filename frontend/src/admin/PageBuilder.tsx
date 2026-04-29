@@ -87,16 +87,7 @@ const BLOCK_PATTERNS: BlockPattern[] = [
     tags: ['saas', 'produto', 'completa'],
     blocks: [
       { id: pid('hero'), type: 'hero', visible: true, blockSpacing: 'spacious', blockRadius: 'large', heroLayout: 'centered', colorTheme: 'brand', badge: 'NOVO', title: 'A plataforma que transforma o seu negócio', subtitle: 'Automatize processos, aumente conversões e escale com confiança.', description: '', ctaLabel: 'Começar grátis', ctaLink: '/cadastro' },
-      {
-        id: pid('features'), type: 'features', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', featuresLayout: 'split_dark', title: 'Tudo que você precisa em uma plataforma', featuresLabel: 'FUNCIONALIDADES', featuresAccent: '#f97316', items: [
-          { icon: '⚡', title: 'Automação inteligente', description: 'Configure regras e deixe a plataforma trabalhar por você 24/7.' },
-          { icon: '📊', title: 'Analytics em tempo real', description: 'Dashboards completos para decisões rápidas e baseadas em dados.' },
-          { icon: '🔒', title: 'Segurança enterprise', description: 'Criptografia ponta a ponta e conformidade com LGPD e ISO 27001.' },
-          { icon: '🌐', title: 'Integrações nativas', description: 'Conecte com mais de 200 ferramentas que você já usa.' },
-          { icon: '📱', title: 'Acesso mobile', description: 'App para iOS e Android com todas as funcionalidades.' },
-          { icon: '🤝', title: 'Suporte dedicado', description: 'Time especializado disponível via chat, e-mail e telefone.' },
-        ]
-      },
+
       {
         id: pid('stats'), type: 'stats', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'light', stats: [
           { value: '+12.000', label: 'Empresas ativas' },
@@ -107,9 +98,9 @@ const BLOCK_PATTERNS: BlockPattern[] = [
       },
       {
         id: pid('steps'), type: 'steps', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Como funciona', steps: [
-          { icon: '📝', title: 'Crie sua conta', description: 'Cadastre-se em menos de 2 minutos, sem cartão de crédito.' },
-          { icon: '⚙️', title: 'Configure sua operação', description: 'Conecte suas ferramentas e personalize os fluxos de trabalho.' },
-          { icon: '🚀', title: 'Comece a crescer', description: 'Acompanhe os resultados em tempo real e escale com segurança.' },
+          { title: 'Crie sua conta', description: 'Cadastre-se em menos de 2 minutos, sem cartão de crédito.' },
+          { title: 'Configure sua operação', description: 'Conecte suas ferramentas e personalize os fluxos de trabalho.' },
+          { title: 'Comece a crescer', description: 'Acompanhe os resultados em tempo real e escale com segurança.' },
         ]
       },
       { id: pid('testimonial'), type: 'testimonial', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'dark', quote: 'Depois de implementar a plataforma, nossa equipe ganhou 15 horas semanais e as vendas cresceram 40% em 3 meses.', author: 'Mariana Costa', role: 'CEO — TechScale Ltda.' },
@@ -176,21 +167,12 @@ const BLOCK_PATTERNS: BlockPattern[] = [
     tags: ['técnico', 'dev', 'dark', 'completa'],
     blocks: [
       { id: pid('hero'), type: 'hero', visible: true, blockSpacing: 'spacious', blockRadius: 'large', heroLayout: 'dark_glow', colorTheme: 'dark', badge: 'API FIRST', title: 'Infraestrutura de pagamentos para desenvolvedores', subtitle: 'SDK robusto, webhooks em tempo real e documentação que você vai adorar.', description: '', ctaLabel: 'Ver documentação', ctaLink: '/docs' },
-      {
-        id: pid('features'), type: 'features', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', featuresLayout: 'dark_cards', title: 'Arquitetado para escala', featuresLabel: 'CAPACIDADES', featuresAccent: '#8b5cf6', items: [
-          { icon: '⚡', title: 'Latência < 50ms', description: 'Infraestrutura distribuída em múltiplas regiões com roteamento inteligente.' },
-          { icon: '🔐', title: 'OAuth 2.0 + JWT', description: 'Autenticação enterprise com suporte a SSO e MFA nativo.' },
-          { icon: '🔄', title: 'Webhooks confiáveis', description: 'Entrega garantida com retry automático e dead-letter queue.' },
-          { icon: '📦', title: 'SDKs oficiais', description: 'Node.js, Python, PHP, Go, Ruby e Java com suporte ativo.' },
-          { icon: '🧪', title: 'Sandbox completo', description: 'Ambiente de testes idêntico à produção para desenvolvimento seguro.' },
-          { icon: '📡', title: 'Streaming de eventos', description: 'Kafka-compatible event streaming para arquiteturas event-driven.' },
-        ]
-      },
+
       {
         id: pid('steps'), type: 'steps', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Integre em minutos', steps: [
-          { icon: '📦', title: 'Instale o SDK', description: 'npm install @plataforma/sdk ou via pip, composer e gem.' },
-          { icon: '🔑', title: 'Configure as credenciais', description: 'Obtenha suas chaves de API no dashboard e configure o ambiente.' },
-          { icon: '🚀', title: 'Faça sua primeira chamada', description: 'Execute o exemplo de código e veja o resultado em segundos.' },
+          { title: 'Instale o SDK', description: 'npm install @plataforma/sdk ou via pip, composer e gem.' },
+          { title: 'Configure as credenciais', description: 'Obtenha suas chaves de API no dashboard e configure o ambiente.' },
+          { title: 'Faça sua primeira chamada', description: 'Execute o exemplo de código e veja o resultado em segundos.' },
         ]
       },
       { id: pid('video'), type: 'video', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'dark', title: 'Veja como é simples integrar', videoUrl: '' },
@@ -252,9 +234,9 @@ const BLOCK_PATTERNS: BlockPattern[] = [
     blocks: [
       {
         id: pid('steps'), type: 'steps', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Em 3 passos você já está operando', steps: [
-          { icon: '📋', title: 'Cadastre-se', description: 'Crie sua conta gratuitamente e configure seu perfil em minutos.' },
-          { icon: '🔗', title: 'Conecte suas ferramentas', description: 'Integre com os sistemas que você já usa com poucos cliques.' },
-          { icon: '📈', title: 'Acompanhe os resultados', description: 'Monitore indicadores em tempo real e tome decisões com dados.' },
+          { title: 'Cadastre-se', description: 'Crie sua conta gratuitamente e configure seu perfil em minutos.' },
+          { title: 'Conecte suas ferramentas', description: 'Integre com os sistemas que você já usa com poucos cliques.' },
+          { title: 'Acompanhe os resultados', description: 'Monitore indicadores em tempo real e tome decisões com dados.' },
         ]
       },
       { id: pid('integrations'), type: 'integrations', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'light', title: 'Compatível com seu ecossistema', items: ['Google Workspace', 'Microsoft 365', 'Slack', 'WhatsApp Business', 'Shopify', 'WooCommerce', 'Stripe', 'PagSeguro', 'Bling', 'Omie'] },
