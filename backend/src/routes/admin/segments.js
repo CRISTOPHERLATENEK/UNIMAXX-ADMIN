@@ -3,6 +3,9 @@ const { db } = require('../../db/database');
 const { validateBody, validateParams } = require('../../middleware/validate');
 const { idParamSchema, segmentSchema } = require('../../validation/admin');
 const { logAudit } = require('../../utils/audit');
+const fs = require('fs');
+const path = require('path');
+const { UPLOAD_DIR } = require('../../config/env');
 
 function makeSegmentId(inputName) {
   const normalized = String(inputName || '')
@@ -55,11 +58,23 @@ router.put('/:id', validateParams(idParamSchema), validateBody(segmentSchema.omi
 });
 
 router.delete('/:id', validateParams(idParamSchema), (req, res) => {
-  db.run('DELETE FROM segments WHERE segment_id=?', [req.validatedParams.id], async function (err) {
-    if (err) return res.status(500).json({ error: 'Erro' });
-    if (this.changes === 0) return res.status(404).json({ error: 'Segmento não encontrado' });
-    await logAudit(req, { userId: req.user?.id, action: 'delete_segment', entity: 'segments', entityId: req.validatedParams.id });
-    res.json({ message: 'Excluído' });
+  const { id } = req.validatedParams;
+  
+  db.get('SELECT image FROM segments WHERE segment_id=?', [id], (err, row) => {
+    if (err || !row) return res.status(404).json({ error: 'Segmento não encontrado' });
+    const imagePath = row.image;
+    
+    db.run('DELETE FROM segments WHERE segment_id=?', [id], async function (err2) {
+      if (err2) return res.status(500).json({ error: 'Erro' });
+      if (this.changes > 0 && imagePath) {
+        const fullPath = path.join(UPLOAD_DIR, path.basename(imagePath));
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      }
+      await logAudit(req, { userId: req.user?.id, action: 'delete_segment', entity: 'segments', entityId: id });
+      res.json({ message: 'Excluído' });
+    });
   });
 });
 

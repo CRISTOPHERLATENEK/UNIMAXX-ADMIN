@@ -148,8 +148,6 @@ router.post('/contact', (req, res) => {
 
 router.use('/newsletter', require('./newsletter'));
 
-module.exports = router;
-
 // ── Analytics: registrar pageview ─────────────────────────────────────────────
 router.post('/track', (req, res) => {
   const { page = '/', referrer = '', session_id = '' } = req.body || {};
@@ -165,3 +163,5 @@ router.post('/track', (req, res) => {
     () => res.json({ ok: true })
   );
 });
+
+module.exports = router;

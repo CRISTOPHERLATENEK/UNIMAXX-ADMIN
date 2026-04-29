@@ -64,6 +64,35 @@ const solutionSchema = z.object({
   features: z.array(z.string().trim().max(500)).max(100, 'Máximo de 100 funcionalidades').default([]),
 });
 
+// Schemas para blocos do Page Builder
+const heroBlockSchema = z.object({
+  type: z.literal('hero'),
+  title: z.string().max(200).optional(),
+  subtitle: z.string().max(500).optional(),
+  image: z.string().max(2048).optional(),
+  visible: z.boolean().optional().default(true),
+});
+
+const textBlockSchema = z.object({
+  type: z.literal('text'),
+  content: z.string().max(50000).optional(),
+  visible: z.boolean().optional().default(true),
+});
+
+const imageBlockSchema = z.object({
+  type: z.literal('image'),
+  src: z.string().max(2048),
+  alt: z.string().max(255).optional(),
+  visible: z.boolean().optional().default(true),
+});
+
+const blockSchema = z.discriminatedUnion('type', [
+  heroBlockSchema,
+  textBlockSchema,
+  imageBlockSchema,
+  // Outros blocos podem ser adicionados aqui como z.object({ type: z.literal('...'), ... })
+]).or(z.record(z.string(), z.any())); // Fallback para outros tipos de blocos não validados rigidamente
+
 const pageSchema = z.object({
   slug: requiredString(160, 'Slug').regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug inválido'),
   title: requiredString(160, 'Título'),
@@ -72,7 +101,7 @@ const pageSchema = z.object({
   meta_title: optionalString(160),
   meta_description: optionalString(320),
   is_active: boolField(1),
-  blocks_json: z.array(z.record(z.string(), z.any())).max(200, 'Máximo de 200 blocos').default([]),
+  blocks_json: z.array(blockSchema).max(200, 'Máximo de 200 blocos').default([]),
 });
 
 const genericPageSchema = z.object({
@@ -81,7 +110,7 @@ const genericPageSchema = z.object({
   meta_title: optionalString(160),
   meta_description: optionalString(320),
   is_active: boolField(1),
-  blocks_json: z.array(z.record(z.string(), z.any())).max(200, 'Máximo de 200 blocos').default([]),
+  blocks_json: z.array(blockSchema).max(200, 'Máximo de 200 blocos').default([]),
 });
 
 const segmentSchema = z.object({

@@ -21,4 +21,7 @@ module.exports = {
   DB_PATH:      resolveFromBackend(process.env.DB_PATH    || './database.sqlite'),
   UPLOAD_DIR:   resolveFromBackend(process.env.UPLOAD_DIR || './uploads'),
   CORS_ORIGINS: (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean),
+  ACCESS_TOKEN_EXPIRES_IN: '2h',
+  REFRESH_TOKEN_EXPIRES_IN: '7d',
+  MAX_UPLOAD_SIZE: Number(process.env.MAX_UPLOAD_SIZE) || 5 * 1024 * 1024,
 };

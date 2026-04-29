@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
-const { UPLOAD_DIR } = require('../config/env');
+const { UPLOAD_DIR, MAX_UPLOAD_SIZE } = require('../config/env');
 
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: MAX_UPLOAD_SIZE },
   fileFilter: (req, file, cb) => {
     const allowed = ['image/png', 'image/jpeg', 'image/webp'];
     if (!allowed.includes(file.mimetype)) return cb(new Error('Tipo não permitido. Envie PNG/JPG/WEBP.'));
@@ -26,4 +26,4 @@ const upload = multer({
   },
 });
 
-module.exports = { upload, UPLOAD_DIR };
+module.exports = { upload, UPLOAD_DIR, MAX_UPLOAD_SIZE };

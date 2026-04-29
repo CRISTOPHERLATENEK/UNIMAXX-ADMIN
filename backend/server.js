@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -15,6 +16,7 @@ const setupHelpModule = require('./src/modules/help');
 const app = express();
 app.set('trust proxy', 1);
 app.use(compression({ threshold: 512 }));
+app.use(cookieParser());
 
 // ── Security Headers ──────────────────────────────────────────────────────
 app.use(helmet({

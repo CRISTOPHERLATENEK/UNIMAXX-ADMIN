@@ -3,6 +3,9 @@ const { db, parseArr } = require('../../db/database');
 const { validateBody, validateParams } = require('../../middleware/validate');
 const { idParamSchema, solutionSchema } = require('../../validation/admin');
 const { logAudit } = require('../../utils/audit');
+const fs = require('fs');
+const path = require('path');
+const { UPLOAD_DIR } = require('../../config/env');
 
 router.get('/', (req, res) => {
   db.all('SELECT * FROM solutions ORDER BY order_num', [], (err, rows) => {
@@ -49,11 +52,22 @@ router.put('/:id', validateParams(idParamSchema), validateBody(solutionSchema), 
 
 router.delete('/:id', validateParams(idParamSchema), (req, res) => {
   const { id } = req.validatedParams;
-  db.run('DELETE FROM solutions WHERE solution_id=?', [id], async function (err) {
-    if (err) return res.status(500).json({ error: 'Erro' });
-    if (this.changes === 0) return res.status(404).json({ error: 'Não encontrado' });
-    await logAudit(req, { userId: req.user?.id, action: 'delete_solution', entity: 'solutions', entityId: id });
-    res.json({ message: 'Excluído' });
+  
+  db.get('SELECT image FROM solutions WHERE solution_id=?', [id], (err, row) => {
+    if (err || !row) return res.status(404).json({ error: 'Não encontrado' });
+    const imagePath = row.image;
+    
+    db.run('DELETE FROM solutions WHERE solution_id=?', [id], async function (err2) {
+      if (err2) return res.status(500).json({ error: 'Erro' });
+      if (this.changes > 0 && imagePath) {
+        const fullPath = path.join(UPLOAD_DIR, path.basename(imagePath));
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      }
+      await logAudit(req, { userId: req.user?.id, action: 'delete_solution', entity: 'solutions', entityId: id });
+      res.json({ message: 'Excluído' });
+    });
   });
 });
 

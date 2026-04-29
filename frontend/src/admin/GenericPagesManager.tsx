@@ -97,7 +97,7 @@ function Editor({ initial, isNew, onSave, onBack }: {
         </div>
         <div className="flex items-center gap-2">
           {!isNew && form.slug && (
-            <a href={`/${form.slug}`} target="_blank" rel="noreferrer"
+            <a href={`/p/${form.slug}`} target="_blank" rel="noreferrer"
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium transition"
               style={{ color: '#6e6e73', background: '#f5f5f7' }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#e5e5ea'; }}

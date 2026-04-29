@@ -2,7 +2,12 @@ const { z } = require('zod');
 const { validateBody, validateParams } = require('../../middleware/validate');
 const { helpArticleSchema, helpArticleUpdateSchema, helpCategorySchema, helpImageSchema } = require('../../validation/admin');
 const { logAudit } = require('../../utils/audit');
-const { MAX_UPLOAD_SIZE } = require('../../middleware/upload');
+const { MAX_UPLOAD_SIZE } = require('../../config/env');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 module.exports = function (app, db, authenticateToken, upload) {
   const idParamSchema = z.object({ id: z.coerce.number().int().positive() });
@@ -60,7 +65,12 @@ module.exports = function (app, db, authenticateToken, upload) {
   }
 
   function sanitizeHtml(html) {
-    return html || '';
+    if (!html) return '';
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre', 'span', 'div'],
+      ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class', 'target', 'rel'],
+      ALLOW_DATA_ATTR: false,
+    });
   }
 
   // =========================
@@ -276,81 +286,62 @@ module.exports = function (app, db, authenticateToken, upload) {
   });
 
   app.delete('/api/admin/help/articles/:id', authenticateToken, validateParams(idParamSchema), (req, res) => {
-    db.run(`DELETE FROM help_articles WHERE id = ?`, [req.validatedParams.id], async function (err) {
-      if (err) return res.status(500).json({ error: 'Erro ao excluir artigo' });
-      if (this.changes === 0) return res.status(404).json({ error: 'Artigo não encontrado' });
-      await logAudit(req, { userId: req.user?.id, action: 'delete_help_article', entity: 'help_articles', entityId: req.validatedParams.id });
-      res.json({ message: 'Artigo excluído com sucesso' });
+    db.all(`SELECT image_path FROM help_images WHERE article_id = ?`, [req.validatedParams.id], (err, images) => {
+      db.run(`DELETE FROM help_articles WHERE id = ?`, [req.validatedParams.id], async function (err2) {
+        if (err2) return res.status(500).json({ error: 'Erro ao excluir artigo' });
+        if (this.changes === 0) return res.status(404).json({ error: 'Artigo não encontrado' });
+
+        const fs = require('fs');
+        const path = require('path');
+        if (images && images.length > 0) {
+          images.forEach(img => {
+            const fullPath = path.join(MAX_UPLOAD_SIZE > 0 ? require('../../config/env').UPLOAD_DIR : '', path.basename(img.image_path));
+            if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+          });
+        }
+
+        await logAudit(req, { userId: req.user?.id, action: 'delete_help_article', entity: 'help_articles', entityId: req.validatedParams.id });
+        res.json({ message: 'Artigo excluído com sucesso' });
+      });
     });
   });
 
   // =========================
   // ROTAS ADMIN - IMAGENS
   // =========================
-  app.get('/api/admin/help/articles/:articleId/images', authenticateToken, validateParams(articleIdParamSchema), (req, res) => {
-    db.all(
-      `SELECT * FROM help_images WHERE article_id = ? ORDER BY order_position ASC`,
-      [req.validatedParams.articleId],
-      (err, rows) => {
-        if (err) return res.status(500).json({ error: 'Erro ao buscar imagens' });
-        res.json(rows || []);
+  app.post('/api/admin/help/articles/:articleId/images', authenticateToken, validateParams(articleIdParamSchema), upload.single('image'), async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+
+    const imagePath = `/uploads/${req.file.filename}`;
+    const { alt_text } = req.body;
+
+    db.run(
+      `INSERT INTO help_images (article_id, image_path, alt_text, order_position)
+       VALUES (?, ?, ?, (SELECT COALESCE(MAX(order_position), 0) + 1 FROM help_images WHERE article_id = ?))`,
+      [req.validatedParams.articleId, imagePath, alt_text || '', req.validatedParams.articleId],
+      async function (err) {
+        if (err) return res.status(500).json({ error: 'Erro ao salvar imagem' });
+        await logAudit(req, { userId: req.user?.id, action: 'upload_help_image', entity: 'help_images', entityId: this.lastID, details: { article_id: req.validatedParams.articleId } });
+        res.json({ id: this.lastID, image_path: imagePath });
       }
     );
-  });
-
-  app.post('/api/admin/help/articles/:articleId/images', authenticateToken, validateParams(articleIdParamSchema), (req, res) => {
-    upload.single('image')(req, res, async (err) => {
-      if (err) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-          return res.status(413).json({ error: `Imagem muito grande. Máximo: ${Math.round(MAX_UPLOAD_SIZE / (1024 * 1024))}MB.` });
-        }
-        return res.status(400).json({ error: err.message || 'Erro no upload' });
-      }
-
-      if (!req.file) return res.status(400).json({ error: 'Nenhuma imagem enviada' });
-
-      const validated = helpImageSchema.safeParse(req.body || {});
-      if (!validated.success) {
-        return res.status(400).json({ error: validated.error.issues?.[0]?.message || 'Dados inválidos' });
-      }
-
-      const imagePath = `/uploads/${req.file.filename}`;
-      const altText = validated.data.alt_text || '';
-
-      db.run(
-        `INSERT INTO help_images (article_id, image_path, alt_text, order_position)
-         VALUES (?, ?, ?, (SELECT COALESCE(MAX(order_position), 0) + 1 FROM help_images WHERE article_id = ?))`,
-        [req.validatedParams.articleId, imagePath, altText, req.validatedParams.articleId],
-        async function (dbErr) {
-          if (dbErr) return res.status(500).json({ error: 'Erro ao salvar imagem' });
-          await logAudit(req, { userId: req.user?.id, action: 'upload_help_image', entity: 'help_images', entityId: this.lastID, details: { articleId: req.validatedParams.articleId, imagePath } });
-          res.json({ message: 'Imagem enviada com sucesso', id: this.lastID, url: imagePath });
-        }
-      );
-    });
   });
 
   app.delete('/api/admin/help/images/:id', authenticateToken, validateParams(idParamSchema), (req, res) => {
-    db.run(`DELETE FROM help_images WHERE id = ?`, [req.validatedParams.id], async function (err) {
-      if (err) return res.status(500).json({ error: 'Erro ao excluir imagem' });
-      if (this.changes === 0) return res.status(404).json({ error: 'Imagem não encontrada' });
-      await logAudit(req, { userId: req.user?.id, action: 'delete_help_image', entity: 'help_images', entityId: req.validatedParams.id });
-      res.json({ message: 'Imagem excluída com sucesso' });
+    db.get(`SELECT image_path FROM help_images WHERE id = ?`, [req.validatedParams.id], (err, row) => {
+      if (err || !row) return res.status(404).json({ error: 'Imagem não encontrada' });
+
+      db.run(`DELETE FROM help_images WHERE id = ?`, [req.validatedParams.id], async function (err2) {
+        if (err2) return res.status(500).json({ error: 'Erro ao excluir imagem' });
+        if (this.changes > 0) {
+          const fs = require('fs');
+          const path = require('path');
+          const fullPath = path.join(require('../../config/env').UPLOAD_DIR, path.basename(row.image_path));
+          if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+        }
+        await logAudit(req, { userId: req.user?.id, action: 'delete_help_image', entity: 'help_images', entityId: req.validatedParams.id });
+        res.json({ message: 'Imagem excluída com sucesso' });
+      });
     });
-  });
-
-  app.put('/api/admin/help/images/:id', authenticateToken, validateParams(idParamSchema), validateBody(helpImageSchema), (req, res) => {
-    const { order_position = 0, alt_text = '' } = req.validatedBody;
-
-    db.run(
-      `UPDATE help_images SET order_position = ?, alt_text = ? WHERE id = ?`,
-      [order_position, alt_text, req.validatedParams.id],
-      async function (err) {
-        if (err) return res.status(500).json({ error: 'Erro ao atualizar imagem' });
-        if (this.changes === 0) return res.status(404).json({ error: 'Imagem não encontrada' });
-        await logAudit(req, { userId: req.user?.id, action: 'update_help_image', entity: 'help_images', entityId: req.validatedParams.id, details: { alt_text, order_position } });
-        res.json({ message: 'Imagem atualizada com sucesso' });
-      }
-    );
   });
 };

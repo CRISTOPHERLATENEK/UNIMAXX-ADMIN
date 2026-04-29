@@ -1,5 +1,8 @@
 const router = require('express').Router();
 const { db } = require('../../db/database');
+const fs = require('fs');
+const path = require('path');
+const { UPLOAD_DIR } = require('../../config/env');
 
 // CREATE
 router.post('/', (req, res) => {
@@ -57,13 +60,25 @@ router.put('/:id', (req, res) => {
   );
 });
 
-// DELETE — remove de verdade
+// DELETE — remove de verdade e exclui arquivo físico
 router.delete('/:id', (req, res) => {
   const id = Number(req.params.id);
-  db.run('DELETE FROM banners WHERE id=?', [id], function (err) {
-    if (err) return res.status(500).json({ error: 'Erro ao excluir banner', detail: err.message });
-    if (this.changes === 0) return res.status(404).json({ error: 'Banner não encontrado' });
-    res.json({ ok: true });
+  
+  db.get('SELECT image FROM banners WHERE id=?', [id], (err, row) => {
+    if (err || !row) return res.status(404).json({ error: 'Banner não encontrado' });
+    
+    const imagePath = row.image;
+    
+    db.run('DELETE FROM banners WHERE id=?', [id], function (err2) {
+      if (err2) return res.status(500).json({ error: 'Erro ao excluir banner', detail: err2.message });
+      if (this.changes > 0 && imagePath) {
+        const fullPath = path.join(UPLOAD_DIR, path.basename(imagePath));
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      }
+      res.json({ ok: true });
+    });
   });
 });
 

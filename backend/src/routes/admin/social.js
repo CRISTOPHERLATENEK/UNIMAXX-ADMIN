@@ -3,6 +3,17 @@ const { db } = require('../../db/database');
 const { validateBody, validateParams } = require('../../middleware/validate');
 const { clientLogoSchema, testimonialSchema, partnerSchema, numericIdParamSchema } = require('../../validation/admin');
 const { logAudit } = require('../../utils/audit');
+const fs = require('fs');
+const path = require('path');
+const { UPLOAD_DIR } = require('../../config/env');
+
+function deletePhysicalFile(imagePath) {
+  if (!imagePath) return;
+  const fullPath = path.join(UPLOAD_DIR, path.basename(imagePath));
+  if (fs.existsSync(fullPath)) {
+    fs.unlinkSync(fullPath);
+  }
+}
 
 // ── Client Logos ──────────────────────────────────────────────────────────
 router.get('/client-logos', (req, res) => {
@@ -35,11 +46,15 @@ router.put('/client-logos/:id', validateParams(numericIdParamSchema), validateBo
   );
 });
 router.delete('/client-logos/:id', validateParams(numericIdParamSchema), (req, res) => {
-  db.run('DELETE FROM client_logos WHERE id=?', [req.validatedParams.id], async function (err) {
-    if (err) return res.status(500).json({ error: 'Erro' });
-    if (this.changes === 0) return res.status(404).json({ error: 'Logo não encontrado' });
-    await logAudit(req, { userId: req.user?.id, action: 'delete_client_logo', entity: 'client_logos', entityId: req.validatedParams.id });
-    res.json({ ok: true });
+  db.get('SELECT image FROM client_logos WHERE id=?', [req.validatedParams.id], (err, row) => {
+    if (err || !row) return res.status(404).json({ error: 'Logo não encontrado' });
+    const imagePath = row.image;
+    db.run('DELETE FROM client_logos WHERE id=?', [req.validatedParams.id], async function (err2) {
+      if (err2) return res.status(500).json({ error: 'Erro' });
+      if (this.changes > 0) deletePhysicalFile(imagePath);
+      await logAudit(req, { userId: req.user?.id, action: 'delete_client_logo', entity: 'client_logos', entityId: req.validatedParams.id });
+      res.json({ ok: true });
+    });
   });
 });
 
@@ -74,11 +89,15 @@ router.put('/testimonials/:id', validateParams(numericIdParamSchema), validateBo
   );
 });
 router.delete('/testimonials/:id', validateParams(numericIdParamSchema), (req, res) => {
-  db.run('DELETE FROM testimonials WHERE id=?', [req.validatedParams.id], async function (err) {
-    if (err) return res.status(500).json({ error: 'Erro' });
-    if (this.changes === 0) return res.status(404).json({ error: 'Depoimento não encontrado' });
-    await logAudit(req, { userId: req.user?.id, action: 'delete_testimonial', entity: 'testimonials', entityId: req.validatedParams.id });
-    res.json({ ok: true });
+  db.get('SELECT author_photo FROM testimonials WHERE id=?', [req.validatedParams.id], (err, row) => {
+    if (err || !row) return res.status(404).json({ error: 'Depoimento não encontrado' });
+    const imagePath = row.author_photo;
+    db.run('DELETE FROM testimonials WHERE id=?', [req.validatedParams.id], async function (err2) {
+      if (err2) return res.status(500).json({ error: 'Erro' });
+      if (this.changes > 0) deletePhysicalFile(imagePath);
+      await logAudit(req, { userId: req.user?.id, action: 'delete_testimonial', entity: 'testimonials', entityId: req.validatedParams.id });
+      res.json({ ok: true });
+    });
   });
 });
 
@@ -113,11 +132,15 @@ router.put('/partners/:id', validateParams(numericIdParamSchema), validateBody(p
   );
 });
 router.delete('/partners/:id', validateParams(numericIdParamSchema), (req, res) => {
-  db.run('DELETE FROM partners WHERE id=?', [req.validatedParams.id], async function (err) {
-    if (err) return res.status(500).json({ error: 'Erro' });
-    if (this.changes === 0) return res.status(404).json({ error: 'Parceiro não encontrado' });
-    await logAudit(req, { userId: req.user?.id, action: 'delete_partner', entity: 'partners', entityId: req.validatedParams.id });
-    res.json({ ok: true });
+  db.get('SELECT image FROM partners WHERE id=?', [req.validatedParams.id], (err, row) => {
+    if (err || !row) return res.status(404).json({ error: 'Parceiro não encontrado' });
+    const imagePath = row.image;
+    db.run('DELETE FROM partners WHERE id=?', [req.validatedParams.id], async function (err2) {
+      if (err2) return res.status(500).json({ error: 'Erro' });
+      if (this.changes > 0) deletePhysicalFile(imagePath);
+      await logAudit(req, { userId: req.user?.id, action: 'delete_partner', entity: 'partners', entityId: req.validatedParams.id });
+      res.json({ ok: true });
+    });
   });
 });
 
