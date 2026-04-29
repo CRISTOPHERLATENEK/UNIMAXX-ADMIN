@@ -275,35 +275,39 @@ function Editor({ initial, isNew, onSave, onBack }: {
         ))}
       </div>
 
-      {/* Scrollable form */}
+      {/* ═══ TAB: CONSTRUTOR — ocupa 100% da área disponível ═══ */}
+      {tab === 'construtor' && (
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          {/* Header do construtor */}
+          <div className="px-5 py-3 border-b flex items-center justify-between flex-shrink-0"
+            style={{ borderColor: 'rgba(0,0,0,.07)', background: '#fff' }}>
+            <div>
+              <p className="font-bold text-sm text-[#1d1d1f]">Construtor de página</p>
+              <p className="text-[11px]" style={{ color: '#98989d' }}>
+                Monte a página bloco a bloco — cada bloco é uma seção independente.
+                {form.pg_blocks.length > 0 && ` · ${form.pg_blocks.filter(b => b.visible).length}/${form.pg_blocks.length} visíveis`}
+              </p>
+            </div>
+            {form.pg_blocks.length > 0 && !form.pg_is_active && (
+              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                Página inativa
+              </span>
+            )}
+          </div>
+          {/* PageBuilder esticado para preencher todo o espaço restante */}
+          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+            <PageBuilder
+              blocks={form.pg_blocks}
+              onChange={blocks => set('pg_blocks', blocks)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Todas as outras abas — layout estreito/scrollável normal */}
+      {tab !== 'construtor' && (
       <div className="flex-1 overflow-y-auto" style={{ background: '#fafafa' }}>
         <div className="max-w-2xl mx-auto p-5 pb-16 space-y-4">
-
-          {/* ═══ TAB: CONSTRUTOR ═══ */}
-          {tab === 'construtor' && (
-            <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
-              <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: 'rgba(0,0,0,.06)', background: 'rgba(0,0,0,.01)' }}>
-                <div>
-                  <p className="font-bold text-sm text-[#1d1d1f]">Construtor de página</p>
-                  <p className="text-[11px]" style={{ color: '#98989d' }}>
-                    Monte a página bloco a bloco — cada bloco é uma seção independente.
-                    {form.pg_blocks.length > 0 && ` · ${form.pg_blocks.filter(b => b.visible).length}/${form.pg_blocks.length} visíveis`}
-                  </p>
-                </div>
-                {form.pg_blocks.length > 0 && !form.pg_is_active && (
-                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
-                    Página inativa
-                  </span>
-                )}
-              </div>
-              <div className="p-4">
-                <PageBuilder
-                  blocks={form.pg_blocks}
-                  onChange={blocks => set('pg_blocks', blocks)}
-                />
-              </div>
-            </div>
-          )}
 
           {/* ═══ TAB: CARD ═══ */}
           {tab === 'card' && (
@@ -466,6 +470,7 @@ function Editor({ initial, isNew, onSave, onBack }: {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

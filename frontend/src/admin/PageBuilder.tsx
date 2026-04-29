@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ANIM_BG_OPTIONS } from '@/components/AnimatedBgLayer';
 import type { AnimatedBgType } from '@/components/AnimatedBgLayer';
+import { BlockRenderer, DEFAULT_T } from '@/pages/BlockRenderer';
 import {
   Plus, X, ChevronUp, ChevronDown, Eye, EyeOff,
   GripVertical, Layers,
@@ -50,6 +51,339 @@ const HERO_LAYOUTS = [
   { id: 'magazine', label: 'Magazine', desc: 'Imagem de fundo full-bleed com overlay' },
   { id: 'cinematic', label: 'Cinematic', desc: 'Estilo banner/game — imagem + título à esquerda + botão vídeo' },
   { id: 'oxpay', label: 'Oxpay', desc: 'Fundo escuro premium com orbes de luz e grid sutil' },
+];
+
+
+// ── Block Patterns ─────────────────────────────────────────────────────────────
+
+type PatternCategory = 'page' | 'section' | 'quick';
+
+interface BlockPattern {
+  id: string;
+  label: string;
+  description: string;
+  category: PatternCategory;
+  emoji: string;
+  color: string;
+  tags: string[];
+  blocks: PageBlock[];
+}
+
+function pid(type: string) {
+  return `${type}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+const BLOCK_PATTERNS: BlockPattern[] = [
+  // ─────────────────────────────────────────────────────
+  // PÁGINAS COMPLETAS
+  // ─────────────────────────────────────────────────────
+  {
+    id: 'saas-landing',
+    label: 'SaaS Landing Page',
+    description: 'Página completa para produto SaaS — Hero, Funcionalidades, Estatísticas, Como Funciona, Depoimento e CTA.',
+    category: 'page',
+    emoji: '🚀',
+    color: '#6366f1',
+    tags: ['saas', 'produto', 'completa'],
+    blocks: [
+      { id: pid('hero'), type: 'hero', visible: true, blockSpacing: 'spacious', blockRadius: 'large', heroLayout: 'centered', colorTheme: 'brand', badge: 'NOVO', title: 'A plataforma que transforma o seu negócio', subtitle: 'Automatize processos, aumente conversões e escale com confiança.', description: '', ctaLabel: 'Começar grátis', ctaLink: '/cadastro' },
+      {
+        id: pid('features'), type: 'features', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', featuresLayout: 'split_dark', title: 'Tudo que você precisa em uma plataforma', featuresLabel: 'FUNCIONALIDADES', featuresAccent: '#f97316', items: [
+          { icon: '⚡', title: 'Automação inteligente', description: 'Configure regras e deixe a plataforma trabalhar por você 24/7.' },
+          { icon: '📊', title: 'Analytics em tempo real', description: 'Dashboards completos para decisões rápidas e baseadas em dados.' },
+          { icon: '🔒', title: 'Segurança enterprise', description: 'Criptografia ponta a ponta e conformidade com LGPD e ISO 27001.' },
+          { icon: '🌐', title: 'Integrações nativas', description: 'Conecte com mais de 200 ferramentas que você já usa.' },
+          { icon: '📱', title: 'Acesso mobile', description: 'App para iOS e Android com todas as funcionalidades.' },
+          { icon: '🤝', title: 'Suporte dedicado', description: 'Time especializado disponível via chat, e-mail e telefone.' },
+        ]
+      },
+      {
+        id: pid('stats'), type: 'stats', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'light', stats: [
+          { value: '+12.000', label: 'Empresas ativas' },
+          { value: '99,9%', label: 'Uptime garantido' },
+          { value: '3x', label: 'Mais produtividade' },
+          { value: '24/7', label: 'Suporte disponível' },
+        ]
+      },
+      {
+        id: pid('steps'), type: 'steps', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Como funciona', steps: [
+          { icon: '📝', title: 'Crie sua conta', description: 'Cadastre-se em menos de 2 minutos, sem cartão de crédito.' },
+          { icon: '⚙️', title: 'Configure sua operação', description: 'Conecte suas ferramentas e personalize os fluxos de trabalho.' },
+          { icon: '🚀', title: 'Comece a crescer', description: 'Acompanhe os resultados em tempo real e escale com segurança.' },
+        ]
+      },
+      { id: pid('testimonial'), type: 'testimonial', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'dark', quote: 'Depois de implementar a plataforma, nossa equipe ganhou 15 horas semanais e as vendas cresceram 40% em 3 meses.', author: 'Mariana Costa', role: 'CEO — TechScale Ltda.' },
+      { id: pid('cta'), type: 'cta', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'brand', title: 'Pronto para transformar seu negócio?', description: 'Teste gratuitamente por 14 dias. Sem cartão de crédito.', ctaLabel: 'Criar conta grátis', ctaLink: '/cadastro' },
+    ],
+  },
+  {
+    id: 'solution-page',
+    label: 'Página de Solução',
+    description: 'Hero dividido + imagem com texto + benefícios + integrações + FAQ + CTA. Ideal para apresentar um produto específico.',
+    category: 'page',
+    emoji: '💡',
+    color: '#10b981',
+    tags: ['solução', 'produto', 'completa'],
+    blocks: [
+      { id: pid('hero'), type: 'hero', visible: true, blockSpacing: 'spacious', blockRadius: 'large', heroLayout: 'split', colorTheme: 'dark', badge: 'SOLUÇÃO', title: 'Gerencie tudo em um só lugar', subtitle: 'Uma plataforma completa para empresas que querem crescer sem complicação.', description: '', ctaLabel: 'Ver demonstração', ctaLink: '/demo' },
+      { id: pid('image_text'), type: 'image_text', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', imagePosition: 'right', title: 'Feito para quem não tem tempo a perder', description: 'Nossa solução elimina processos manuais e centraliza toda a operação em um painel intuitivo. Do primeiro acesso ao resultado, a curva de aprendizado é mínima.', imageUrl: '', imageAlt: 'Interface da plataforma' },
+      {
+        id: pid('benefits'), type: 'benefits', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', benefitsLayout: 'grid_cards', title: 'Por que escolher nossa solução', items: [
+
+        ]
+      },
+      { id: pid('integrations'), type: 'integrations', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'light', title: 'Integra com as ferramentas que você já usa', items: ['Salesforce', 'HubSpot', 'Slack', 'WhatsApp', 'Google Sheets', 'Zapier', 'Stripe', 'Shopify', 'Totvs', 'SAP'] },
+      {
+        id: pid('faq'), type: 'faq', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Perguntas Frequentes', faq: [
+          { question: 'Preciso de conhecimento técnico para usar?', answer: 'Não. A plataforma foi criada para usuários não técnicos. Se você sabe usar um e-mail, consegue usar nossa ferramenta.' },
+
+        ]
+      },
+      { id: pid('cta'), type: 'cta', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'brand', title: 'Comece hoje mesmo', description: '14 dias grátis, sem cartão de crédito. Cancele quando quiser.', ctaLabel: 'Testar gratuitamente', ctaLink: '/cadastro' },
+    ],
+  },
+  {
+    id: 'institutional',
+    label: 'Página Institucional',
+    description: 'Apresentação da empresa com hero impactante, texto sobre missão, estatísticas e depoimento.',
+    category: 'page',
+    emoji: '🏢',
+    color: '#3b82f6',
+    tags: ['institucional', 'empresa', 'sobre'],
+    blocks: [
+      { id: pid('hero'), type: 'hero', visible: true, blockSpacing: 'spacious', blockRadius: 'large', heroLayout: 'magazine', colorTheme: 'dark', badge: 'DESDE 2018', title: 'Transformando negócios através da tecnologia', subtitle: 'Somos uma empresa brasileira de tecnologia com foco em soluções práticas e resultados reais.', description: '', ctaLabel: 'Conheça nossa história', ctaLink: '/sobre' },
+      { id: pid('text'), type: 'text', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Nossa missão', description: 'Acreditamos que tecnologia precisa ser acessível, intuitiva e capaz de gerar resultados reais. Por isso desenvolvemos soluções que unem inovação com simplicidade, ajudando empresas de todos os tamanhos a crescerem com inteligência.' },
+      {
+        id: pid('stats'), type: 'stats', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'brand', stats: [
+          { value: '6 anos', label: 'No mercado' },
+          { value: '+500', label: 'Clientes ativos' },
+          { value: '4 países', label: 'Presença global' },
+          { value: 'R$ 2bi', label: 'Processados' },
+        ]
+      },
+      { id: pid('image_text'), type: 'image_text', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', imagePosition: 'left', title: 'Um time que vive o que entrega', description: 'Nosso time é formado por especialistas em tecnologia, negócios e experiência do usuário. Trabalhamos lado a lado com nossos clientes para entender cada detalhe da operação e entregar soluções que realmente funcionam.', imageUrl: '', imageAlt: 'Equipe Maxx' },
+      { id: pid('testimonial'), type: 'testimonial', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'dark', quote: 'Desde que adotamos a plataforma, nossa operação ficou muito mais organizada e conseguimos escalar sem contratar mais pessoas.', author: 'Carlos Mendes', role: 'Diretor de Operações — LogiTech S.A.' },
+      { id: pid('cta'), type: 'cta', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'brand', title: 'Vamos conversar?', description: 'Conte como é a sua operação e veja como podemos ajudar.', ctaLabel: 'Falar com especialista', ctaLink: '/contato' },
+    ],
+  },
+  {
+    id: 'technical-landing',
+    label: 'Landing Técnica / Dark',
+    description: 'Hero dark glow + funcionalidades técnicas + passo a passo + vídeo + FAQ. Para produtos voltados a devs ou times técnicos.',
+    category: 'page',
+    emoji: '🔧',
+    color: '#8b5cf6',
+    tags: ['técnico', 'dev', 'dark', 'completa'],
+    blocks: [
+      { id: pid('hero'), type: 'hero', visible: true, blockSpacing: 'spacious', blockRadius: 'large', heroLayout: 'dark_glow', colorTheme: 'dark', badge: 'API FIRST', title: 'Infraestrutura de pagamentos para desenvolvedores', subtitle: 'SDK robusto, webhooks em tempo real e documentação que você vai adorar.', description: '', ctaLabel: 'Ver documentação', ctaLink: '/docs' },
+      {
+        id: pid('features'), type: 'features', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', featuresLayout: 'dark_cards', title: 'Arquitetado para escala', featuresLabel: 'CAPACIDADES', featuresAccent: '#8b5cf6', items: [
+          { icon: '⚡', title: 'Latência < 50ms', description: 'Infraestrutura distribuída em múltiplas regiões com roteamento inteligente.' },
+          { icon: '🔐', title: 'OAuth 2.0 + JWT', description: 'Autenticação enterprise com suporte a SSO e MFA nativo.' },
+          { icon: '🔄', title: 'Webhooks confiáveis', description: 'Entrega garantida com retry automático e dead-letter queue.' },
+          { icon: '📦', title: 'SDKs oficiais', description: 'Node.js, Python, PHP, Go, Ruby e Java com suporte ativo.' },
+          { icon: '🧪', title: 'Sandbox completo', description: 'Ambiente de testes idêntico à produção para desenvolvimento seguro.' },
+          { icon: '📡', title: 'Streaming de eventos', description: 'Kafka-compatible event streaming para arquiteturas event-driven.' },
+        ]
+      },
+      {
+        id: pid('steps'), type: 'steps', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Integre em minutos', steps: [
+          { icon: '📦', title: 'Instale o SDK', description: 'npm install @plataforma/sdk ou via pip, composer e gem.' },
+          { icon: '🔑', title: 'Configure as credenciais', description: 'Obtenha suas chaves de API no dashboard e configure o ambiente.' },
+          { icon: '🚀', title: 'Faça sua primeira chamada', description: 'Execute o exemplo de código e veja o resultado em segundos.' },
+        ]
+      },
+      { id: pid('video'), type: 'video', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'dark', title: 'Veja como é simples integrar', videoUrl: '' },
+      {
+        id: pid('faq'), type: 'faq', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Dúvidas técnicas comuns', faq: [
+          { question: 'Qual o SLA de disponibilidade?', answer: '99,99% de uptime garantido em contrato, com créditos automáticos em caso de violação.' },
+          { question: 'A API tem versionamento?', answer: 'Sim. Mantemos suporte às últimas 3 versões principais, com avisos de depreciação com 12 meses de antecedência.' },
+          { question: 'Como funciona o rate limiting?', answer: 'Por padrão, 1.000 req/min por chave de API. Limites customizados disponíveis nos planos Enterprise.' },
+        ]
+      },
+      { id: pid('cta'), type: 'cta', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', title: 'Comece a construir agora', description: 'Acesso gratuito ao sandbox. Sem cartão de crédito.', ctaLabel: 'Criar conta de dev', ctaLink: '/dev/signup' },
+    ],
+  },
+
+  // ─────────────────────────────────────────────────────
+  // SEÇÕES (2-4 blocks)
+  // ─────────────────────────────────────────────────────
+  {
+    id: 'hero-cta',
+    label: 'Hero + CTA rápido',
+    description: 'Cabeçalho impactante seguido de chamada para ação. Ótimo para início de seções importantes.',
+    category: 'section',
+    emoji: '📣',
+    color: '#f97316',
+    tags: ['hero', 'cta', 'conversão'],
+    blocks: [
+      { id: pid('hero'), type: 'hero', visible: true, blockSpacing: 'spacious', blockRadius: 'large', heroLayout: 'centered', colorTheme: 'brand', badge: '', title: 'Título principal da sua página', subtitle: 'Uma frase que resume o valor que você entrega ao cliente.', description: '', ctaLabel: 'Começar agora', ctaLink: '/contato' },
+      { id: pid('cta'), type: 'cta', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'dark', title: 'Não perca mais tempo', description: 'Agende uma demonstração e veja os resultados na prática.', ctaLabel: 'Agendar demo', ctaLink: '/demo' },
+    ],
+  },
+  {
+    id: 'social-proof',
+    label: 'Prova Social',
+    description: 'Estatísticas de impacto + depoimento de cliente. Aumenta a credibilidade da página.',
+    category: 'section',
+    emoji: '⭐',
+    color: '#f59e0b',
+    tags: ['stats', 'depoimento', 'credibilidade'],
+    blocks: [
+      {
+        id: pid('stats'), type: 'stats', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'brand', stats: [
+          { value: '+10.000', label: 'Clientes satisfeitos' },
+          { value: '4,9/5', label: 'Nota média' },
+          { value: '92%', label: 'Taxa de renovação' },
+          { value: '< 2h', label: 'Tempo médio de resposta' },
+        ]
+      },
+      { id: pid('testimonial'), type: 'testimonial', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', quote: 'O melhor investimento que fizemos para nossa operação. O retorno veio muito mais rápido do que esperávamos.', author: 'Ana Lúcia Ferreira', role: 'Gerente de Operações — Grupo Expansão' },
+    ],
+  },
+  {
+    id: 'how-it-works',
+    label: 'Como Funciona + Integrações',
+    description: 'Passo a passo numerado + lista de integrações compatíveis. Ideal para páginas de produto.',
+    category: 'section',
+    emoji: '🔢',
+    color: '#3b82f6',
+    tags: ['steps', 'integrações', 'processo'],
+    blocks: [
+      {
+        id: pid('steps'), type: 'steps', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Em 3 passos você já está operando', steps: [
+          { icon: '📋', title: 'Cadastre-se', description: 'Crie sua conta gratuitamente e configure seu perfil em minutos.' },
+          { icon: '🔗', title: 'Conecte suas ferramentas', description: 'Integre com os sistemas que você já usa com poucos cliques.' },
+          { icon: '📈', title: 'Acompanhe os resultados', description: 'Monitore indicadores em tempo real e tome decisões com dados.' },
+        ]
+      },
+      { id: pid('integrations'), type: 'integrations', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'light', title: 'Compatível com seu ecossistema', items: ['Google Workspace', 'Microsoft 365', 'Slack', 'WhatsApp Business', 'Shopify', 'WooCommerce', 'Stripe', 'PagSeguro', 'Bling', 'Omie'] },
+    ],
+  },
+  {
+    id: 'faq-cta',
+    label: 'FAQ + CTA Final',
+    description: 'Perguntas frequentes com acordeão + chamada para ação final. Perfeito para o fim da página.',
+    category: 'section',
+    emoji: '❓',
+    color: '#ec4899',
+    tags: ['faq', 'cta', 'conversão'],
+    blocks: [
+      {
+        id: pid('faq'), type: 'faq', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', title: 'Perguntas Frequentes', faq: [
+          { question: 'Como funciona o período de teste?', answer: 'Você tem 14 dias com acesso completo à plataforma, sem limitações e sem informar cartão de crédito.' },
+          { question: 'Posso cancelar a qualquer momento?', answer: 'Sim. Sem fidelidade e sem multa. Você cancela pelo painel com um clique.' },
+          { question: 'Há suporte durante a implantação?', answer: 'Sim. Nosso time de sucesso do cliente acompanha todo o processo de onboarding sem custo adicional.' },
+          { question: 'Os dados ficam armazenados no Brasil?', answer: 'Sim. Todos os dados são armazenados em servidores localizados no Brasil, em conformidade com a LGPD.' },
+        ]
+      },
+      { id: pid('cta'), type: 'cta', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'brand', title: 'Ainda tem dúvidas?', description: 'Fale com nosso time. Estamos aqui para ajudar você a tomar a melhor decisão.', ctaLabel: 'Falar com especialista', ctaLink: '/contato' },
+    ],
+  },
+  {
+    id: 'benefits-features',
+    label: 'Benefícios + Funcionalidades',
+    description: 'Grid de benefícios escuro + lista de funcionalidades. Dupla poderosa para páginas de produto.',
+    category: 'section',
+    emoji: '💎',
+    color: '#10b981',
+    tags: ['benefits', 'features', 'produto'],
+    blocks: [
+      {
+        id: pid('benefits'), type: 'benefits', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', benefitsLayout: 'grid_cards', title: 'O que você ganha', items: [
+
+        ]
+      },
+      {
+        id: pid('features'), type: 'features', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', featuresLayout: 'checklist', title: 'O que está incluído', featuresLabel: 'TUDO QUE VOCÊ PRECISA', featuresAccent: '#10b981', items: [
+
+        ]
+      },
+    ],
+  },
+  {
+    id: 'image-text-duo',
+    label: 'Imagem + Texto (2 lados)',
+    description: 'Dois blocos de imagem com texto alternados — um à direita e um à esquerda. Conta uma história visualmente.',
+    category: 'section',
+    emoji: '🖼️',
+    color: '#f97316',
+    tags: ['imagem', 'texto', 'storytelling'],
+    blocks: [
+      { id: pid('image_text'), type: 'image_text', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'light', imagePosition: 'right', title: 'Simplifique sua operação', description: 'Centralize todas as informações do seu negócio em um único painel. Chega de planilhas espalhadas e sistemas que não conversam entre si.', imageUrl: '', imageAlt: '' },
+      { id: pid('image_text'), type: 'image_text', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', imagePosition: 'left', title: 'Tome decisões com dados reais', description: 'Relatórios automáticos, indicadores em tempo real e alertas inteligentes. Você tem tudo que precisa para liderar com segurança.', imageUrl: '', imageAlt: '' },
+    ],
+  },
+
+  // ─────────────────────────────────────────────────────
+  // INÍCIO RÁPIDO (blocos únicos pré-configurados)
+  // ─────────────────────────────────────────────────────
+  {
+    id: 'quick-hero-split',
+    label: 'Hero Dividido',
+    description: 'Hero com layout split — texto à esquerda, imagem à direita.',
+    category: 'quick',
+    emoji: '◧',
+    color: '#6366f1',
+    tags: ['hero', 'split'],
+    blocks: [
+      { id: pid('hero'), type: 'hero', visible: true, blockSpacing: 'spacious', blockRadius: 'large', heroLayout: 'split', colorTheme: 'dark', badge: '', title: 'Seu título principal aqui', subtitle: 'Subtítulo que complementa a proposta de valor.', description: '', ctaLabel: 'Saiba mais', ctaLink: '/contato' },
+    ],
+  },
+  {
+    id: 'quick-hero-dark',
+    label: 'Hero Dark Glow',
+    description: 'Hero premium com fundo preto e glow neon colorido.',
+    category: 'quick',
+    emoji: '🌑',
+    color: '#1e1e2e',
+    tags: ['hero', 'dark', 'premium'],
+    blocks: [
+      { id: pid('hero'), type: 'hero', visible: true, blockSpacing: 'spacious', blockRadius: 'large', heroLayout: 'dark_glow', colorTheme: 'dark', badge: 'NOVO', title: 'Próximo nível começa aqui', subtitle: 'Tecnologia de ponta para quem não aceita menos que o melhor.', description: '', ctaLabel: 'Explorar', ctaLink: '/explorar' },
+    ],
+  },
+  {
+    id: 'quick-stats-brand',
+    label: 'Estatísticas (cor tema)',
+    description: 'Bloco de números de impacto com fundo na cor principal da marca.',
+    category: 'quick',
+    emoji: '📊',
+    color: '#f97316',
+    tags: ['stats', 'números', 'impacto'],
+    blocks: [
+      {
+        id: pid('stats'), type: 'stats', visible: true, blockSpacing: 'normal', blockRadius: 'large', colorTheme: 'brand', stats: [
+          { value: '0', label: 'Métrica 1' },
+          { value: '0', label: 'Métrica 2' },
+          { value: '0', label: 'Métrica 3' },
+        ]
+      },
+    ],
+  },
+  {
+    id: 'quick-cta-dark',
+    label: 'CTA Escuro',
+    description: 'Chamada para ação com fundo escuro e botão em destaque.',
+    category: 'quick',
+    emoji: '📣',
+    color: '#1e293b',
+    tags: ['cta', 'dark', 'conversão'],
+    blocks: [
+      { id: pid('cta'), type: 'cta', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', title: 'Pronto para começar?', description: 'Entre em contato e descubra como podemos ajudar o seu negócio.', ctaLabel: 'Falar agora', ctaLink: '/contato' },
+    ],
+  },
+  {
+    id: 'quick-testimonial',
+    label: 'Depoimento em destaque',
+    description: 'Citação de cliente com fundo escuro para máximo impacto.',
+    category: 'quick',
+    emoji: '💬',
+    color: '#8b5cf6',
+    tags: ['depoimento', 'credibilidade'],
+    blocks: [
+      { id: pid('testimonial'), type: 'testimonial', visible: true, blockSpacing: 'spacious', blockRadius: 'large', colorTheme: 'dark', quote: 'Escreva aqui o depoimento do seu cliente — use aspas e mantenha autêntico.', author: 'Nome do Cliente', role: 'Cargo — Empresa' },
+    ],
+  },
 ];
 
 function makeBlock(type: BlockType): PageBlock {
@@ -1168,25 +1502,277 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'hero') return <HeroEditor block={block} onChange={onChange} />;
 
-  // Fundo do bloco — compartilhado
-  const ThemePicker = () => (
-    <div>
-      <FL>Fundo do bloco</FL>
-      <div className="flex gap-2">
-        {[
-          { v: 'light' as const, label: 'Claro', bg: '#f5f5f7', fg: '#1d1d1f', border: 'rgba(0,0,0,.08)' },
-          { v: 'dark' as const, label: 'Escuro', bg: '#0a0a0c', fg: '#fff', border: 'transparent' },
-          { v: 'brand' as const, label: 'Cor tema', bg: '#f97316', fg: '#fff', border: 'transparent' },
-        ].map(o => (
-          <button key={o.v} onClick={() => set('colorTheme', o.v)}
-            className="flex-1 h-8 rounded-xl text-[11px] font-bold border-2 transition"
-            style={{ background: o.bg, color: o.fg, borderColor: block.colorTheme === o.v ? '#f97316' : o.border }}>
-            {o.label}
-          </button>
-        ))}
+  // ── Aparência completa (fundo + forma + espaçamento) ──────────────────────
+  const AppearanceControls = () => {
+    const [openSection, setOpenSection] = React.useState<'bg' | 'shape' | 'spacing' | null>('bg');
+    const toggle = (s: 'bg' | 'shape' | 'spacing') => setOpenSection(openSection === s ? null : s);
+
+    const bgMode = block.continuousBgMode || 'none';
+    const bgType = block.continuousBgType || 'gradient';
+    const shapeTop = block.sectionShapeTop || 'none';
+    const shapeBottom = block.sectionShapeBottom || 'none';
+    const shapeColor = block.sectionShapeColor || '#ffffff';
+
+    const SHAPE_OPTIONS = [
+      { v: 'none', label: 'Nenhuma', svg: null },
+      { v: 'wave', label: 'Onda', svg: 'M0,60 C15,40 35,80 50,60 C65,40 85,80 100,60 L100,0 L0,0 Z' },
+      { v: 'wave-soft', label: 'Onda suave', svg: 'M0,70 C25,50 75,90 100,70 L100,0 L0,0 Z' },
+      { v: 'diagonal-right', label: 'Diagonal →', svg: 'M0,0 L100,0 L100,30 L0,100 Z' },
+      { v: 'diagonal-left', label: 'Diagonal ←', svg: 'M0,30 L100,0 L100,0 L0,0 Z' },
+    ] as const;
+
+    const AccordionHeader = ({ id, label, emoji, active }: { id: 'bg' | 'shape' | 'spacing'; label: string; emoji: string; active: boolean }) => (
+      <button onClick={() => toggle(id)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '9px 12px', borderRadius: active ? '10px 10px 0 0' : 10,
+          background: active ? '#f97316' : '#f5f5f7',
+          border: `1.5px solid ${active ? '#f97316' : 'rgba(0,0,0,.08)'}`,
+          cursor: 'pointer', marginBottom: active ? 0 : 4,
+          borderBottom: active ? 'none' : undefined,
+          transition: 'all .15s',
+        }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ fontSize: 14 }}>{emoji}</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: active ? '#fff' : '#1d1d1f' }}>{label}</span>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={active ? '#fff' : '#8e8e93'} strokeWidth="2.5"
+          style={{ transform: active ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+    );
+
+    const AccordionBody = ({ children }: { children: React.ReactNode }) => (
+      <div style={{ background: '#fff', border: '1.5px solid #f97316', borderTop: 'none', borderRadius: '0 0 10px 10px', padding: '12px 12px 14px', marginBottom: 4 }}>
+        {children}
       </div>
-    </div>
-  );
+    );
+
+    return (
+      <div style={{ marginBottom: 4 }}>
+        <SectionDivider label="Aparência" />
+
+        {/* ── FUNDO ── */}
+        <AccordionHeader id="bg" label="Fundo da seção" emoji="🎨" active={openSection === 'bg'} />
+        {openSection === 'bg' && (
+          <AccordionBody>
+            {/* Base theme */}
+            <p style={{ fontSize: 10, fontWeight: 800, color: '#98989d', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Cor base</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5, marginBottom: 12 }}>
+              {[
+                { v: 'light' as const, label: 'Claro', bg: '#f5f5f7', fg: '#1d1d1f' },
+                { v: 'dark' as const, label: 'Escuro', bg: '#0a0a0c', fg: '#fff' },
+                { v: 'brand' as const, label: 'Cor tema', bg: '#f97316', fg: '#fff' },
+              ].map(o => (
+                <button key={o.v} onClick={() => set('colorTheme', o.v)}
+                  style={{
+                    height: 36, borderRadius: 10, fontSize: 11, fontWeight: 700, border: `2px solid ${block.colorTheme === o.v ? '#f97316' : 'rgba(0,0,0,.08)'}`,
+                    background: o.bg, color: o.fg, cursor: 'pointer',
+                    boxShadow: block.colorTheme === o.v ? '0 0 0 3px rgba(249,115,22,.2)' : 'none',
+                    transition: 'all .12s',
+                  }}>
+                  {o.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Gradient overlay */}
+            <p style={{ fontSize: 10, fontWeight: 800, color: '#98989d', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Gradiente / Imagem sobreposta</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 4, marginBottom: bgMode !== 'none' ? 10 : 0 }}>
+              {([
+                { v: 'none', label: 'Nenhum', icon: '○' },
+                { v: 'self', label: 'Neste bloco', icon: '⬛' },
+              ] as const).map(o => (
+                <button key={o.v} onClick={() => set('continuousBgMode', o.v)}
+                  style={{
+                    height: 32, borderRadius: 8, fontSize: 11, fontWeight: 700,
+                    border: `1.5px solid ${bgMode === o.v ? '#f97316' : 'rgba(0,0,0,.08)'}`,
+                    background: bgMode === o.v ? '#fff7ed' : '#f9f9fb',
+                    color: bgMode === o.v ? '#f97316' : '#6e6e73', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                  }}>
+                  <span>{o.icon}</span> {o.label}
+                </button>
+              ))}
+            </div>
+
+            {bgMode !== 'none' && (
+              <div style={{ background: '#f9f9fb', borderRadius: 10, padding: 10 }}>
+                {/* Type: gradient vs image */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 10 }}>
+                  {([
+                    { v: 'gradient', label: '⬜ Gradiente' },
+                    { v: 'image', label: '🖼 Imagem' },
+                  ] as const).map(o => (
+                    <button key={o.v} onClick={() => set('continuousBgType', o.v)}
+                      style={{ height: 28, borderRadius: 7, fontSize: 10, fontWeight: 700, border: `1.5px solid ${bgType === o.v ? '#f97316' : 'rgba(0,0,0,.1)'}`, background: bgType === o.v ? '#fff7ed' : '#fff', color: bgType === o.v ? '#f97316' : '#6e6e73', cursor: 'pointer' }}>
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+
+                {bgType === 'gradient' && (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+                      {([
+                        { key: 'continuousBgColor1' as const, label: 'Cor 1' },
+                        { key: 'continuousBgColor2' as const, label: 'Cor 2' },
+                      ]).map(({ key, label }) => (
+                        <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: '#98989d', textTransform: 'uppercase' }}>{label}</span>
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            <input type="color" value={(block[key] as string) || '#07101f'} onChange={e => set(key, e.target.value)}
+                              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid rgba(0,0,0,.1)', cursor: 'pointer', padding: 2, flexShrink: 0 }} />
+                            <input type="text" value={(block[key] as string) || '#07101f'} onChange={e => set(key, e.target.value)}
+                              style={{ flex: 1, height: 28, borderRadius: 6, border: '1px solid rgba(0,0,0,.1)', fontSize: 10, fontFamily: 'monospace', paddingLeft: 6, background: '#fff' }} />
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#98989d', textTransform: 'uppercase' }}>Ângulo: {block.continuousBgAngle ?? 160}°</span>
+                      <input type="range" min={0} max={360} value={block.continuousBgAngle ?? 160} onChange={e => set('continuousBgAngle', Number(e.target.value))}
+                        style={{ width: '100%', accentColor: '#f97316' }} />
+                    </label>
+                    {/* Live preview strip */}
+                    <div style={{ height: 28, borderRadius: 8, marginTop: 8, background: `linear-gradient(${block.continuousBgAngle ?? 160}deg, ${block.continuousBgColor1 || '#07101f'}, ${block.continuousBgColor2 || '#1a4a7a'})`, border: '1px solid rgba(0,0,0,.1)' }} />
+                  </>
+                )}
+
+                {bgType === 'image' && (
+                  <div>
+                    <Input value={block.continuousBgImage || ''} onChange={e => set('continuousBgImage', e.target.value)}
+                      placeholder="URL da imagem de fundo" className="h-8 text-xs" />
+                    {block.continuousBgImage && (
+                      <div style={{ height: 60, borderRadius: 8, marginTop: 6, backgroundImage: `url(${block.continuousBgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid rgba(0,0,0,.1)' }} />
+                    )}
+                  </div>
+                )}
+
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 8 }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#98989d', textTransform: 'uppercase' }}>Opacidade: {block.continuousBgOpacity ?? 100}%</span>
+                  <input type="range" min={5} max={100} value={block.continuousBgOpacity ?? 100} onChange={e => set('continuousBgOpacity', Number(e.target.value))}
+                    style={{ width: '100%', accentColor: '#f97316' }} />
+                </label>
+              </div>
+            )}
+          </AccordionBody>
+        )}
+
+        {/* ── FORMA DA SEÇÃO ── */}
+        <AccordionHeader id="shape" label="Forma da seção" emoji="〰️" active={openSection === 'shape'} />
+        {openSection === 'shape' && (
+          <AccordionBody>
+            <p style={{ fontSize: 10, fontWeight: 800, color: '#98989d', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Borda superior</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 4, marginBottom: 12 }}>
+              {SHAPE_OPTIONS.map(s => {
+                const sel = shapeTop === s.v;
+                return (
+                  <button key={s.v} onClick={() => set('sectionShapeTop', s.v)}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 4px', borderRadius: 8, border: `1.5px solid ${sel ? '#f97316' : 'rgba(0,0,0,.08)'}`, background: sel ? '#fff7ed' : '#f9f9fb', cursor: 'pointer' }}>
+                    {s.svg ? (
+                      <svg viewBox="0 0 100 100" style={{ width: 36, height: 20 }} preserveAspectRatio="none">
+                        <path d={s.svg} fill={sel ? '#f97316' : '#c7c7cc'} />
+                      </svg>
+                    ) : (
+                      <div style={{ width: 36, height: 20, background: sel ? '#f97316' : '#e5e5ea', borderRadius: 4 }} />
+                    )}
+                    <span style={{ fontSize: 9, fontWeight: 700, color: sel ? '#f97316' : '#8e8e93', textAlign: 'center', lineHeight: 1.2 }}>{s.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <p style={{ fontSize: 10, fontWeight: 800, color: '#98989d', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Borda inferior</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 4, marginBottom: 12 }}>
+              {SHAPE_OPTIONS.map(s => {
+                const sel = shapeBottom === s.v;
+                return (
+                  <button key={s.v} onClick={() => set('sectionShapeBottom', s.v)}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 4px', borderRadius: 8, border: `1.5px solid ${sel ? '#f97316' : 'rgba(0,0,0,.08)'}`, background: sel ? '#fff7ed' : '#f9f9fb', cursor: 'pointer' }}>
+                    {s.svg ? (
+                      <svg viewBox="0 0 100 100" style={{ width: 36, height: 20 }} preserveAspectRatio="none">
+                        <path d={s.svg} fill={sel ? '#f97316' : '#c7c7cc'} />
+                      </svg>
+                    ) : (
+                      <div style={{ width: 36, height: 20, background: sel ? '#f97316' : '#e5e5ea', borderRadius: 4 }} />
+                    )}
+                    <span style={{ fontSize: 9, fontWeight: 700, color: sel ? '#f97316' : '#8e8e93', textAlign: 'center', lineHeight: 1.2 }}>{s.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {(shapeTop !== 'none' || shapeBottom !== 'none') && (
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 800, color: '#98989d', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Cor da forma</p>
+                <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                  <input type="color" value={shapeColor} onChange={e => set('sectionShapeColor', e.target.value)}
+                    style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid rgba(0,0,0,.1)', cursor: 'pointer', padding: 2 }} />
+                  <input type="text" value={shapeColor} onChange={e => set('sectionShapeColor', e.target.value)}
+                    style={{ flex: 1, height: 28, borderRadius: 6, border: '1px solid rgba(0,0,0,.1)', fontSize: 10, fontFamily: 'monospace', paddingLeft: 6, background: '#fff' }} />
+                </div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {['#ffffff', '#f5f5f7', '#0a0a0c', '#f97316', '#f0f7ff', '#1e293b'].map(c => (
+                    <button key={c} onClick={() => set('sectionShapeColor', c)}
+                      style={{ width: 24, height: 24, borderRadius: 6, background: c, border: shapeColor === c ? '2.5px solid #f97316' : '1.5px solid rgba(0,0,0,.12)', cursor: 'pointer' }} />
+                  ))}
+                </div>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 10 }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#98989d', textTransform: 'uppercase' }}>Tamanho: {block.sectionShapeSize ?? 3}%</span>
+                  <input type="range" min={1} max={10} step={0.5} value={block.sectionShapeSize ?? 3} onChange={e => set('sectionShapeSize', Number(e.target.value))}
+                    style={{ width: '100%', accentColor: '#f97316' }} />
+                </label>
+              </div>
+            )}
+          </AccordionBody>
+        )}
+
+        {/* ── ESPAÇAMENTO ── */}
+        <AccordionHeader id="spacing" label="Espaçamento e cantos" emoji="📐" active={openSection === 'spacing'} />
+        {openSection === 'spacing' && (
+          <AccordionBody>
+            <p style={{ fontSize: 10, fontWeight: 800, color: '#98989d', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Padding vertical</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5, marginBottom: 12 }}>
+              {([
+                { v: 'compact', label: 'Compacto', preview: '▪' },
+                { v: 'normal', label: 'Normal', preview: '▩' },
+                { v: 'spacious', label: 'Generoso', preview: '◻' },
+              ] as const).map(o => {
+                const sel = (block.blockSpacing || 'normal') === o.v;
+                return (
+                  <button key={o.v} onClick={() => set('blockSpacing', o.v)}
+                    style={{ height: 48, borderRadius: 10, fontSize: 20, border: `2px solid ${sel ? '#f97316' : 'rgba(0,0,0,.08)'}`, background: sel ? '#fff7ed' : '#f9f9fb', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                    <span>{o.preview}</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: sel ? '#f97316' : '#8e8e93' }}>{o.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <p style={{ fontSize: 10, fontWeight: 800, color: '#98989d', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Cantos dos cards internos</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
+              {([
+                { v: 'none', label: 'Quadrado', r: 0 },
+                { v: 'medium', label: 'Médio', r: 12 },
+                { v: 'large', label: 'Arredondado', r: 24 },
+              ] as const).map(o => {
+                const sel = (block.blockRadius || 'large') === o.v;
+                return (
+                  <button key={o.v} onClick={() => set('blockRadius', o.v)}
+                    style={{ height: 52, borderRadius: 10, border: `2px solid ${sel ? '#f97316' : 'rgba(0,0,0,.08)'}`, background: sel ? '#fff7ed' : '#f9f9fb', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                    <div style={{ width: 28, height: 18, borderRadius: o.r, border: `2px solid ${sel ? '#f97316' : '#c7c7cc'}` }} />
+                    <span style={{ fontSize: 9, fontWeight: 700, color: sel ? '#f97316' : '#8e8e93' }}>{o.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </AccordionBody>
+        )}
+      </div>
+    );
+  };
 
   // ── Features ──────────────────────────────────────────────────────────────
   if (block.type === 'features') {
@@ -1446,7 +2032,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
     return (
       <div className="space-y-4">
-        <ThemePicker />
+        <AppearanceControls />
 
         <SectionDivider label="Layout" />
         <div>
@@ -1526,7 +2112,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
   // ── Integrations ──────────────────────────────────────────────────────────
   if (block.type === 'integrations') return (
     <div className="space-y-3">
-      <ThemePicker />
+      <AppearanceControls />
       <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Integrações" className="h-9" /></div>
       <div><FL hint="Nome de cada sistema integrado">Sistemas</FL>
         <TagList items={block.items || []} onChange={v => set('items', v)} placeholder="Ex: iFood, SAP, Mercado Pago…" /></div>
@@ -1536,7 +2122,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'steps') return (
     <div className="space-y-3">
-      <ThemePicker />
+      <AppearanceControls />
       <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Como funciona" className="h-9" /></div>
       {(block.steps || []).map((step, i) => (
         <div key={i} className="p-3 rounded-xl bg-[#f5f5f7] space-y-2 group">
@@ -1563,7 +2149,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'stats') return (
     <div className="space-y-2">
-      <ThemePicker />
+      <AppearanceControls />
       <FL hint="Máx. 4">Estatísticas</FL>
       {(block.stats || []).map((s, i) => (
         <div key={i} className="flex items-center gap-2 group">
@@ -1589,7 +2175,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'testimonial') return (
     <div className="space-y-3">
-      <ThemePicker />
+      <AppearanceControls />
       <div><FL>Citação</FL><Textarea value={block.quote || ''} onChange={e => set('quote', e.target.value)} rows={3} placeholder="O sistema transformou nossa gestão…" className="resize-none text-[13px]" /></div>
       <div className="grid grid-cols-2 gap-2">
         <div><FL>Autor</FL><Input value={block.author || ''} onChange={e => set('author', e.target.value)} placeholder="João Silva" className="h-9" /></div>
@@ -1601,7 +2187,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'faq') return (
     <div className="space-y-3">
-      <ThemePicker />
+      <AppearanceControls />
       <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Perguntas Frequentes" className="h-9" /></div>
       {(block.faq || []).map((item, i) => (
         <div key={i} className="p-3 rounded-xl bg-[#f5f5f7] space-y-2 group">
@@ -1627,7 +2213,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'video') return (
     <div className="space-y-3">
-      <ThemePicker />
+      <AppearanceControls />
       <div><FL>Título (opcional)</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Veja o sistema em 2 minutos" className="h-9" /></div>
       <div><FL hint="URL completa do YouTube">URL do Vídeo</FL><Input value={block.videoUrl || ''} onChange={e => set('videoUrl', e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="h-9" /></div>
       {block.videoUrl && (() => {
@@ -1645,7 +2231,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'cta') return (
     <div className="space-y-3">
-      <ThemePicker />
+      <AppearanceControls />
       <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Pronto para transformar seu negócio?" className="h-9" /></div>
       <div><FL>Descrição</FL><Textarea value={block.description || ''} onChange={e => set('description', e.target.value)} rows={2} placeholder="Fale com nossos especialistas…" className="resize-none text-[13px]" /></div>
       <div className="grid grid-cols-2 gap-2">
@@ -1662,7 +2248,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'text') return (
     <div className="space-y-3">
-      <ThemePicker />
+      <AppearanceControls />
       <div><FL>Título (opcional)</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Título do bloco" className="h-9" /></div>
       <div><FL>Texto</FL><Textarea value={block.description || ''} onChange={e => set('description', e.target.value)} rows={5} placeholder="Seu texto aqui…" className="resize-none text-[13px]" /></div>
       <SpacingRadiusControls block={block} onChange={onChange} />
@@ -1671,7 +2257,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'richtext') return (
     <div className="space-y-3">
-      <ThemePicker />
+      <AppearanceControls />
       <div>
         <FL hint="HTML puro — <b>, <ul>, <a href=...>, <h2>, etc.">Conteúdo HTML</FL>
         <Textarea value={block.html || ''} onChange={e => set('html', e.target.value)} rows={8}
@@ -1691,7 +2277,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'image') return (
     <div className="space-y-3">
-      <ThemePicker />
+      <AppearanceControls />
       <div><FL hint="URL da imagem">URL da Imagem</FL><Input value={block.imageUrl || ''} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." className="h-9" /></div>
       <div><FL>Texto alternativo</FL><Input value={block.imageAlt || ''} onChange={e => set('imageAlt', e.target.value)} placeholder="Descrição da imagem" className="h-9" /></div>
       {block.imageUrl && <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'rgba(0,0,0,.07)' }}><img src={block.imageUrl} alt={block.imageAlt || ''} className="w-full max-h-48 object-cover" /></div>}
@@ -1998,78 +2584,78 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
 // ── Block card ────────────────────────────────────────────────────────────────
 
-function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDown, onDuplicate }: {
-  block: PageBlock; index: number; total: number;
-  onChange: (b: PageBlock) => void; onRemove: () => void; onMoveUp: () => void; onMoveDown: () => void; onDuplicate: () => void;
+// ── Block color map ───────────────────────────────────────────────────────────
+
+const BLOCK_COLORS: Record<string, string> = {
+  hero: '#6366f1', features: '#f97316', benefits: '#10b981', steps: '#3b82f6',
+  stats: '#f59e0b', testimonial: '#8b5cf6', faq: '#ec4899', video: '#ef4444',
+  cta: '#f97316', text: '#6b7280', richtext: '#6b7280', image: '#0ea5e9',
+  integrations: '#14b8a6', image_text: '#f97316', divider: '#9ca3af',
+};
+
+// ── Block Inspector (right panel) ─────────────────────────────────────────────
+
+function BlockInspector({ block, index, total, onClose, onChange, onMoveUp, onMoveDown, onDuplicate, onRemove }: {
+  block: PageBlock; index: number; total: number; onClose: () => void;
+  onChange: (b: PageBlock) => void; onMoveUp: () => void; onMoveDown: () => void;
+  onDuplicate: () => void; onRemove: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const def = BLOCK_CATALOG.find(d => d.type === block.type);
-  const summary = block.title || (block.quote || '').slice(0, 40) || (block.alertText || '').slice(0, 40) || (block.html || '').slice(0, 40) || '';
-
-  const heroColors: Record<string, string> = { centered: '#6366f1', split: '#22c55e', dark_glow: '#0a0a0c', magazine: '#1e293b' };
-  const blockColor = block.type === 'hero' ? (heroColors[block.heroLayout || 'centered'] || '#f97316') : '#f97316';
-
-  // Badge de variante para features/benefits
-  const variantLabel =
-    block.type === 'features' ? (({ split_dark: 'Split Dark', dark_cards: 'Dark Cards', half_split: 'Half & Half', grid: 'Grid c/ Ícone', highlight_list: 'Lista Numerada', minimal_pills: 'Pílulas', checklist: 'Checklist', cards_hover: 'Cards Hover', community_connect: 'Community Connect', bento: 'Bento', dark_numbered: 'Numerado Dark' } as Record<string, string>)[block.featuresLayout || 'split_dark'] || 'Split Dark') :
-      block.type === 'benefits' && block.benefitsLayout ? { grid_cards: 'Grid', side_image: 'c/ Imagem', carousel: 'Carrossel' }[block.benefitsLayout] :
-        block.type === 'hero' && block.heroLayout ? HERO_LAYOUTS.find(l => l.id === block.heroLayout)?.label : null;
-
-  // Badge de espaçamento
-  const spacingLabel = block.blockSpacing && block.blockSpacing !== 'normal'
-    ? { compact: '↕ Compacto', spacious: '↕ Generoso' }[block.blockSpacing] : null;
+  const blockColor = BLOCK_COLORS[block.type] || '#f97316';
 
   return (
-    <div className="rounded-2xl border overflow-hidden transition-all"
-      style={{ borderColor: expanded ? `${blockColor}25` : 'rgba(0,0,0,.08)', opacity: block.visible ? 1 : 0.5, boxShadow: expanded ? `0 4px 20px ${blockColor}10` : 'none' }}>
-
-      {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2.5 bg-white">
-        <GripVertical style={{ width: 14, height: 14, color: '#c7c7cc', flexShrink: 0 }} />
-        <button className="flex items-center gap-2.5 flex-1 min-w-0 text-left" onClick={() => setExpanded(v => !v)}>
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-base leading-none"
-            style={{ background: `${blockColor}14` }}>
-            <span style={{ fontSize: 14 }}>{def?.emoji || '📦'}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Inspector header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
+        borderBottom: '1px solid rgba(0,0,0,.06)', background: '#fafafa', flexShrink: 0,
+      }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: blockColor, color: '#fff', fontSize: 16, flexShrink: 0,
+        }}>
+          {def?.emoji || '📦'}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 800, color: '#1d1d1f', lineHeight: 1.2 }}>{def?.label || block.type}</p>
+          <p style={{ fontSize: 10, color: '#98989d', marginTop: 1, fontWeight: 500 }}>{def?.description || ''}</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {/* Move up/down */}
+          <div style={{ display: 'flex', background: '#f0f0f2', borderRadius: 8, padding: 2 }}>
+            <button disabled={index === 0} onClick={onMoveUp}
+              style={{ width: 26, height: 26, borderRadius: 6, border: 'none', background: 'transparent', cursor: index === 0 ? 'not-allowed' : 'pointer', color: '#8e8e93', opacity: index === 0 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ChevronUp style={{ width: 14, height: 14 }} />
+            </button>
+            <button disabled={index === total - 1} onClick={onMoveDown}
+              style={{ width: 26, height: 26, borderRadius: 6, border: 'none', background: 'transparent', cursor: index === total - 1 ? 'not-allowed' : 'pointer', color: '#8e8e93', opacity: index === total - 1 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ChevronDown style={{ width: 14, height: 14 }} />
+            </button>
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <p className="text-[13px] font-semibold text-[#1d1d1f] leading-none">{def?.label || block.type}</p>
-              {variantLabel && (
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                  style={{ background: `${blockColor}15`, color: blockColor }}>
-                  {variantLabel}
-                </span>
-              )}
-              {spacingLabel && (
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#f5f5f7] text-[#aeaeb2]">
-                  {spacingLabel}
-                </span>
-              )}
-            </div>
-            {summary && <p className="text-[11px] text-[#98989d] truncate mt-0.5">{summary}</p>}
-          </div>
-        </button>
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <button disabled={index === 0} onClick={onMoveUp} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition" title="Mover para cima"><ChevronUp style={{ width: 13, height: 13 }} /></button>
-          <button disabled={index === total - 1} onClick={onMoveDown} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] disabled:opacity-25 hover:text-[#6e6e73] hover:bg-[#f5f5f7] transition" title="Mover para baixo"><ChevronDown style={{ width: 13, height: 13 }} /></button>
-          <button onClick={() => onChange({ ...block, visible: !block.visible })} className="w-6 h-6 rounded-lg flex items-center justify-center transition hover:bg-[#f5f5f7]" style={{ color: block.visible ? '#34c759' : '#c7c7cc' }} title={block.visible ? 'Ocultar bloco' : 'Mostrar bloco'}>
-            {block.visible ? <Eye style={{ width: 13, height: 13 }} /> : <EyeOff style={{ width: 13, height: 13 }} />}
-          </button>
-          <button onClick={onDuplicate} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-blue-400 hover:bg-blue-50 transition" title="Duplicar bloco">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {/* Duplicate */}
+          <button onClick={onDuplicate} title="Duplicar bloco"
+            style={{ width: 28, height: 28, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: '#8e8e93', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="8" y="8" width="13" height="13" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
             </svg>
           </button>
-          <button onClick={() => { if (window.confirm('Excluir este bloco?')) onRemove(); }} className="w-6 h-6 rounded-lg flex items-center justify-center text-[#c7c7cc] hover:text-red-400 hover:bg-red-50 transition" title="Excluir bloco"><X style={{ width: 13, height: 13 }} /></button>
+          {/* Visibility */}
+          <button onClick={() => onChange({ ...block, visible: block.visible === false ? true : false })} title={block.visible !== false ? 'Ocultar bloco' : 'Mostrar bloco'}
+            style={{ width: 28, height: 28, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: block.visible !== false ? '#e8f9ee' : '#f5f5f7', color: block.visible !== false ? '#34c759' : '#8e8e93' }}>
+            {block.visible !== false ? <Eye style={{ width: 13, height: 13 }} /> : <EyeOff style={{ width: 13, height: 13 }} />}
+          </button>
+          {/* Delete */}
+          <button onClick={() => { if (window.confirm('Excluir este bloco?')) { onRemove(); onClose(); } }} title="Excluir bloco"
+            style={{ width: 28, height: 28, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', color: '#8e8e93', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X style={{ width: 14, height: 14 }} />
+          </button>
         </div>
       </div>
 
-      {/* Expanded editor */}
-      {expanded && (
-        <div className="border-t px-4 py-4 bg-[#fafafa]" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
-          <BlockEditor block={block} onChange={onChange} />
-        </div>
-      )}
+      {/* Inspector body — scrollable form */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px' }}>
+        <BlockEditor block={block} onChange={onChange} />
+      </div>
     </div>
   );
 }
@@ -2078,33 +2664,249 @@ function BlockCard({ block, index, total, onChange, onRemove, onMoveUp, onMoveDo
 
 function BlockPicker({ onAdd, onClose }: { onAdd: (type: BlockType) => void; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      style={{ background: 'rgba(0,0,0,.45)', backdropFilter: 'blur(4px)' }}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,.45)', backdropFilter: 'blur(4px)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
+      <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', width: '100%', maxWidth: 560, overflow: 'hidden', boxShadow: '0 -20px 60px rgba(0,0,0,.2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,.07)' }}>
           <div>
-            <p className="font-bold text-[15px] text-[#1d1d1f]" style={{ fontFamily: "'Outfit',sans-serif" }}>Adicionar bloco</p>
-            <p className="text-[11px] text-[#98989d]">Escolha o tipo de seção</p>
+            <p style={{ fontWeight: 800, fontSize: 15, color: '#1d1d1f' }}>Adicionar bloco</p>
+            <p style={{ fontSize: 11, color: '#98989d', marginTop: 2 }}>Escolha o tipo de seção</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-[#f5f5f7] transition" style={{ color: '#6e6e73' }}>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, border: 'none', background: '#f5f5f7', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6e6e73' }}>
             <X style={{ width: 16, height: 16 }} />
           </button>
         </div>
-        <div className="p-4 grid grid-cols-2 gap-2 max-h-[65vh] overflow-y-auto">
+        <div style={{ padding: 16, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, maxHeight: '65vh', overflowY: 'auto', background: '#f9f9fb' }}>
           {BLOCK_CATALOG.map(def => (
             <button key={def.type} onClick={() => { onAdd(def.type); onClose(); }}
-              className="flex items-start gap-3 p-3 rounded-2xl border text-left transition hover:border-[#f97316] hover:bg-orange-50 group"
-              style={{ borderColor: 'rgba(0,0,0,.08)' }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#f5f5f7] text-lg leading-none group-hover:bg-orange-100 transition">
-                {def.emoji}
-              </div>
+              style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 14px', borderRadius: 16, background: '#fff', border: '1.5px solid rgba(0,0,0,.06)', cursor: 'pointer', textAlign: 'left', transition: 'all .15s', boxShadow: '0 2px 6px rgba(0,0,0,.04)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#f97316'; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(249,115,22,.12)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.06)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 6px rgba(0,0,0,.04)'; }}
+            >
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>{def.emoji}</div>
               <div>
-                <p className="text-[13px] font-semibold text-[#1d1d1f] leading-none">{def.label}</p>
-                <p className="text-[11px] text-[#98989d] mt-0.5 leading-snug">{def.description}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#1d1d1f', lineHeight: 1.3 }}>{def.label}</p>
+                <p style={{ fontSize: 11, color: '#8e8e93', marginTop: 3, lineHeight: 1.4, fontWeight: 500 }}>{def.description}</p>
               </div>
             </button>
           ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Block Patterns Picker ─────────────────────────────────────────────────────
+
+const PATTERN_CATEGORIES: { id: PatternCategory; label: string; emoji: string }[] = [
+  { id: 'page', label: 'Páginas Completas', emoji: '🌐' },
+  { id: 'section', label: 'Seções', emoji: '🧩' },
+  { id: 'quick', label: 'Início Rápido', emoji: '⚡' },
+];
+
+function BlockPatternsPicker({ currentBlocksCount, onInsert, onClose }: {
+  currentBlocksCount: number;
+  onInsert: (blocks: PageBlock[], mode: 'append' | 'replace') => void;
+  onClose: () => void;
+}) {
+  const [activeCategory, setActiveCategory] = useState<PatternCategory>('page');
+  const [selected, setSelected] = useState<BlockPattern | null>(null);
+  const [mode, setMode] = useState<'append' | 'replace'>('append');
+
+  const filtered = BLOCK_PATTERNS.filter(p => p.category === activeCategory);
+
+  const handleInsert = () => {
+    if (!selected) return;
+    // Re-generate IDs so blocks are always unique on insert
+    const freshBlocks = selected.blocks.map(b => ({
+      ...b,
+      id: `${b.type}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    }));
+    onInsert(freshBlocks, mode);
+    onClose();
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', background: 'rgba(0,0,0,.55)', backdropFilter: 'blur(6px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ margin: 'auto', width: '92vw', maxWidth: 900, maxHeight: '88vh', display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 20, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,.25)' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid rgba(0,0,0,.07)', flexShrink: 0 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#f97316,#fb923c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🎨</div>
+              <div>
+                <p style={{ fontSize: 16, fontWeight: 800, color: '#1d1d1f', lineHeight: 1.2 }}>Padrões de bloco</p>
+                <p style={{ fontSize: 11, color: '#98989d', marginTop: 1 }}>Templates prontos para acelerar a criação da sua página</p>
+              </div>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, border: 'none', background: '#f5f5f7', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6e6e73' }}>
+            <X style={{ width: 16, height: 16 }} />
+          </button>
+        </div>
+
+        {/* Body — 2 columns: categories+list | preview */}
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+
+          {/* Left: categories + grid */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: '1px solid rgba(0,0,0,.06)' }}>
+            {/* Category tabs */}
+            <div style={{ display: 'flex', gap: 6, padding: '12px 20px 10px', borderBottom: '1px solid rgba(0,0,0,.06)', flexShrink: 0, background: '#fafafa' }}>
+              {PATTERN_CATEGORIES.map(cat => {
+                const count = BLOCK_PATTERNS.filter(p => p.category === cat.id).length;
+                const active = activeCategory === cat.id;
+                return (
+                  <button key={cat.id} onClick={() => { setActiveCategory(cat.id); setSelected(null); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '6px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                      background: active ? '#f97316' : '#f0f0f2',
+                      color: active ? '#fff' : '#6e6e73',
+                      fontSize: 12, fontWeight: 700, transition: 'all .15s',
+                    }}>
+                    <span>{cat.emoji}</span>
+                    <span>{cat.label}</span>
+                    <span style={{ opacity: .7, fontSize: 10 }}>({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Pattern grid */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, alignContent: 'start' }}>
+              {filtered.map(pattern => {
+                const isSelected = selected?.id === pattern.id;
+                return (
+                  <button key={pattern.id} onClick={() => setSelected(isSelected ? null : pattern)}
+                    style={{
+                      display: 'flex', flexDirection: 'column', textAlign: 'left',
+                      padding: '14px', borderRadius: 14, cursor: 'pointer',
+                      border: `2px solid ${isSelected ? pattern.color : 'rgba(0,0,0,.08)'}`,
+                      background: isSelected ? `${pattern.color}08` : '#fff',
+                      transition: 'all .15s', boxShadow: isSelected ? `0 4px 16px ${pattern.color}25` : '0 2px 6px rgba(0,0,0,.04)',
+                    }}
+                    onMouseEnter={e => { if (!isSelected) { (e.currentTarget as HTMLElement).style.borderColor = `${pattern.color}50`; (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 12px ${pattern.color}18`; } }}
+                    onMouseLeave={e => { if (!isSelected) { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.08)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 6px rgba(0,0,0,.04)'; } }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
+                      <div style={{ width: 38, height: 38, borderRadius: 10, background: `${pattern.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+                        {pattern.emoji}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: '#1d1d1f', lineHeight: 1.3 }}>{pattern.label}</p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
+                          {pattern.blocks.map((b, i) => {
+                            const def = BLOCK_CATALOG.find(d => d.type === b.type);
+                            return (
+                              <span key={i} style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${BLOCK_COLORS[b.type] || '#f97316'}15`, color: BLOCK_COLORS[b.type] || '#f97316', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                                {def?.emoji} {def?.label}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 11, color: '#6e6e73', lineHeight: 1.5, fontWeight: 500 }}>{pattern.description}</p>
+                    {isSelected && (
+                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${pattern.color}20`, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 16, height: 16, borderRadius: '50%', background: pattern.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        </div>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: pattern.color }}>Selecionado — configure e insira à direita</p>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right: detail + insert options */}
+          <div style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {selected ? (
+              <>
+                {/* Pattern detail */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 16px' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 14, background: `${selected.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, marginBottom: 12 }}>
+                    {selected.emoji}
+                  </div>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: '#1d1d1f', marginBottom: 6 }}>{selected.label}</p>
+                  <p style={{ fontSize: 12, color: '#6e6e73', lineHeight: 1.6, marginBottom: 16 }}>{selected.description}</p>
+
+                  {/* Block breakdown */}
+                  <p style={{ fontSize: 10, fontWeight: 800, color: '#98989d', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>
+                    {selected.blocks.length} bloco{selected.blocks.length !== 1 ? 's' : ''} incluído{selected.blocks.length !== 1 ? 's' : ''}
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {selected.blocks.map((b, i) => {
+                      const def = BLOCK_CATALOG.find(d => d.type === b.type);
+                      const color = BLOCK_COLORS[b.type] || '#f97316';
+                      return (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', background: '#f9f9fb', borderRadius: 10, border: '1px solid rgba(0,0,0,.05)' }}>
+                          <div style={{ width: 26, height: 26, borderRadius: 7, background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>
+                            {def?.emoji || '📦'}
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: '#1d1d1f', lineHeight: 1.2 }}>{def?.label || b.type}</p>
+                            <p style={{ fontSize: 9, color: '#98989d', marginTop: 1 }}>{def?.description}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Insert mode */}
+                  {currentBlocksCount > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                      <p style={{ fontSize: 10, fontWeight: 800, color: '#98989d', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Como inserir</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {([
+                          { id: 'append', label: 'Adicionar ao final', desc: 'Mantém os blocos atuais', emoji: '➕' },
+                          { id: 'replace', label: 'Substituir página', desc: 'Remove todos os blocos atuais', emoji: '🔄' },
+                        ] as const).map(opt => (
+                          <button key={opt.id} onClick={() => setMode(opt.id)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', borderRadius: 10, cursor: 'pointer',
+                              border: `1.5px solid ${mode === opt.id ? selected.color : 'rgba(0,0,0,.08)'}`,
+                              background: mode === opt.id ? `${selected.color}08` : '#f9f9fb',
+                              textAlign: 'left',
+                            }}>
+                            <span style={{ fontSize: 16 }}>{opt.emoji}</span>
+                            <div>
+                              <p style={{ fontSize: 11, fontWeight: 700, color: mode === opt.id ? selected.color : '#1d1d1f', lineHeight: 1.2 }}>{opt.label}</p>
+                              <p style={{ fontSize: 10, color: '#98989d' }}>{opt.desc}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Insert button */}
+                <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(0,0,0,.07)', background: '#fafafa', flexShrink: 0 }}>
+                  <button onClick={handleInsert}
+                    style={{ width: '100%', height: 42, borderRadius: 12, border: 'none', cursor: 'pointer', background: selected.color, color: '#fff', fontSize: 13, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: `0 4px 16px ${selected.color}45`, transition: 'all .15s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLElement).style.boxShadow = `0 6px 20px ${selected.color}55`; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 16px ${selected.color}45`; }}>
+                    <Plus style={{ width: 16, height: 16 }} />
+                    {mode === 'replace' ? 'Substituir com este padrão' : `Inserir ${selected.blocks.length} bloco${selected.blocks.length !== 1 ? 's' : ''}`}
+                  </button>
+                  <p style={{ fontSize: 10, color: '#98989d', textAlign: 'center', marginTop: 8 }}>
+                    Os blocos são inseridos com conteúdo de exemplo — edite no inspector
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: 24, textAlign: 'center', gap: 12 }}>
+                <div style={{ width: 52, height: 52, borderRadius: 16, background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>👈</div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#1d1d1f' }}>Selecione um padrão</p>
+                <p style={{ fontSize: 11, color: '#98989d', lineHeight: 1.5 }}>Clique em qualquer template ao lado para ver os detalhes e opções de inserção</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -2116,11 +2918,14 @@ function BlockPicker({ onAdd, onClose }: { onAdd: (type: BlockType) => void; onC
 export interface PageBuilderProps { blocks: PageBlock[]; onChange: (blocks: PageBlock[]) => void; }
 
 export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
-  const [showPicker, setShowPicker] = useState<number | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [showPatterns, setShowPatterns] = useState(false);
+  const [insertAfter, setInsertAfter] = useState(-1);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [history, setHistory] = useState<PageBlock[][]>([]);
   const [future, setFuture] = useState<PageBlock[][]>([]);
+  const canvasRef = React.useRef<HTMLDivElement>(null);
 
-  // Wrap onChange to track history
   const applyChange = (newBlocks: PageBlock[]) => {
     setHistory(h => [...h.slice(-20), blocks]);
     setFuture([]);
@@ -2143,159 +2948,378 @@ export function PageBuilder({ blocks, onChange }: PageBuilderProps) {
     onChange(next);
   };
 
-  // Keyboard shortcuts: Ctrl+Z / Ctrl+Y
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
       if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+      if (e.key === 'Escape') setSelectedIdx(null);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [history, future, blocks]);
 
+  // Scroll canvas to selected block
+  useEffect(() => {
+    if (selectedIdx === null || !canvasRef.current) return;
+    const blocks_el = canvasRef.current.querySelectorAll('[data-block-idx]');
+    const el = blocks_el[selectedIdx] as HTMLElement | undefined;
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [selectedIdx]);
+
   const insertAt = (type: BlockType, afterIndex: number) => {
     const newBlock = makeBlock(type);
-    if (afterIndex === -1) {
-      applyChange([...blocks, newBlock]);
-    } else {
-      const n = [...blocks];
-      n.splice(afterIndex + 1, 0, newBlock);
-      applyChange(n);
-    }
+    const n = [...blocks];
+    if (afterIndex === -1) { n.push(newBlock); applyChange(n); setSelectedIdx(n.length - 1); }
+    else { n.splice(afterIndex + 1, 0, newBlock); applyChange(n); setSelectedIdx(afterIndex + 1); }
   };
+
   const upd = (i: number, b: PageBlock) => { const n = [...blocks]; n[i] = b; applyChange(n); };
-  const rem = (i: number) => applyChange(blocks.filter((_, j) => j !== i));
-  const mov = (i: number, d: -1 | 1) => { const n = [...blocks]; const t = i + d; if (t < 0 || t >= n.length) return;[n[i], n[t]] = [n[t], n[i]]; applyChange(n); };
+  const rem = (i: number) => { applyChange(blocks.filter((_, j) => j !== i)); setSelectedIdx(null); };
+  const mov = (i: number, d: -1 | 1) => {
+    const n = [...blocks]; const t = i + d;
+    if (t < 0 || t >= n.length) return;
+    [n[i], n[t]] = [n[t], n[i]]; applyChange(n); setSelectedIdx(t);
+  };
   const dup = (i: number) => {
     const clone = { ...JSON.parse(JSON.stringify(blocks[i])), id: `block-${Date.now()}-${Math.random().toString(36).slice(2)}` };
-    const n = [...blocks];
-    n.splice(i + 1, 0, clone);
-    applyChange(n);
+    const n = [...blocks]; n.splice(i + 1, 0, clone); applyChange(n); setSelectedIdx(i + 1);
   };
 
   const exportJSON = () => {
     const json = JSON.stringify(blocks, null, 2);
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
-    a.download = `blocks-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    a.download = `blocks-${Date.now()}.json`; a.click(); URL.revokeObjectURL(a.href);
   };
 
   const importJSON = () => {
     const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
+    input.type = 'file'; input.accept = '.json';
     input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
+      const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return;
       try {
-        const text = await file.text();
-        const parsed = JSON.parse(text);
+        const text = await file.text(); const parsed = JSON.parse(text);
         if (Array.isArray(parsed)) {
-          if (window.confirm(`Importar ${parsed.length} blocos? Isso substituirá os blocos atuais.`)) {
-            applyChange(parsed);
-          }
-        } else {
-          alert('Arquivo JSON inválido — esperado um array de blocos.');
-        }
-      } catch {
-        alert('Erro ao ler o arquivo JSON.');
-      }
+          if (window.confirm(`Importar ${parsed.length} blocos? Isso substituirá os blocos atuais.`)) { applyChange(parsed); setSelectedIdx(null); }
+        } else { alert('Arquivo JSON inválido — esperado um array de blocos.'); }
+      } catch { alert('Erro ao ler o arquivo JSON.'); }
     };
     input.click();
   };
 
-  // Quick-add image_text block at a position without opening picker
-  const quickAddImageText = (afterIndex: number) => {
-    const n = [...blocks];
-    n.splice(afterIndex + 1, 0, makeBlock('image_text'));
-    applyChange(n);
-  };
+  const selectedBlock = selectedIdx !== null ? blocks[selectedIdx] : null;
 
   return (
-    <div className="space-y-2">
-      {/* Toolbar: undo/redo + export/import */}
-      <div className="flex items-center gap-2 mb-3">
-        <button
-          onClick={undo} disabled={!history.length}
-          title="Desfazer (Ctrl+Z)"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition disabled:opacity-30"
-          style={{ background: '#fff', borderColor: '#e5e7eb', color: '#374151' }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 14L4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 010 11H11" /></svg>
-          Desfazer
-        </button>
-        <button
-          onClick={redo} disabled={!future.length}
-          title="Refazer (Ctrl+Y)"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition disabled:opacity-30"
-          style={{ background: '#fff', borderColor: '#e5e7eb', color: '#374151' }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 14l5-5-5-5" /><path d="M20 9H9.5a5.5 5.5 0 000 11H13" /></svg>
-          Refazer
-        </button>
-        <div className="flex-1" />
-        <button
-          onClick={importJSON}
-          title="Importar blocos de JSON"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition"
-          style={{ background: '#fff', borderColor: '#e5e7eb', color: '#374151' }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-          Importar
-        </button>
-        <button
-          onClick={exportJSON} disabled={!blocks.length}
-          title="Exportar blocos como JSON"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border transition disabled:opacity-30"
-          style={{ background: '#f0fdf4', borderColor: '#bbf7d0', color: '#166534' }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-          Exportar
-        </button>
-      </div>
-      {blocks.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-10 rounded-2xl border-2 border-dashed text-center" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
-          <Layers style={{ width: 36, height: 36, color: '#c7c7cc', marginBottom: 10 }} />
-          <p className="text-[13px] font-medium text-[#6e6e73]">Nenhum bloco ainda</p>
-          <p className="text-[12px] text-[#98989d] mb-4">Adicione blocos para montar a página</p>
-          <Button variant="outline" size="sm" className="gap-1.5 text-[12px]" onClick={() => setShowPicker(-1)}>
-            <Plus style={{ width: 13, height: 13 }} /> Adicionar primeiro bloco
-          </Button>
-        </div>
-      )}
-      {blocks.map((block, i) => (
-        <React.Fragment key={block.id}>
-          <BlockCard block={block} index={i} total={blocks.length}
-            onChange={b => upd(i, b)} onRemove={() => rem(i)} onMoveUp={() => mov(i, -1)} onMoveDown={() => mov(i, 1)} onDuplicate={() => dup(i)} />
-          {/* Between-block inserter */}
-          <div className="flex items-center gap-2 px-1 group/inserter" style={{ height: 28 }}>
-            <div className="flex-1 h-px transition-all" style={{ background: 'rgba(0,0,0,.06)' }} />
-            <button
-              title="Adicionar Imagem + Texto aqui"
-              onClick={() => quickAddImageText(i)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold opacity-0 group-hover/inserter:opacity-100 transition-all hover:scale-105"
-              style={{ background: '#fff7ed', color: '#f97316', border: '1.5px dashed #f97316' }}>
-              <Plus style={{ width: 11, height: 11 }} /> Imagem + Texto
-            </button>
-            <button
-              title="Adicionar outro tipo de bloco aqui"
-              onClick={() => setShowPicker(i)}
-              className="w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover/inserter:opacity-100 transition-all hover:scale-110"
-              style={{ background: '#f5f5f7', color: '#6e6e73', border: '1.5px dashed rgba(0,0,0,.15)' }}>
-              <Plus style={{ width: 11, height: 11 }} />
-            </button>
-            <div className="flex-1 h-px transition-all" style={{ background: 'rgba(0,0,0,.06)' }} />
+    <div style={{ display: 'flex', height: '100%', minHeight: 'calc(100vh - 160px)', background: '#f0f0f2' }}>
+
+      {/* ══════════════════════════════════════════════════════
+          LEFT: Block Navigator (~230px)
+      ══════════════════════════════════════════════════════ */}
+      <div style={{
+        width: 230, flexShrink: 0, display: 'flex', flexDirection: 'column',
+        background: '#fff', borderRight: '1px solid rgba(0,0,0,.07)', overflow: 'hidden',
+      }}>
+        {/* Nav header */}
+        <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid rgba(0,0,0,.06)', flexShrink: 0, background: '#fafafa' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Layers style={{ width: 14, height: 14, color: '#c7c7cc' }} />
+              <p style={{ fontSize: 11, fontWeight: 800, color: '#1d1d1f', textTransform: 'uppercase', letterSpacing: '.06em' }}>Blocos</p>
+            </div>
+            <span style={{ fontSize: 10, color: '#98989d', fontWeight: 600, background: '#f0f0f2', padding: '2px 7px', borderRadius: 20 }}>
+              {blocks.filter(b => b.visible !== false).length}/{blocks.length}
+            </span>
           </div>
-        </React.Fragment>
-      ))}
-      {blocks.length > 0 && (
-        <Button variant="outline" className="w-full h-10 gap-2 text-[13px] font-medium rounded-2xl border-dashed" onClick={() => setShowPicker(-1)}>
-          <Plus style={{ width: 14, height: 14 }} /> Adicionar bloco
-        </Button>
+
+          {/* Add block button */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 5, marginBottom: 8 }}>
+            <button onClick={() => { setInsertAfter(selectedIdx ?? -1); setShowPicker(true); }}
+              style={{ height: 34, borderRadius: 10, fontSize: 12, fontWeight: 700, border: 'none', background: '#f97316', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 2px 8px rgba(249,115,22,.3)' }}>
+              <Plus style={{ width: 14, height: 14 }} /> Adicionar bloco
+            </button>
+            <button onClick={() => setShowPatterns(true)} title="Padrões / Templates"
+              style={{ height: 34, width: 34, borderRadius: 10, fontSize: 16, border: '1.5px solid rgba(249,115,22,.3)', background: 'rgba(249,115,22,.07)', color: '#f97316', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              🎨
+            </button>
+          </div>
+
+          {/* Undo/Redo + Import/Export */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+            <button onClick={undo} disabled={!history.length} title="Desfazer (Ctrl+Z)"
+              style={{ height: 26, borderRadius: 7, fontSize: 10, fontWeight: 700, border: '1.5px solid rgba(0,0,0,.08)', background: '#f5f5f7', color: '#6e6e73', cursor: 'pointer', opacity: history.length ? 1 : 0.35, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 14L4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 010 11H11" /></svg>
+              Desfazer
+            </button>
+            <button onClick={redo} disabled={!future.length} title="Refazer (Ctrl+Y)"
+              style={{ height: 26, borderRadius: 7, fontSize: 10, fontWeight: 700, border: '1.5px solid rgba(0,0,0,.08)', background: '#f5f5f7', color: '#6e6e73', cursor: 'pointer', opacity: future.length ? 1 : 0.35, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M15 14l5-5-5-5" /><path d="M20 9H9.5a5.5 5.5 0 000 11H13" /></svg>
+              Refazer
+            </button>
+            <button onClick={importJSON}
+              style={{ height: 26, borderRadius: 7, fontSize: 10, fontWeight: 700, border: '1.5px solid rgba(0,0,0,.08)', background: '#f5f5f7', color: '#6e6e73', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+              Importar
+            </button>
+            <button onClick={exportJSON} disabled={!blocks.length}
+              style={{ height: 26, borderRadius: 7, fontSize: 10, fontWeight: 700, border: 'none', background: blocks.length ? '#1d1d1f' : '#e5e5ea', color: blocks.length ? '#fff' : '#98989d', cursor: 'pointer', opacity: blocks.length ? 1 : 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+              Exportar
+            </button>
+          </div>
+        </div>
+
+        {/* Block list */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 8px' }}>
+          {blocks.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200, gap: 8, textAlign: 'center', padding: 16 }}>
+              <Layers style={{ width: 28, height: 28, color: '#c7c7cc' }} />
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#8e8e93' }}>Nenhum bloco ainda</p>
+              <p style={{ fontSize: 11, color: '#c7c7cc', lineHeight: 1.4 }}>Clique em "Adicionar bloco" para começar</p>
+            </div>
+          ) : (
+            blocks.map((block, i) => {
+              const def = BLOCK_CATALOG.find(d => d.type === block.type);
+              const color = BLOCK_COLORS[block.type] || '#f97316';
+              const isSelected = selectedIdx === i;
+              const isHidden = block.visible === false;
+              return (
+                <div key={block.id}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 7, padding: '6px 8px',
+                    borderRadius: 10, cursor: 'pointer', marginBottom: 2,
+                    background: isSelected ? `${color}12` : 'transparent',
+                    border: `1.5px solid ${isSelected ? color : 'transparent'}`,
+                    transition: 'all .12s',
+                    opacity: isHidden ? 0.4 : 1,
+                    position: 'relative',
+                  }}
+                  className="pb-nav-item"
+                  onClick={() => setSelectedIdx(isSelected ? null : i)}>
+                  {/* Drag handle */}
+                  <div style={{ color: '#d1d1d6', flexShrink: 0, cursor: 'grab' }}>
+                    <GripVertical style={{ width: 13, height: 13 }} />
+                  </div>
+                  {/* Block icon */}
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: isSelected ? color : `${color}18`,
+                    fontSize: 14, lineHeight: 1,
+                    transition: 'all .12s',
+                  }}>
+                    {def?.emoji || '📦'}
+                  </div>
+                  {/* Label */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{
+                      fontSize: 12, fontWeight: isSelected ? 700 : 600,
+                      color: isSelected ? color : '#1d1d1f',
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    }}>
+                      {def?.label || block.type}
+                    </p>
+                  </div>
+                  {/* Hover actions */}
+                  <div className="pb-nav-actions" style={{ display: 'flex', gap: 2, opacity: 0, transition: 'opacity .12s', flexShrink: 0 }}>
+                    <button onClick={e => { e.stopPropagation(); upd(i, { ...block, visible: isHidden ? true : false }); }}
+                      style={{ width: 22, height: 22, borderRadius: 5, border: 'none', background: 'transparent', cursor: 'pointer', color: isHidden ? '#c7c7cc' : '#34c759', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {isHidden ? <EyeOff style={{ width: 11, height: 11 }} /> : <Eye style={{ width: 11, height: 11 }} />}
+                    </button>
+                    <button onClick={e => { e.stopPropagation(); if (window.confirm('Excluir bloco?')) rem(i); }}
+                      style={{ width: 22, height: 22, borderRadius: 5, border: 'none', background: 'transparent', cursor: 'pointer', color: '#c7c7cc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <X style={{ width: 11, height: 11 }} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════
+          CENTER: Live Canvas (click to select blocks)
+      ══════════════════════════════════════════════════════ */}
+      <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
+        {/* Canvas topbar */}
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 20,
+          background: 'rgba(240,240,242,.92)', backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(0,0,0,.07)',
+          padding: '8px 14px',
+          display: 'flex', alignItems: 'center', gap: 10, height: 40,
+        }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff5f57', flexShrink: 0 }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#febc2e', flexShrink: 0 }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#28c840', flexShrink: 0 }} />
+          <div style={{ flex: 1, background: 'rgba(0,0,0,.07)', borderRadius: 6, height: 22, display: 'flex', alignItems: 'center', paddingLeft: 10 }}>
+            <p style={{ fontSize: 10, color: '#8e8e93', fontWeight: 500 }}>Pré-visualização — clique em um bloco para editar</p>
+          </div>
+          {selectedBlock && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#f97316', borderRadius: 6, padding: '3px 10px' }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff' }} />
+              <p style={{ fontSize: 10, fontWeight: 800, color: '#fff' }}>
+                Editando: {BLOCK_CATALOG.find(d => d.type === selectedBlock.type)?.label}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Canvas body */}
+        <div ref={canvasRef} style={{ padding: '16px 20px', minHeight: 'calc(100% - 40px)' }}>
+          {blocks.length === 0 ? (
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              minHeight: 400, gap: 14, textAlign: 'center',
+              background: '#fff', borderRadius: 14, border: '2px dashed rgba(0,0,0,.1)',
+            }}>
+              <Layers style={{ width: 40, height: 40, color: '#d1d1d6' }} />
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#8e8e93' }}>Página vazia</p>
+              <p style={{ fontSize: 12, color: '#c7c7cc' }}>Adicione blocos ou escolha um template pronto</p>
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                <button onClick={() => { setInsertAfter(-1); setShowPicker(true); }}
+                  style={{ padding: '8px 16px', borderRadius: 10, background: '#f5f5f7', color: '#6e6e73', border: '1.5px solid rgba(0,0,0,.08)', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Plus style={{ width: 13, height: 13 }} /> Bloco avulso
+                </button>
+                <button onClick={() => setShowPatterns(true)}
+                  style={{ padding: '8px 16px', borderRadius: 10, background: '#f97316', color: '#fff', border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 2px 10px rgba(249,115,22,.35)' }}>
+                  🎨 Usar template
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,.10)' }}>
+              {blocks.map((block, i) => {
+                const isSelected = selectedIdx === i;
+                const color = BLOCK_COLORS[block.type] || '#f97316';
+                return (
+                  <div key={block.id} data-block-idx={i}
+                    style={{ position: 'relative', outline: isSelected ? `3px solid ${color}` : '3px solid transparent', outlineOffset: -3, transition: 'outline-color .15s' }}
+                    className="pb-canvas-block">
+                    {/* Clickable overlay */}
+                    <div
+                      onClick={() => setSelectedIdx(isSelected ? null : i)}
+                      style={{
+                        position: 'absolute', inset: 0, zIndex: 5, cursor: 'pointer',
+                        transition: 'background .15s',
+                      }}
+                      className="pb-block-overlay"
+                    >
+                      {/* Selected label */}
+                      {isSelected && (
+                        <div style={{
+                          position: 'absolute', top: 8, left: 8, zIndex: 6,
+                          background: color, color: '#fff',
+                          fontSize: 10, fontWeight: 800, padding: '3px 9px', borderRadius: 6,
+                          pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 4,
+                          boxShadow: `0 2px 8px ${color}55`,
+                        }}>
+                          {BLOCK_CATALOG.find(d => d.type === block.type)?.emoji} {BLOCK_CATALOG.find(d => d.type === block.type)?.label}
+                        </div>
+                      )}
+                    </div>
+                    {/* Insert between */}
+                    <div className="pb-insert-zone" style={{
+                      position: 'absolute', bottom: -15, left: '50%', transform: 'translateX(-50%)',
+                      zIndex: 10, opacity: 0, transition: 'opacity .2s', pointerEvents: 'none',
+                    }}>
+                      <button
+                        style={{ padding: '4px 12px', borderRadius: 20, fontSize: 10, fontWeight: 800, background: '#f97316', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 10px rgba(249,115,22,.4)', pointerEvents: 'auto' }}
+                        onClick={e => { e.stopPropagation(); setInsertAfter(i); setShowPicker(true); }}>
+                        <Plus style={{ width: 10, height: 10 }} /> Inserir bloco aqui
+                      </button>
+                    </div>
+                    <BlockRenderer block={block} t={DEFAULT_T} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════
+          RIGHT: Inspector / Properties Panel (~360px)
+      ══════════════════════════════════════════════════════ */}
+      <div style={{
+        width: 360, flexShrink: 0, display: 'flex', flexDirection: 'column',
+        background: '#fff', borderLeft: '1px solid rgba(0,0,0,.07)', overflow: 'hidden',
+      }}>
+        {selectedBlock && selectedIdx !== null ? (
+          <BlockInspector
+            block={selectedBlock}
+            index={selectedIdx}
+            total={blocks.length}
+            onClose={() => setSelectedIdx(null)}
+            onChange={b => upd(selectedIdx, b)}
+            onMoveUp={() => mov(selectedIdx, -1)}
+            onMoveDown={() => mov(selectedIdx, 1)}
+            onDuplicate={() => dup(selectedIdx)}
+            onRemove={() => rem(selectedIdx)}
+          />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: 28, textAlign: 'center', gap: 14 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 18, background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c7c7cc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+              </svg>
+            </div>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 800, color: '#1d1d1f', marginBottom: 6 }}>Inspector de propriedades</p>
+              <p style={{ fontSize: 12, color: '#98989d', lineHeight: 1.6, maxWidth: 220 }}>
+                Selecione um bloco no canvas ou na lista para editar suas propriedades aqui
+              </p>
+            </div>
+            <div style={{ width: '100%', background: '#f5f5f7', borderRadius: 12, padding: '12px 14px', textAlign: 'left' }}>
+              <p style={{ fontSize: 10, fontWeight: 800, color: '#8e8e93', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Atalhos de teclado</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {[
+                  ['Ctrl+Z', 'Desfazer'], ['Ctrl+Y', 'Refazer'], ['Esc', 'Deselecionar bloco'],
+                ].map(([key, label]) => (
+                  <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 11, color: '#6e6e73' }}>{label}</span>
+                    <kbd style={{ fontSize: 10, fontWeight: 700, background: '#fff', border: '1px solid rgba(0,0,0,.1)', borderRadius: 5, padding: '2px 7px', color: '#1d1d1f', boxShadow: '0 1px 2px rgba(0,0,0,.06)' }}>{key}</kbd>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Block picker modal */}
+      {showPicker && (
+        <BlockPicker
+          onAdd={type => { insertAt(type, insertAfter); setShowPicker(false); }}
+          onClose={() => setShowPicker(false)}
+        />
       )}
-      {showPicker !== null && <BlockPicker onAdd={(type) => insertAt(type, showPicker)} onClose={() => setShowPicker(null)} />}
+
+      {/* Block Patterns modal */}
+      {showPatterns && (
+        <BlockPatternsPicker
+          currentBlocksCount={blocks.length}
+          onInsert={(newBlocks, mode) => {
+            if (mode === 'replace') {
+              applyChange(newBlocks);
+              setSelectedIdx(null);
+            } else {
+              applyChange([...blocks, ...newBlocks]);
+              setSelectedIdx(blocks.length);
+            }
+          }}
+          onClose={() => setShowPatterns(false)}
+        />
+      )}
+
+      {/* Inline styles for hover effects */}
+      <style>{`
+        .pb-nav-item:hover .pb-nav-actions { opacity: 1 !important; }
+        .pb-nav-item:hover { background: rgba(0,0,0,.03) !important; }
+        .pb-canvas-block:hover .pb-block-overlay { background: rgba(249,115,22,.04); }
+        .pb-canvas-block:hover .pb-insert-zone { opacity: 1 !important; pointer-events: auto !important; }
+        .pb-canvas-block:hover { outline-color: rgba(249,115,22,.3) !important; }
+      `}</style>
     </div>
   );
 }

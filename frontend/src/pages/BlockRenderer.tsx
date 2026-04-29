@@ -463,6 +463,30 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
     // ── HERO ─────────────────────────────────────────────────────────────────
     case 'hero': {
       // Converte campos do PageBlock para o formato Banner — renderiza igual ao carrossel da home
+      const hasHeroContent = !!(block.title?.trim() || block.description?.trim() || block.imageUrl);
+      if (!hasHeroContent) {
+        // Preview placeholder: sem imagem e sem texto, mostra gradiente com dica
+        return (
+          <div style={{
+            position: 'relative', width: '100%', minHeight: 320,
+            background: `linear-gradient(135deg, #0d0d10 0%, ${t.from}40 100%)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexDirection: 'column', gap: 12,
+          }}>
+            <div style={{
+              border: `2px dashed ${t.from}80`,
+              borderRadius: 12, padding: '24px 40px', textAlign: 'center',
+            }}>
+              <p style={{ color: t.from, fontFamily: "'Outfit',sans-serif", fontSize: 18, fontWeight: 700, margin: 0 }}>
+                Bloco Hero
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginTop: 6, margin: '6px 0 0' }}>
+                Adicione um título, descrição ou imagem para visualizar
+              </p>
+            </div>
+          </div>
+        );
+      }
       const heroBanner = {
         id: 0,
         title: block.title || '',
@@ -916,9 +940,9 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
         <div className="bg-white border-b" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
           <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6">
             {(block.stats || []).map((s, i) => (
-              <div key={i} className="text-center">
-                <p className="font-bold text-3xl mb-1" style={{ color: t.from, fontFamily: "'Outfit',sans-serif" }}>{s.value}</p>
-                <p className="text-[#6e6e73] text-sm">{s.label}</p>
+              <div key={i} className="text-center min-w-0 overflow-hidden">
+                <p className="font-bold text-3xl mb-1 truncate" style={{ color: t.from, fontFamily: "'Outfit',sans-serif" }}>{s.value}</p>
+                <p className="text-[#6e6e73] text-sm truncate">{s.label}</p>
               </div>
             ))}
           </div>
@@ -1036,17 +1060,6 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
       );
 
     // ── ALERT BANNER ──────────────────────────────────────────────────────────
-    case 'alert_banner': {
-      if (!block.alertText) return null;
-      const ac = { info: { bg: '#eff6ff', text: '#1d4ed8', icon: 'ℹ️' }, success: { bg: '#f0fdf4', text: '#15803d', icon: '✅' }, warning: { bg: '#fffbeb', text: '#b45309', icon: '⚠️' }, error: { bg: '#fef2f2', text: '#dc2626', icon: '🚨' } }[block.alertType || 'info'];
-      return (
-        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-3">
-          <div className="rounded-2xl px-5 py-3.5 flex items-center gap-3 text-[14px] font-medium" style={{ background: ac.bg, color: ac.text }}>
-            <span className="text-lg">{ac.icon}</span><span>{block.alertText}</span>
-          </div>
-        </div>
-      );
-    }
 
     // ── DIVIDER ───────────────────────────────────────────────────────────────
     case 'divider':
