@@ -16,5 +16,6 @@ router.use('/',                require('./social'));   // logos, testimonials, p
 router.use('/leads',           require('./leads'));
 router.use('/newsletter',      require('./newsletter'));
 router.use('/analytics',       require('./analytics'));
+router.use('/preview-tokens',  require('./preview-tokens'));
 
 module.exports = router;

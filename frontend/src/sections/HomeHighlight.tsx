@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 
 const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
-const BASE_URL = API_URL.replace('/api', '');
+const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
 function imgUrl(src?: string) {
   if (!src) return '';

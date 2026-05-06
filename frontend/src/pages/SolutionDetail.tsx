@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { resolveImg } from '@/utils/imageUtils';
 import type React from 'react';
 
 import { useParams, Link, useNavigate } from 'react-router-dom';
@@ -15,8 +16,7 @@ import { fetchSolutionPageBySlug } from '@/services/solutionPagesService';
 import { AnimatedBgLayer } from '@/components/AnimatedBgLayer';
 import type { SolutionPage, PageBlock } from '@/types';
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace('/api', '');
-const resolveImg = (p?: string) => !p ? null : p.startsWith('http') ? p : `${BASE_URL}${p}`;
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace(/\/api\/?$/, '');
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Building2, Monitor, ShoppingCart, CreditCard, Truck, BarChart3,

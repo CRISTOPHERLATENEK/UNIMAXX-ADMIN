@@ -57,9 +57,8 @@ const ICON_GROUPS: { label: string; icons: string[] }[] = [
   { label: 'Outros', icons: ['Sparkles', 'Footprints'] },
 ];
 
-const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
-const BASE_URL = API_URL.replace('/api', '');
-const imgSrc = (p?: string) => !p ? '' : p.startsWith('http') ? p : `${BASE_URL}${p}`;
+import { resolveImgSrc } from '@/utils/imageUtils';
+const imgSrc = resolveImgSrc;
 
 // ── Helpers UI ────────────────────────────────────────────────────────────────
 

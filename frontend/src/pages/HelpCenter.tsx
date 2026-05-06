@@ -12,7 +12,7 @@ import { Footer } from '@/sections/Footer';
 import { PageBanner } from '@/components/PageBanner';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const BASE_URL = API_URL.replace('/api', '');
+const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
 interface HelpCategory {
   id: number;

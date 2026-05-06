@@ -71,20 +71,20 @@ const heroBlockSchema = z.object({
   subtitle: z.string().max(500).optional(),
   image: z.string().max(2048).optional(),
   visible: z.boolean().optional().default(true),
-});
+}).passthrough();
 
 const textBlockSchema = z.object({
   type: z.literal('text'),
   content: z.string().max(50000).optional(),
   visible: z.boolean().optional().default(true),
-});
+}).passthrough();
 
 const imageBlockSchema = z.object({
   type: z.literal('image'),
-  src: z.string().max(2048),
+  src: z.string().max(2048).optional(),
   alt: z.string().max(255).optional(),
   visible: z.boolean().optional().default(true),
-});
+}).passthrough();
 
 const blockSchema = z.discriminatedUnion('type', [
   heroBlockSchema,
@@ -101,8 +101,8 @@ const pageSchema = z.object({
   meta_title: optionalString(160),
   meta_description: optionalString(320),
   is_active: boolField(1),
-  blocks_json: z.array(blockSchema).max(200, 'Máximo de 200 blocos').default([]),
-});
+  blocks_json: z.array(z.intersection(blockSchema, z.object({ block_style: z.string().optional().default('fluid') }))).max(200, 'Máximo de 200 blocos').default([]),
+}).passthrough(); // fix #4 — campos extras não causam erro de validação
 
 const genericPageSchema = z.object({
   slug: requiredString(160, 'Slug').regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug inválido'),
@@ -110,7 +110,7 @@ const genericPageSchema = z.object({
   meta_title: optionalString(160),
   meta_description: optionalString(320),
   is_active: boolField(1),
-  blocks_json: z.array(blockSchema).max(200, 'Máximo de 200 blocos').default([]),
+  blocks_json: z.array(z.intersection(blockSchema, z.object({ block_style: z.string().optional().default('fluid') }))).max(200, 'Máximo de 200 blocos').default([]),
 });
 
 const segmentSchema = z.object({

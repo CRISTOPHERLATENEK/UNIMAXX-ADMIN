@@ -30,7 +30,7 @@ export function Segments() {
   const primaryColor = settings.primary_color || '#f97316';
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-  const BASE_URL = API_URL.replace('/api', '');
+  const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
   const segments = (data.segments || [])
     .filter((s: any) => Number(s.active) === 1 && (s.show_home === undefined || Number(s.show_home) === 1))

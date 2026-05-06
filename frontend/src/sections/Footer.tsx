@@ -36,7 +36,7 @@ export function Footer() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
-  const BASE_URL = API_URL.replace("/api", "");
+  const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
   // ── Logo ──
   const logoValue = content["header.logo_white"] || content["header.logo"] || content["footer.logo"] || "";

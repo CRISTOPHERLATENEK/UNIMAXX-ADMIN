@@ -62,8 +62,9 @@ import { PageLayoutManager } from '@/admin/PageLayoutManager';
 import { parseLayout } from '@/admin/PageLayoutManager';
 import SolutionPageDetail from '@/pages/SolutionPageDetail';
 import GenericPageView from '@/pages/GenericPageView';
+import PreviewView from '@/pages/PreviewView';
 import { GenericPagesManager } from '@/admin/GenericPagesManager';
-import SolutionPagesManager from '@/admin/SolutionPagesManager';
+// SolutionPagesManager removido — gerenciamento de páginas de solução feito pelo UnifiedSolutionsManager
 import { HomeManager } from '@/admin/HomeManager';
 import { HomeEditor } from '@/admin/HomeEditor';
 
@@ -219,13 +220,14 @@ function AppRoutes() {
   const publicFallback = showMaintenance ? <MaintenancePage /> : <NotFound />;
 
   return (
-    <div key={isAdminRoute ? 'admin' : location.pathname} className={!isAdminRoute ? 'page-transition' : undefined}>
+    <div className={!isAdminRoute ? 'page-transition' : undefined}>
       <Routes location={location}>
         <Route path="/" element={showMaintenance ? <MaintenancePage /> : <HomePage />} />
         <Route path="/solucoes" element={showMaintenance ? <MaintenancePage /> : <Solucoes />} />
         <Route path="/solucao/:id" element={showMaintenance ? <MaintenancePage /> : <SolucaoDetalhe />} />
         <Route path="/solucao-page/:slug" element={showMaintenance ? <MaintenancePage /> : <SolutionPageDetail />} />
         <Route path="/p/:slug" element={showMaintenance ? <MaintenancePage /> : <GenericPageView />} />
+        <Route path="/preview/:token" element={<PreviewView />} />
         <Route path="/segmentos" element={showMaintenance ? <MaintenancePage /> : <Segmentos />} />
         <Route path="/sobre" element={showMaintenance ? <MaintenancePage /> : <Sobre />} />
         <Route path="/carreiras" element={showMaintenance ? <MaintenancePage /> : <Carreiras />} />
@@ -255,7 +257,7 @@ function AppRoutes() {
           <Route path="parceiros" element={<PartnersManager />} />
           <Route path="layout" element={<PageLayoutManager />} />
           <Route path="paginas" element={<GenericPagesManager />} />
-          <Route path="paginas-solucoes" element={<SolutionPagesManager />} />
+          {/* paginas-solucoes removida — use /admin/solucoes (UnifiedSolutionsManager) */}
           <Route path="institucional" element={<InstitucionalManager />} />
           <Route path="leads" element={<LeadsManager />} />
           <Route path="newsletter" element={<NewsletterManager />} />

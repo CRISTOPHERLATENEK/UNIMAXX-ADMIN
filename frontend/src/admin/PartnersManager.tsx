@@ -3,6 +3,7 @@ import type React from 'react';
 
 import { Plus, Pencil, Trash2, Eye, EyeOff, X, Save, Upload } from 'lucide-react';
 import { ImageUploadField, SPECS } from '@/components/ImageUploadField';
+import { resolveImgSrc } from '@/utils/imageUtils';
 import { useData } from '@/context/DataContext';
 import { toast } from 'sonner';
 import type { Partner } from '@/types';
@@ -18,9 +19,7 @@ export function PartnersManager() {
   const [uploading, setUploading] = useState(false);
   const [filterCat, setFilterCat] = useState('todos');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-  const BASE_URL = API_URL.replace('/api', '');
-  const imgSrc = (img: string) => img ? (img.startsWith('http') ? img : `${BASE_URL}${img}`) : '';
+  const imgSrc = (img: string) => img ? (img.startsWith('http') ? img : (resolveImgSrc(img))) : '';
 
   const categories = ['todos', ...Array.from(new Set(partners.map((p) => p.category).filter(Boolean)))];
   const filtered = filterCat === 'todos' ? partners : partners.filter((p) => p.category === filterCat);

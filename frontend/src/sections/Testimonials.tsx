@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Star, Quote } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 
 const API_URL  = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
-const BASE_URL = API_URL.replace('/api', '');
+const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 const imgSrc   = (img: string) => img ? (img.startsWith('http') ? img : `${BASE_URL}${img}`) : '';
 
 function initials(name: string) {

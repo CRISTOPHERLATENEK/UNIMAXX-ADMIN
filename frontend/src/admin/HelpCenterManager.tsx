@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type React from 'react';
-
+import { API_URL } from '../config';
 import {
   Plus, Edit2, Trash2, Search, Upload, EyeOff,
   Save, X, AlertCircle, CheckCircle2, Loader
@@ -12,8 +12,7 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const BASE_URL = API_URL.replace('/api', '');
+import { resolveImgSrc } from '@/utils/imageUtils';
 
 interface HelpCategory {
   id: number;
@@ -119,7 +118,7 @@ export function HelpCenterManager() {
         fetchCategories();
       } else {
         let msg = 'Erro ao salvar categoria';
-        try { const err = await res.json(); msg = err.error || msg; } catch {}
+        try { const err = await res.json(); msg = err.error || msg; } catch { }
         toast.error(msg);
         console.error('Save category error:', res.status, msg);
       }
@@ -156,7 +155,7 @@ export function HelpCenterManager() {
         fetchArticles();
       } else {
         let msg = 'Erro ao salvar artigo';
-        try { const err = await res.json(); msg = err.error || msg; } catch {}
+        try { const err = await res.json(); msg = err.error || msg; } catch { }
         toast.error(msg);
         console.error('Save article error:', res.status, msg);
       }
@@ -243,11 +242,10 @@ export function HelpCenterManager() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-3 font-medium border-b-2 transition-colors ${
-              activeTab === tab
+            className={`px-4 py-3 font-medium border-b-2 transition-colors ${activeTab === tab
                 ? 'border-orange-500 text-orange-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
           >
             {tab === 'categories' ? 'Categorias' : 'Artigos'}
           </button>
@@ -538,9 +536,8 @@ export function HelpCenterManager() {
           <div className="space-y-4 pt-2">
             <label
               htmlFor="help-image-upload"
-              className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer transition-colors ${
-                uploadingImage ? 'border-orange-300 bg-orange-50' : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50'
-              }`}
+              className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer transition-colors ${uploadingImage ? 'border-orange-300 bg-orange-50' : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50'
+                }`}
             >
               <Loader className="animate-spin text-orange-500 mb-2" size={28} style={{ display: uploadingImage ? 'block' : 'none' }} />
               <Upload className="text-gray-400 mb-2" size={28} style={{ display: uploadingImage ? 'none' : 'block' }} />
@@ -562,7 +559,7 @@ export function HelpCenterManager() {
               {images.length === 0 ? (
                 <p className="text-center text-sm text-gray-500 py-4">Nenhuma imagem cadastrada</p>
               ) : images.map(img => {
-                const src = img.image_path.startsWith('http') ? img.image_path : `${BASE_URL}${img.image_path}`;
+                const src = resolveImgSrc(img.image_path);
                 return (
                   <div key={img.id} className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
                     <img src={src} alt={img.alt_text || 'imagem'} className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />

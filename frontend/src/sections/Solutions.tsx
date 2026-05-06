@@ -11,14 +11,13 @@ import { useData } from '@/context/DataContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchSolutionPageBySlug } from '@/services/solutionPagesService';
 import type { SolutionPage } from '@/types';
+import { resolveImg } from '@/components/ImageUploadField';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Building2, Monitor, ShoppingCart, CreditCard, Truck, BarChart3,
   Globe, Settings, Zap, Package, Star, Layers, FileText,
 };
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace('/api', '');
-const resolveImg = (p?: string) => !p ? null : p.startsWith('http') ? p : `${BASE_URL}${p}`;
 
 const GRADIENTS = [
   ['#1e3a5f', '#2563eb'], ['#7c2d12', '#c2410c'], ['#14532d', '#16a34a'],
@@ -203,6 +202,7 @@ export function Solutions() {
   const content = data.content || {};
   const pc = data.settings?.primary_color || '#f97316';
   const sc = data.settings?.secondary_color || '#fb923c';
+  const layout = content['solutions.layout'] || 'carousel';
 
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeSol, setActiveSol] = useState<any>(null);
@@ -219,7 +219,7 @@ export function Solutions() {
 
   if (loading || !solutions.length) return null;
 
-  const useCarousel = solutions.length > 4;
+  const useCarousel = (layout === 'carousel' || layout === 'featured') && solutions.length > 4;
 
   return (
     <section id="solucoes" className="sol-section">
@@ -267,7 +267,43 @@ export function Solutions() {
         )}
 
         {/* ── Cards ── */}
-        {useCarousel ? (
+        {layout === 'compact' ? (
+          /* Compact grid — 2 cols mobile, 3 cols sm, up to 6 cols */
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+            gap: 16,
+            marginBottom: 8,
+          }}>
+            {solutions.map((sol: any, i: number) => (
+              <SolCard key={sol.solution_id} sol={sol} index={i} pc={pc} onClick={() => openModal(sol)} />
+            ))}
+          </div>
+        ) : layout === 'featured' && solutions.length > 1 ? (
+          /* Featured layout — first card larger, rest in carousel */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: 24,
+            }}>
+              {solutions.slice(0, 1).map((sol: any, i: number) => (
+                <SolCard key={sol.solution_id} sol={sol} index={i} pc={pc} onClick={() => openModal(sol)} />
+              ))}
+            </div>
+            {solutions.length > 1 && (
+              <div style={{ position: 'relative', margin: '0 -16px' }}>
+                <div className="sol-fade-l" />
+                <div className="sol-fade-r" />
+                <div ref={trackRef} className="sol-track">
+                  {solutions.slice(1).map((sol: any, i: number) => (
+                    <SolCard key={sol.solution_id} sol={sol} index={i + 1} pc={pc} onClick={() => openModal(sol)} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : useCarousel ? (
           /* Scrollable carousel */
           <div style={{ position: 'relative', margin: '0 -16px' }}>
             <div className="sol-fade-l" />

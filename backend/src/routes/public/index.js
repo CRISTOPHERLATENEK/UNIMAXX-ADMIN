@@ -102,17 +102,31 @@ router.get('/solution-pages', cache(60), (req, res) => {
   );
 });
 
-// Detalhe público: metadados + blocks_json
-router.get('/solution-pages/:slug', (req, res) => {
+// Detalhe público por slug — helper compartilhado
+function querySolutionPageBySlug(slug, res) {
   db.get(
     'SELECT id, slug, title, icon, color_theme, meta_title, meta_description, is_active, blocks_json, created_at, updated_at FROM solution_pages WHERE slug=? AND is_active=1',
-    [req.params.slug],
+    [slug],
     (err, row) => {
       if (err) return res.status(500).json({ error: 'Erro' });
       if (!row) return res.status(404).json({ error: 'Página não encontrada' });
       res.json({ ...row, is_active: !!row.is_active, blocks_json: parseArr(row.blocks_json) });
     }
   );
+}
+
+// Rota canônica sem ambiguidade (fix #6): GET /api/solution-pages/by-slug/:slug
+// Deve ser declarada ANTES de /:slug para ter precedência no Express
+router.get('/solution-pages/by-slug/:slug', (req, res) => {
+  querySolutionPageBySlug(req.params.slug, res);
+});
+
+// Compat: /:slug — rejeita slugs puramente numéricos para evitar colisão com IDs
+router.get('/solution-pages/:slug', (req, res) => {
+  if (/^\d+$/.test(req.params.slug)) {
+    return res.status(400).json({ error: 'Use /by-slug/:slug para buscar por slug' });
+  }
+  querySolutionPageBySlug(req.params.slug, res);
 });
 
 // ── Páginas Genéricas ─────────────────────────────────────────────────────
@@ -163,5 +177,7 @@ router.post('/track', (req, res) => {
     () => res.json({ ok: true })
   );
 });
+
+router.use('/preview', require('./preview'));
 
 module.exports = router;

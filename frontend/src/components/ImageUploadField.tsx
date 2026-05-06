@@ -5,10 +5,9 @@
 import React, { useRef } from 'react';
 import { Upload, X, ImageIcon, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
+import { resolveImg as _resolveImg } from '@/utils/imageUtils';
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace('/api', '');
-export const resolveImg = (p?: string) =>
-  !p ? null : p.startsWith('http') ? p : `${BASE_URL}${p}`;
+export const resolveImg = _resolveImg;
 
 export interface ImgSpec {
   dimensions: string;   // ex: "1440 × 560 px"
@@ -25,18 +24,28 @@ interface Props {
   label?: string;
   value: string;
   onChange: (url: string) => void;
-  onUpload: (file: File) => Promise<void>;
+  onUpload?: (file: File) => Promise<void>;
   uploading?: boolean;
-  spec: ImgSpec;
+  spec?: ImgSpec;
   height?: number;      // preview height px, default 148
   placeholder?: string;
 }
 
+const DEFAULT_SPEC: ImgSpec = {
+  dimensions: 'Livre',
+  formats: 'JPG, PNG, WEBP',
+  maxSize: '5 MB',
+  maxSizeBytes: 5 * 1024 * 1024,
+  where: 'Imagem',
+  objectFit: 'cover',
+};
+
 export function ImageUploadField({
   label, value, onChange, onUpload, uploading = false,
-  spec, height = 148, placeholder,
+  spec: specProp, height = 148, placeholder,
 }: Props) {
   const ref = useRef<HTMLInputElement>(null);
+  const spec = specProp ?? DEFAULT_SPEC;
   const src = resolveImg(value);
   const fit = spec.objectFit ?? 'cover';
 
@@ -61,7 +70,7 @@ export function ImageUploadField({
     }
 
     try {
-      await onUpload(f);
+      if (onUpload) await onUpload(f);
     } catch (err: any) {
       toast.error(err?.message || "Não foi possível salvar. Tente novamente mais tarde.");
     } finally {

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { resolveImg } from '@/components/ImageUploadField';
 
 const iconOptions = [
   'Building2', 'Monitor', 'ShoppingCart', 'CreditCard',
@@ -73,9 +74,6 @@ export function SolutionsManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
-
-  const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace('/api', '');
-  const resolveImg = (img?: string) => !img ? null : img.startsWith('http') ? img : `${API_BASE}${img}`;
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

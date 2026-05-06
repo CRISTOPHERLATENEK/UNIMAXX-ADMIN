@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useData } from "@/context/DataContext";
 import { useTheme } from "@/context/ThemeContext";
 
+
 /* ═══════════════════════════════════════════════════════════════
    HEADER — 4 LAYOUTS SELECIONÁVEIS VIA ADMIN (settings.header_layout)
    "default"   → estilo original escuro
@@ -26,13 +27,18 @@ export function Header() {
   const content = data.content;
   const settings = data.settings || {};
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
-  const BASE_URL = API_URL.replace("/api", "");
+  const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
   const pc = settings.primary_color || "#f97316";
   const sc = settings.secondary_color || "#fb923c";
   const headerLayout = settings.header_layout || "default";
   const headerBg = settings.header_bg_color || "";
   const headerText = settings.header_text_color || "";
+
+  // ── Top Bar (Faixa de Chamada) ──
+  const topBarEnabled = content["header.topbar.enabled"] === "1";
+  const topBarText = content["header.topbar.text"] || "";
+  const topBarLink = content["header.topbar.link"] || "";
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -63,8 +69,9 @@ export function Header() {
   // ── Nav items (mesma lógica original) ──
   const activeSolutions = (data.solutions || []).filter((s: any) => s.active === 1);
   const solutionsDropdown = [
-    { label: "Todas as Soluções", to: "/solucoes" },
+    { id: "all-solutions", label: "Todas as Soluções", to: "/solucoes" },
     ...activeSolutions.map((s: any) => ({
+      id: `solution-${s.solution_id}`,
       label: s.title,
       to: s.nav_link?.trim() || `/solucao-page/${s.solution_id}`,
     })),
@@ -96,7 +103,35 @@ export function Header() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  // ── Render Logo ──
+  // ── Top Bar (Faixa de Chamada) ──
+  const renderTopBar = () => {
+    if (!topBarEnabled || !topBarText) return null;
+    const bar = (
+      <>
+        <style>{`@keyframes topbar-shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}`}</style>
+        <div
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 text-[12px] font-semibold text-white relative overflow-hidden"
+          style={{ background: `linear-gradient(90deg, ${pc}, ${sc}, ${pc})`, backgroundSize: "200% 100%", animation: "topbar-shimmer 4s linear infinite" }}
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse" />
+            {topBarText}
+            {topBarLink && (
+              <span className="inline-flex items-center gap-0.5 underline underline-offset-2 opacity-80 hover:opacity-100 transition-opacity">
+                Saiba mais <ArrowRight className="w-3 h-3" />
+              </span>
+            )}
+          </span>
+        </div>
+      </>
+    );
+    if (topBarLink) {
+      return topBarLink.startsWith("http")
+        ? <a href={topBarLink} target="_blank" rel="noreferrer" className="block">{bar}</a>
+        : <Link to={topBarLink} className="block">{bar}</Link>;
+    }
+    return bar;
+  };
   const renderLogo = (color: string = "white", size: "sm" | "md" = "md") => {
     const sz = size === "sm" ? 32 : 36;
     const fs = size === "sm" ? 15 : 17;
@@ -165,11 +200,11 @@ export function Header() {
             >
               {item.dropdown.map((sub: any, i: number) => (
                 <Link
-                  key={sub.label}
+                  key={sub.id ?? `${sub.label}-${i}`}
                   to={sub.to}
                   className={`flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium transition-all duration-150 mx-1 rounded-xl group/item ${isActive(sub.to)
-                      ? "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10"
-                      : "text-[#1d1d1f]/80 hover:text-[#1d1d1f] hover:bg-gray-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[.06]"
+                    ? "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10"
+                    : "text-[#1d1d1f]/80 hover:text-[#1d1d1f] hover:bg-gray-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[.06]"
                     }`}
                   style={{ animationDelay: `${i * 25}ms`, fontFamily: "'DM Sans', sans-serif" }}
                 >
@@ -217,13 +252,13 @@ export function Header() {
                     style={{ fontFamily: "'DM Sans', sans-serif" }}>
                     {item.label}
                   </p>
-                  {item.dropdown.map((subItem) => (
+                  {item.dropdown.map((subItem, idx) => (
                     <Link
-                      key={subItem.label}
+                      key={'id' in subItem ? subItem.id : `${subItem.label}-${idx}`}
                       to={subItem.to}
                       className={`flex items-center justify-between px-3 py-3 text-[15px] font-medium rounded-xl transition-colors ${isActive(subItem.to)
-                          ? "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10"
-                          : "text-[#1d1d1f] hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[.05]"
+                        ? "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10"
+                        : "text-[#1d1d1f] hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[.05]"
                         }`}
                       style={{ fontFamily: "'DM Sans', sans-serif" }}
                       onClick={() => setIsMenuOpen(false)}
@@ -237,8 +272,8 @@ export function Header() {
                 <Link
                   to={item.to!}
                   className={`flex items-center justify-between px-3 py-3 text-[15px] font-medium rounded-xl transition-colors ${isActive(item.to!)
-                      ? "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10"
-                      : "text-[#1d1d1f] hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[.05]"
+                    ? "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10"
+                    : "text-[#1d1d1f] hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[.05]"
                     }`}
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                   onClick={() => setIsMenuOpen(false)}
@@ -286,11 +321,12 @@ export function Header() {
   if (headerLayout === "pill") {
     return (
       <header className="fixed top-0 left-0 right-0 z-50">
+        {renderTopBar()}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
           <div
             className={`flex items-center justify-between h-[56px] px-5 transition-all duration-500 ${isScrolled
-                ? "bg-white/95 dark:bg-[#1a1a1d]/95 shadow-lg shadow-black/[.06] backdrop-blur-xl"
-                : "bg-white dark:bg-[#1a1a1d] shadow-md shadow-black/[.04]"
+              ? "bg-white/95 dark:bg-[#1a1a1d]/95 shadow-lg shadow-black/[.06] backdrop-blur-xl"
+              : "bg-white dark:bg-[#1a1a1d] shadow-md shadow-black/[.04]"
               }`}
             style={{ borderRadius: 9999, border: "1px solid rgba(0,0,0,.06)" }}
           >
@@ -363,6 +399,7 @@ export function Header() {
   if (headerLayout === "pill-dark") {
     return (
       <header className="fixed top-0 left-0 right-0 z-50">
+        {renderTopBar()}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
           <div
             className={`flex items-center justify-between h-[56px] px-5 transition-all duration-500 ${isScrolled ? "shadow-lg shadow-black/[.15] backdrop-blur-xl" : "shadow-md shadow-black/[.1]"
@@ -422,6 +459,7 @@ export function Header() {
           backdropFilter: isScrolled ? "blur(20px)" : undefined,
         }}
       >
+        {renderTopBar()}
         {/* Top bar */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-[52px]"
@@ -474,8 +512,8 @@ export function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
-          ? "glass shadow-sm shadow-black/[.04] border-b border-black/[.06] dark:border-white/[.05]"
-          : "backdrop-blur-xl"
+        ? "glass shadow-sm shadow-black/[.04] border-b border-black/[.06] dark:border-white/[.05]"
+        : "backdrop-blur-xl"
         }`}
       style={{
         background: headerBg
@@ -483,6 +521,7 @@ export function Header() {
           : isScrolled ? undefined : "rgba(10,10,12,0.90)",
       }}
     >
+      {renderTopBar()}
       <div
         className="absolute top-0 left-0 right-0 h-[2px] transition-opacity duration-500"
         style={{

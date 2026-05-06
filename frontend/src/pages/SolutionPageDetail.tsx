@@ -99,7 +99,7 @@ export default function SolutionPageDetail() {
       {blocks.length > 0
         ? groups.map((g, gi) => {
             if (g.kind === 'single') {
-              return <BlockRenderer key={g.block.id} block={g.block} t={t} />;
+              return <BlockRenderer key={g.block.id || `single-${gi}`} block={g.block} t={t} />;
             }
             // Parent group: shared background wrapper
             const isImage = g.bgType === 'image';
@@ -115,7 +115,7 @@ export default function SolutionPageDetail() {
                   opacity: g.opacity,
                 }} />
                 <div style={{ position: 'relative', zIndex: 1 }}>
-                  {g.blocks.map(block => <BlockRenderer key={block.id} block={block} t={t} />)}
+                  {g.blocks.map((block, bi) => <BlockRenderer key={block.id || `block-${gi}-${bi}`} block={block} t={t} />)}
                 </div>
               </div>
             );

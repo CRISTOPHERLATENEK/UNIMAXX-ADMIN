@@ -16,7 +16,7 @@ export function Partners() {
   const filtered = activeCategory === 'todos' ? partners : partners.filter((p) => p.category === activeCategory);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-  const BASE_URL = API_URL.replace('/api', '');
+  const BASE_URL = API_URL.replace(/\/api\/?$/, '');
   const imgSrc = (img: string) => (img.startsWith('http') ? img : `${BASE_URL}${img}`);
 
   if (loading || !partners.length) return null;

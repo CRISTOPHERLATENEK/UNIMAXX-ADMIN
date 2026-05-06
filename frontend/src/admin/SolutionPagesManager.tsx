@@ -17,10 +17,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const BASE_URL = API_URL.replace('/api', '');
-const resolveImg = (p?: string) => !p ? null : p.startsWith('http') ? p : `${BASE_URL}${p}`;
+import { API_URL } from '../config';
+import { resolveImg } from '@/components/ImageUploadField';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Stat { label: string; value: string; }

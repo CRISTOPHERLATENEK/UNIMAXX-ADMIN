@@ -12,7 +12,7 @@ export async function fetchSolutionPages(): Promise<SolutionPage[]> {
 }
 
 export async function fetchSolutionPageBySlug(slug: string): Promise<SolutionPage> {
-  const res = await fetch(`${API_URL}/solution-pages/${encodeURIComponent(slug)}`);
+  const res = await fetch(`${API_URL}/solution-pages/by-slug/${encodeURIComponent(slug)}`); // fix #6 — rota explícita sem colisão numérica
   if (res.status === 404) throw new Error('Página de solução não encontrada');
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

@@ -758,7 +758,6 @@ function TabEmpresa({ settings, setSetting, content, setContentKey }: {
   settings: Record<string, string>; setSetting: (k: string, v: string) => void;
   content: Record<string, string>; setContentKey: (k: string, v: string) => void;
 }) {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   const [uploading, setUploading] = React.useState<Record<string, boolean>>({});
 
   const uploadImg = async (key: 'logo' | 'logo_white' | 'favicon' | 'og', file: File, target: 'content' | 'setting', contentKey: string) => {

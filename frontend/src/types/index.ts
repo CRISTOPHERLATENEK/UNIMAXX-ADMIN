@@ -139,7 +139,7 @@ export type BlockSpacing = 'compact' | 'normal' | 'spacious';
 export type BlockRadius = 'none' | 'medium' | 'large';
 
 // Fundo contínuo entre blocos
-export type ContinuousBgMode = 'none' | 'parent' | 'fixed' | 'js_offset';
+export type ContinuousBgMode = 'none' | 'self' | 'parent' | 'fixed' | 'js_offset';
 export type ContinuousBgType = 'gradient' | 'solid' | 'image';
 export type SectionShape = 'none' | 'wave' | 'wave-soft' | 'diagonal-right' | 'diagonal-left' | 'arc-down' | 'arc-up' | 'zigzag' | 'slant-both';
 
@@ -148,7 +148,7 @@ export interface PageBlock {
   type: BlockType;
   visible: boolean;
   // hero
-  heroLayout?: 'centered' | 'split' | 'dark_glow' | 'magazine' | 'cinematic';
+  heroLayout?: 'centered' | 'centered_dark' | 'split' | 'dark_glow' | 'magazine' | 'cinematic';
   bannerStyle?: 'cinematic' | 'neon' | 'editorial' | 'split' | 'bold' | 'parallax';
   accentColor?: string;
   badge?: string;
@@ -169,9 +169,22 @@ export interface PageBlock {
   // lists
   items?: string[];
   // items with icons (new)
-  iconItems?: { icon: string; label: string; desc?: string }[];
+  iconItems?: {
+    icon: string;
+    label: string;
+    desc?: string;
+    align?: 'left' | 'center' | 'right';
+    width?: number;
+    paddingH?: number;
+    paddingV?: number;
+    fontSize?: number;
+    descSize?: number;
+    iconSize?: number;
+    bold?: boolean;
+    accentColor?: string;
+  }[];
   // steps
-  steps?: { title: string; description: string }[];
+  steps?: { title: string; description: string; number?: string }[];
   // stats
   stats?: { label: string; value: string }[];
   // faq
@@ -229,6 +242,29 @@ export interface PageBlock {
   sectionShapeBottom?: SectionShape;
   sectionShapeColor?: string;
   sectionShapeSize?: number; // 1–5, default 3
+  // ── Per-block colour overrides ────────────────────────────────────────────
+  bgColor?: string;
+  titleColor?: string;
+  subtitleColor?: string;
+  ctaBgColor?: string;
+  ctaTextColor?: string;
+  // ── Per-block font sizes ──────────────────────────────────────────────────
+  titleSize?: string;
+  subtitleSize?: string;
+  // ── Layout / style variants ───────────────────────────────────────────────
+  blockStyle?: string;
+  block_style?: string;
+  ctaLayout?: string;
+  // ── Standalone CTA fields ─────────────────────────────────────────────────
+  ctaText?: string;
+  ctaUrl?: string;
+  ctaBtnBg?: string;
+  ctaBtnText?: string;
+  socialProof?: string;
+  // ── Integrations block ────────────────────────────────────────────────────
+  logoItems?: { name: string; imageUrl: string }[];
+  // ── Testimonial block ─────────────────────────────────────────────────────
+  company?: string;
 }
 
 // ─── Solution Pages (lean — conteúdo vive em blocks_json) ────────────────────

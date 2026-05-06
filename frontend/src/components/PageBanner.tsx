@@ -6,18 +6,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import type { Banner } from '@/types';
+import { resolveImgSrc } from '@/utils/imageUtils';
 
-const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
-const BASE_URL = API_URL.replace('/api', '');
-
-function imgUrl(src: string) {
-  if (!src) return '';
-  if (src.startsWith('http')) return src;
-  const cleanPath = src.startsWith('/') ? src : `/${src}`;
-  if (cleanPath.startsWith('/uploads')) {
-    return `${BASE_URL}${cleanPath}`;
-  }
-  return `${BASE_URL}/uploads${cleanPath}`;
+function imgUrl(src: string): string {
+  return resolveImgSrc(src);
 }
 
 // ─── Parallax Slide ──────────────────────────────────────────────────────────

@@ -9,14 +9,13 @@ import { Header } from '@/sections/Header';
 import { Footer } from '@/sections/Footer';
 import { PageBanner } from '@/components/PageBanner';
 import { useData } from '@/context/DataContext';
+import { resolveImg } from '@/components/ImageUploadField';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Building2, Monitor, ShoppingCart, CreditCard, Truck,
   BarChart3, Globe, Settings, Zap, Package, Star, Layers, FileText,
 };
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace('/api', '');
-const resolveImg = (p?: string) => !p ? null : p.startsWith('http') ? p : `${BASE_URL}${p}`;
 
 const GRADIENTS = [
   ['#1e3a5f','#2563eb'], ['#7c2d12','#c2410c'], ['#14532d','#16a34a'],

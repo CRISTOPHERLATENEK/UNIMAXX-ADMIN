@@ -20,7 +20,7 @@ export function TestimonialsManager() {
   const [uploading, setUploading] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-  const BASE_URL = API_URL.replace('/api', '');
+  const BASE_URL = API_URL.replace(/\/api\/?$/, '');
   const imgSrc = (img: string) => img ? (img.startsWith('http') ? img : `${BASE_URL}${img}`) : '';
 
   const handleSave = async () => {

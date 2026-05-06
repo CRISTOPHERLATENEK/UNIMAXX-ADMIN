@@ -1,5 +1,5 @@
 // UnifiedSolutionsManager — Lean: card + page builder (blocks_json only) + SEO
-import { ImageUploadField, SPECS as IMAGE_SPECS } from '@/components/ImageUploadField';
+import { ImageUploadField, SPECS as IMAGE_SPECS, resolveImg } from '@/components/ImageUploadField';
 import React, { useState, useEffect } from 'react';
 import {
   Plus, Pencil, Trash2, Save, X, RefreshCw, ExternalLink,
@@ -25,8 +25,7 @@ import { HomeSectionModal } from '@/admin/HomeSectionModal';
 import { HOME_SECTION_CONFIGS } from '@/admin/homeSectionConfigs';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const BASE_URL = API_URL.replace('/api', '');
-const resolveImg = (p?: string) => !p ? null : p.startsWith('http') ? p : `${BASE_URL}${p}`;
+const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 const authH = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' });
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -206,10 +205,20 @@ function Editor({ initial, isNew, onSave, onBack }: {
     finally { setUpl(false); }
   };
 
+  // fix #7 — validação por campo com destaque visual
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
+
   const handleSave = async () => {
-    if (!form.title.trim()) { toast({ title: 'Título é obrigatório', variant: 'destructive' }); return; }
-    if (!form.solution_id.trim()) { toast({ title: 'ID da solução é obrigatório', variant: 'destructive' }); return; }
-    if (!form.description.trim()) { toast({ title: 'Descrição é obrigatória', variant: 'destructive' }); return; }
+    const errors: Record<string, string> = {};
+    if (!form.title.trim()) errors.title = 'Título é obrigatório';
+    if (!form.solution_id.trim()) errors.solution_id = 'ID da solução é obrigatório';
+    if (!form.description.trim()) errors.description = 'Descrição é obrigatória';
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast({ title: 'Corrija os campos destacados', variant: 'destructive' });
+      return;
+    }
+    setFieldErrors({});
     setSaving(true);
     try { await onSave(form); }
     catch (e: any) { toast({ title: e?.message || 'Erro ao salvar', variant: 'destructive' }); }
@@ -317,8 +326,9 @@ function Editor({ initial, isNew, onSave, onBack }: {
                   <div>
                     <FL hint="Aparece no card e no header de soluções">Título da Solução *</FL>
                     <Input value={form.title}
-                      onChange={(e) => { set('title', e.target.value); autoId(e.target.value); }}
-                      placeholder="Ex: Maxx ERP" className="h-10" />
+                      onChange={(e) => { set('title', e.target.value); autoId(e.target.value); setFieldErrors(p => ({ ...p, title: '' })); }}
+                      placeholder="Ex: Maxx ERP" className={`h-10 ${fieldErrors.title ? 'border-red-500' : ''}`} />
+                    {fieldErrors.title && <p className="text-xs text-red-500 mt-1">{fieldErrors.title}</p>}
                   </div>
                   <div>
                     <FL hint="Usado na URL: /solucao-page/{id}">ID da Solução *</FL>
@@ -328,8 +338,8 @@ function Editor({ initial, isNew, onSave, onBack }: {
                         /solucao-page/
                       </span>
                       <Input value={form.solution_id}
-                        onChange={(e) => set('solution_id', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                        placeholder="maxx-erp" className="h-10 rounded-l-none flex-1" />
+                        onChange={(e) => { set('solution_id', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')); setFieldErrors(p => ({ ...p, solution_id: '' })); }}
+                        placeholder="maxx-erp" className={`h-10 rounded-l-none flex-1 ${fieldErrors.solution_id ? 'border-red-500' : ''}`} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -584,7 +594,7 @@ export default function UnifiedSolutionsManager() {
   };
 
   const handleNew = () => {
-    setEditing({ ...EMPTY, solution_id: `solucao-${Date.now()}` });
+    setEditing({ ...EMPTY, solution_id: '' });
     setIsNew(true);
   };
 

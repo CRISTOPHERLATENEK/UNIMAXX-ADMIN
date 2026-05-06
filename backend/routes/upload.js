@@ -1,74 +1,92 @@
-const multer = require('multer');
-const path = require('path');
-const crypto = require('crypto');
-const fs = require('fs');
+const multer   = require('multer');
+const path     = require('path');
+const crypto   = require('crypto');
+const fs       = require('fs');
 const FileType = require('file-type');
 const { UPLOAD_DIR } = require('../config/env');
+
+// Sharp é opcional — se não instalado, o upload funciona sem otimização
+let sharp;
+try { sharp = require('sharp'); } catch { sharp = null; }
 
 const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
 
-// Mapa de MIME type → extensão canônica
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+// memoryStorage → processa com Sharp antes de gravar no disco
+const baseUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_UPLOAD_SIZE },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_MIME_TYPES.includes(file.mimetype))
+      return cb(new Error('Tipo não permitido. Envie PNG/JPG/WEBP.'));
+    cb(null, true);
+  },
+});
+
 const MIME_TO_EXT = {
   'image/png':  '.png',
   'image/jpeg': '.jpg',
   'image/webp': '.webp',
 };
 
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-  // Salva com UUID sem extensão — a extensão correta é adicionada
-  // após a validação do conteúdo real do arquivo (veja `single` abaixo).
-  filename: (req, file, cb) => {
-    const name = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-    cb(null, name);
-  },
-});
-
-const baseUpload = multer({
-  storage,
-  limits: { fileSize: MAX_UPLOAD_SIZE },
-  fileFilter: (req, file, cb) => {
-    if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-      return cb(new Error('Tipo não permitido. Envie PNG/JPG/WEBP.'));
-    }
-    cb(null, true);
-  },
-});
-
 function containsUnsafeMarkup(buffer) {
   const sample = buffer.slice(0, 4096).toString('utf8').toLowerCase();
-  return ['<svg', '<script', '<html', '<!doctype html', 'javascript:', '<iframe'].some((snippet) => sample.includes(snippet));
+  return ['<svg', '<script', '<html', '<!doctype html', 'javascript:', '<iframe'].some(s => sample.includes(s));
 }
 
 /**
- * Valida o arquivo armazenado pelo conteúdo real (magic bytes).
- * Retorna a extensão correta detectada (ex: '.jpg').
- * Lança Error se inválido ou inseguro.
+ * processImage(buffer)
+ *
+ * 1. Valida magic bytes
+ * 2. Gera variantes WebP (1920 / 960 / 480) quando Sharp disponível
+ * 3. Sem Sharp: salva buffer original com extensão correta
+ *
+ * Retorna { filename, variants }
+ *   filename → arquivo principal  (/uploads/<uuid>.webp  ou original)
+ *   variants → { lg, md, sm }     ou null sem Sharp
  */
-async function validateStoredFile(filePath) {
-  const buffer = fs.readFileSync(filePath);
+async function processImage(buffer) {
+  // Validação de conteúdo real (magic bytes)
   const type = await FileType.fromBuffer(buffer);
-
-  if (!type || !ALLOWED_MIME_TYPES.includes(type.mime)) {
+  if (!type || !ALLOWED_MIME_TYPES.includes(type.mime))
     throw new Error('Arquivo inválido.');
-  }
-
-  if (containsUnsafeMarkup(buffer)) {
+  if (containsUnsafeMarkup(buffer))
     throw new Error('Arquivo rejeitado por conteúdo potencialmente inseguro.');
+
+  const baseName = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+
+  // ── Sem Sharp: salva original ─────────────────────────────────────────────
+  if (!sharp) {
+    const ext = MIME_TO_EXT[type.mime] || '.jpg';
+    const filename = baseName + ext;
+    fs.writeFileSync(path.join(UPLOAD_DIR, filename), buffer);
+    return { filename, variants: null };
   }
 
-  return MIME_TO_EXT[type.mime]; // ex: '.jpg'
-}
+  // ── Com Sharp: gera 3 variantes WebP otimizadas ───────────────────────────
+  const meta  = await sharp(buffer).metadata();
+  const origW = meta.width || 1920;
 
-function removeFileSafely(filePath) {
-  try {
-    if (filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  } catch {
-    // noop
+  const VARIANTS = [
+    { key: 'lg', suffix: '',    maxW: 1920, quality: 85 },
+    { key: 'md', suffix: '-md', maxW: 960,  quality: 82 },
+    { key: 'sm', suffix: '-sm', maxW: 480,  quality: 80 },
+  ];
+
+  const variants = {};
+  for (const v of VARIANTS) {
+    const targetW  = Math.min(origW, v.maxW);
+    const filename = `${baseName}${v.suffix}.webp`;
+    await sharp(buffer)
+      .resize(targetW, null, { withoutEnlargement: true, fit: 'inside' })
+      .webp({ quality: v.quality, effort: 4 })
+      .toFile(path.join(UPLOAD_DIR, filename));
+    variants[v.key] = `/uploads/${filename}`;
   }
+
+  return { filename: `${baseName}.webp`, variants };
 }
 
 function single(fieldName) {
@@ -80,25 +98,14 @@ function single(fieldName) {
       if (!req.file) return next();
 
       try {
-        // Detecta a extensão real pelo conteúdo do arquivo
-        const detectedExt = await validateStoredFile(req.file.path);
-
-        // Renomeia somente se a extensão atual estiver incorreta ou ausente
-        const currentExt = path.extname(req.file.filename).toLowerCase();
-        if (currentExt !== detectedExt) {
-          const newFilename = path.basename(req.file.filename, currentExt) + detectedExt;
-          const newPath = path.join(UPLOAD_DIR, newFilename);
-          fs.renameSync(req.file.path, newPath);
-
-          // Atualiza o objeto req.file para refletir o novo nome/path
-          req.file.filename = newFilename;
-          req.file.path = newPath;
-        }
-
+        const { filename, variants } = await processImage(req.file.buffer);
+        // Expõe no req.file para o handler da rota
+        req.file.filename  = filename;
+        req.file.path      = path.join(UPLOAD_DIR, filename);
+        req.file._variants = variants;   // { lg, md, sm } ou null
         return next();
-      } catch (validationError) {
-        removeFileSafely(req.file.path);
-        return next(validationError);
+      } catch (e) {
+        return next(e);
       }
     });
   };
@@ -111,4 +118,5 @@ module.exports = {
   MAX_UPLOAD_SIZE,
   UPLOAD_DIR,
   upload,
+  processImage,
 };

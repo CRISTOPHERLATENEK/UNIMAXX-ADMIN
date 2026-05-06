@@ -11,7 +11,7 @@ import type { ImgSpec } from '@/components/ImageUploadField';
 import { useToast } from '@/hooks/use-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const BASE_URL = API_URL.replace('/api', '');
+const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
