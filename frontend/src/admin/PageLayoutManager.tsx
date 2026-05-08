@@ -3,10 +3,11 @@ import {
   GripVertical, Eye, EyeOff, Save, RotateCcw,
   Layout, Image, Link2, Briefcase, BarChart3,
   Tags, Star, Handshake, MessageSquare, Mail,
-  ChevronUp, ChevronDown, Building2, Zap,
+  ChevronUp, ChevronDown, Building2, Zap, Type,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { toast } from 'sonner';
+import { BlockTypoPanel } from '@/components/admin/BlockTypoPanel';
 
 // ─── Definição de todas as seções disponíveis ───
 export const ALL_SECTIONS = [
@@ -48,11 +49,36 @@ export function parseLayout(raw: string | undefined): SectionSlot[] {
 }
 
 export function PageLayoutManager() {
-  const { data, updateSettings } = useData();
+  const { data, updateSettings, updateContent } = useData();
   const rawLayout = data.settings?.home_layout;
   const [slots, setSlots] = useState<SectionSlot[]>(() => parseLayout(rawLayout));
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const pc = data.settings?.primary_color || '#f97316';
+
+  // ── Tipografia por bloco ──
+  const [typoEdits, setTypoEdits] = useState<Record<string, string>>({});
+  const [typoSaving, setTypoSaving] = useState<string | null>(null);
+
+  // merge content + local edits for preview
+  const mergedContent = { ...(data.content || {}), ...typoEdits };
+
+  const handleTypoChange = (key: string, value: string) => {
+    setTypoEdits(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleTypoSave = async (sectionId: string) => {
+    setTypoSaving(sectionId);
+    try {
+      await updateContent(typoEdits as Record<string, string>);
+      setTypoEdits({});
+      toast.success('Tipografia salva!');
+    } catch {
+      toast.error('Erro ao salvar tipografia');
+    } finally {
+      setTypoSaving(null);
+    }
+  };
 
   // ─── Drag state ───
   const dragIndex = useRef<number | null>(null);
@@ -191,7 +217,7 @@ export function PageLayoutManager() {
               onDragStart={() => onDragStart(index)}
               onDragOver={(e) => onDragOver(e, index)}
               onDrop={onDrop}
-              className="flex items-center gap-3 p-4 rounded-2xl border transition-all duration-200 cursor-grab active:cursor-grabbing select-none"
+              className="p-4 rounded-2xl border transition-all duration-200 select-none"
               style={{
                 background: slot.visible ? '#ffffff' : '#fafafa',
                 borderColor: slot.visible ? 'rgba(0,0,0,.07)' : 'rgba(0,0,0,.04)',
@@ -207,57 +233,67 @@ export function PageLayoutManager() {
                 e.currentTarget.style.boxShadow = slot.visible ? '0 1px 4px rgba(0,0,0,.04)' : 'none';
               }}
             >
-              {/* Drag handle */}
-              <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0" />
+              {/* Row: drag handle + info + controls */}
+              <div className="flex items-center gap-3 cursor-grab active:cursor-grabbing">
+                {/* Drag handle */}
+                <GripVertical className="w-4 h-4 text-gray-300 flex-shrink-0" />
 
-              {/* Position badge */}
-              <span className="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0"
-                style={{ background: slot.visible ? '#fff7ed' : '#f5f5f7', color: slot.visible ? '#c2410c' : '#9ca3af' }}>
-                {slot.visible ? index + 1 : '–'}
-              </span>
+                {/* Position badge */}
+                <span className="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0"
+                  style={{ background: slot.visible ? '#fff7ed' : '#f5f5f7', color: slot.visible ? '#c2410c' : '#9ca3af' }}>
+                  {slot.visible ? index + 1 : '–'}
+                </span>
 
-              {/* Icon */}
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: slot.visible ? '#fff7ed' : '#f5f5f7' }}>
-                <Icon className="w-4 h-4" style={{ color: slot.visible ? '#f97316' : '#9ca3af' }} />
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{def.label}</p>
-                  {def.required && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
-                      style={{ background: '#dcfce7', color: '#16a34a' }}>obrigatória</span>
-                  )}
+                {/* Icon */}
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: slot.visible ? '#fff7ed' : '#f5f5f7' }}>
+                  <Icon className="w-4 h-4" style={{ color: slot.visible ? '#f97316' : '#9ca3af' }} />
                 </div>
-                <p className="text-xs text-gray-400 truncate">{def.description}</p>
-              </div>
 
-              {/* Controls */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {/* Move up/down */}
-                <button onClick={() => moveUp(index)} disabled={index === 0}
-                  className="p-1.5 rounded-lg text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-20 disabled:cursor-not-allowed">
-                  <ChevronUp className="w-4 h-4" />
-                </button>
-                <button onClick={() => moveDown(index)} disabled={index === slots.length - 1}
-                  className="p-1.5 rounded-lg text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-20 disabled:cursor-not-allowed">
-                  <ChevronDown className="w-4 h-4" />
-                </button>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{def.label}</p>
+                    {def.required && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide"
+                        style={{ background: '#dcfce7', color: '#16a34a' }}>obrigatória</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 truncate">{def.description}</p>
+                </div>
 
-                {/* Toggle visible */}
-                <button onClick={() => toggleVisible(slot.id)}
-                  className="ml-1 p-1.5 rounded-lg transition-colors"
-                  style={{
-                    background: slot.visible ? '#f0fdf4' : '#f9fafb',
-                    color: slot.visible ? '#16a34a' : '#9ca3af',
-                  }}
-                  title={slot.visible ? 'Ocultar seção' : 'Mostrar seção'}>
-                  {slot.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                </button>
-              </div>
+                {/* Controls */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button onClick={() => moveUp(index)} disabled={index === 0}
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-20 disabled:cursor-not-allowed">
+                    <ChevronUp className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => moveDown(index)} disabled={index === slots.length - 1}
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-20 disabled:cursor-not-allowed">
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => toggleVisible(slot.id)}
+                    className="ml-1 p-1.5 rounded-lg transition-colors"
+                    style={{ background: slot.visible ? '#f0fdf4' : '#f9fafb', color: slot.visible ? '#16a34a' : '#9ca3af' }}
+                    title={slot.visible ? 'Ocultar seção' : 'Mostrar seção'}>
+                    {slot.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>{/* end inner row */}
+
+            {/* ── Tipografia inline por seção ── */}
+            <div className="mt-1.5 cursor-default" onClick={e => e.stopPropagation()}>
+              <BlockTypoPanel
+                sectionId={slot.id}
+                sectionLabel={def.label}
+                values={mergedContent}
+                onChange={handleTypoChange}
+                onSave={() => handleTypoSave(slot.id)}
+                saving={typoSaving === slot.id}
+                primaryColor={pc}
+              />
             </div>
+          </div>
           );
         })}
       </div>

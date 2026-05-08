@@ -8,6 +8,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
+import { useBlockTypo } from '@/hooks/useBlockTypo';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Building2, Monitor, ShoppingCart, BarChart3, Zap, Globe,
@@ -17,6 +18,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 export function QuickLinks() {
   const { data, loading } = useData();
+  const bt = useBlockTypo('quicklinks');
   const ct = data.content || {};
   const [hov, setHov] = useState<number | null>(null);
 
@@ -65,8 +67,8 @@ export function QuickLinks() {
 
   return (
     <section style={{ padding: '24px 0', background: 'var(--s0)', position: 'relative', zIndex: 20 }}>
-      <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 2rem' }}>
-        <div data-stagger style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 12 }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)' }}>
+        <div data-stagger className="quicklinks-grid" style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 12 }}>
           {items.map((link, idx) => {
             const Icon = ICON_MAP[link.icon] || Building2;
             const isHov = hov === idx;
@@ -97,20 +99,20 @@ export function QuickLinks() {
                   <Icon size={20} style={{ color: isHov ? '#fff' : c, transition: 'color .3s' }} />
                 </div>
                 <h3 style={{
-                  fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 15,
+                  fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 15,
                   margin: '0 0 4px', lineHeight: 1.2,
                   color: isHov ? '#fff' : '#1d1d1f', transition: 'color .3s',
                 }}>
                   {link.title}
                 </h3>
                 <p style={{
-                  fontFamily: "'DM Sans',sans-serif", fontSize: 12, margin: '0 0 14px',
+                  fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 12, margin: '0 0 14px',
                   color: isHov ? 'rgba(255,255,255,.75)' : '#6e6e73', transition: 'color .3s',
                 }}>
                   {link.subtitle}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', color: isHov ? '#fff' : c, transition: 'color .3s' }}>
+                  <span style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: '0.02em', color: isHov ? '#fff' : c, transition: 'color .3s' }}>
                     Explorar
                   </span>
                   <ArrowUpRight size={13} style={{ color: isHov ? '#fff' : c, transition: 'color .3s' }} />

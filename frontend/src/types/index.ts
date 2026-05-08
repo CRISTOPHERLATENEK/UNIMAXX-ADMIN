@@ -12,6 +12,13 @@ export interface Solution {
   order_num: number;
   active: number;
   nav_link?: string | null;
+  /* ── Tipografia & estilo individual do card ── */
+  card_accent_color?: string;   // cor do botão/gradiente deste card
+  card_title_color?: string;    // cor do título no card e no modal
+  card_body_color?: string;     // cor do texto descritivo no modal
+  card_font_heading?: string;   // fonte do título (override)
+  card_font_body?: string;      // fonte do corpo (override)
+  card_title_weight?: string;   // peso do título
 }
 
 export interface Segment {

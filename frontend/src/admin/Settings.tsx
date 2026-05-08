@@ -5,7 +5,7 @@ import {
   Instagram, Linkedin, Youtube, Facebook,
   Building2, Search, Plug, Zap, FileText,
   Mail, MessageSquare, Hash, Star, Shield,
-  ChevronDown, Settings as SettingsIcon, Image, Layout, Sparkles,
+  ChevronDown, Settings as SettingsIcon, Image, Layout, Sparkles, Type,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
@@ -22,18 +22,19 @@ import { HOME_SECTION_CONFIGS } from '@/admin/homeSectionConfigs';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const TABS = [
-  { id: 'aparencia', label: 'Aparência', icon: Palette },
-  { id: 'empresa', label: 'Empresa', icon: Building2 },
-  { id: 'contato', label: 'Contato', icon: Phone },
-  { id: 'rodape', label: 'Rodapé', icon: Layout },
-  { id: 'redes', label: 'Redes Sociais', icon: Share2 },
-  { id: 'seo', label: 'SEO Global', icon: Search },
-  { id: 'integracoes', label: 'Integrações', icon: Plug },
-  { id: 'scripts', label: 'Scripts & Head', icon: FileText },
-  { id: 'notificacoes', label: 'Notificações', icon: Sparkles },
-  { id: 'manutencao', label: 'Manutenção', icon: SettingsIcon },
-  { id: 'perfil', label: 'Perfil', icon: User },
-  { id: 'seguranca', label: 'Segurança', icon: Lock },
+  { id: 'aparencia',   label: 'Aparência',      icon: Palette },
+  { id: 'tipografia',  label: 'Tipografia',      icon: Type },
+  { id: 'empresa',     label: 'Empresa',         icon: Building2 },
+  { id: 'contato',     label: 'Contato',         icon: Phone },
+  { id: 'rodape',      label: 'Rodapé',          icon: Layout },
+  { id: 'redes',       label: 'Redes Sociais',   icon: Share2 },
+  { id: 'seo',         label: 'SEO Global',      icon: Search },
+  { id: 'integracoes', label: 'Integrações',      icon: Plug },
+  { id: 'scripts',     label: 'Scripts & Head',  icon: FileText },
+  { id: 'notificacoes',label: 'Notificações',    icon: Sparkles },
+  { id: 'manutencao',  label: 'Manutenção',      icon: SettingsIcon },
+  { id: 'perfil',      label: 'Perfil',          icon: User },
+  { id: 'seguranca',   label: 'Segurança',       icon: Lock },
 ];
 
 function Section({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
@@ -401,6 +402,329 @@ const PALETTE_PRESETS = [
   { name: 'Âmbar', primary: '#d97706', secondary: '#f59e0b', accent: '#fbbf24' },
 ];
 
+/* ════════════════════════════════════════════════════════════
+   TAB TIPOGRAFIA — Controle completo de fontes e texto
+════════════════════════════════════════════════════════════ */
+const GOOGLE_FONTS_HEADING = [
+  'Outfit','Space Grotesk','Syne','Raleway','Montserrat',
+  'Playfair Display','Inter','Poppins','Josefin Sans',
+  'DM Serif Display','Bebas Neue','Oswald','Barlow',
+  'Manrope','Unbounded','Cabinet Grotesk',
+];
+const GOOGLE_FONTS_BODY = [
+  'DM Sans','Inter','Plus Jakarta Sans','Nunito','Lato',
+  'Open Sans','Source Sans 3','Roboto','Figtree','Mulish',
+  'Work Sans','IBM Plex Sans','Karla',
+];
+
+function SliderField({
+  label, hint, min, max, step = 1, value, onChange, format,
+}: {
+  label: string; hint?: string; min: number; max: number; step?: number;
+  value: number; onChange: (v: number) => void; format?: (v: number) => string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold text-[#1d1d1f]">{label}</span>
+        <span className="text-xs font-mono bg-[#f5f5f7] px-2 py-0.5 rounded-lg text-[#3a3a3c]">
+          {format ? format(value) : value}
+        </span>
+      </div>
+      {hint && <p className="text-[10px] text-[#98989d] mb-2">{hint}</p>}
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+        style={{ accentColor: 'var(--primary, #f97316)' }} />
+      <div className="flex justify-between mt-1">
+        <span className="text-[9px] text-[#c7c7cc]">{format ? format(min) : min}</span>
+        <span className="text-[9px] text-[#c7c7cc]">{format ? format(max) : max}</span>
+      </div>
+    </div>
+  );
+}
+
+function ColorSwatchPicker({
+  label, hint, value, onChange, clearable = true,
+}: {
+  label: string; hint?: string; value: string; onChange: (v: string) => void; clearable?: boolean;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-xs font-semibold text-[#1d1d1f]">{label}</span>
+        {clearable && value && (
+          <button onClick={() => onChange('')}
+            className="text-[10px] text-[#98989d] hover:text-red-500 transition-colors">
+            Limpar
+          </button>
+        )}
+      </div>
+      {hint && <p className="text-[10px] text-[#98989d] mb-2">{hint}</p>}
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <input type="color" value={value || '#000000'} onChange={e => onChange(e.target.value)}
+            className="w-10 h-10 rounded-xl border cursor-pointer p-0.5"
+            style={{ borderColor: 'rgba(0,0,0,.1)' }} />
+        </div>
+        <input type="text" value={value} onChange={e => onChange(e.target.value)}
+          placeholder="Ex: #1d1d1f ou rgba(0,0,0,.8)"
+          className="flex-1 h-10 px-3 rounded-xl border text-sm font-mono bg-white"
+          style={{ borderColor: 'rgba(0,0,0,.1)' }} />
+      </div>
+    </div>
+  );
+}
+
+function TypoLivePreview({ settings }: { settings: Record<string, string> }) {
+  const fh   = settings.font_heading  || 'Outfit';
+  const fb   = settings.font_body     || 'DM Sans';
+  const hCol = settings.typo_h_color  || '#1d1d1f';
+  const bCol = settings.typo_body_color || '#6e6e73';
+  const lCol = settings.typo_label_color || (settings.primary_color || '#f97316');
+  const hw   = parseInt(settings.typo_h_weight  || '800');
+  const bs   = parseInt(settings.typo_body_size || '15');
+  const bl   = parseFloat(settings.typo_body_lh || '1.65');
+  const hs   = (parseInt(settings.typo_h_spacing || '-3') / 100).toFixed(3) + 'em';
+  const hsc  = parseFloat(settings.typo_h_scale || '100') / 100;
+
+  return (
+    <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+      {/* Light section preview */}
+      <div className="p-5 bg-white space-y-3">
+        <div className="flex items-center gap-2 mb-1">
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '3px 10px', borderRadius: 4,
+            border: `1px solid ${lCol}35`, color: lCol,
+            fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+            textTransform: 'uppercase', fontFamily: `'${fb}',sans-serif`,
+          }}>
+            <span style={{ width: 4, height: 4, borderRadius: '50%', background: lCol, display: 'inline-block' }} />
+            Label da seção
+          </span>
+        </div>
+        <p style={{
+          fontFamily: `'${fh}',sans-serif`, fontWeight: hw,
+          fontSize: `calc(clamp(1.5rem,3vw,2rem) * ${hsc})`,
+          letterSpacing: hs, color: hCol, lineHeight: 1.1, margin: 0,
+        }}>
+          Título principal da seção
+        </p>
+        <p style={{
+          fontFamily: `'${fb}',sans-serif`, fontSize: bs,
+          lineHeight: bl, color: bCol, margin: 0,
+        }}>
+          Este é um parágrafo de exemplo com o texto do corpo. Veja como fica o
+          espaçamento, cor e tamanho da fonte no site real.
+        </p>
+        <div className="flex gap-3 flex-wrap">
+          <span style={{ fontFamily: `'${fh}',sans-serif`, fontSize: `calc(1.1rem * ${hsc})`, fontWeight: hw, color: hCol, letterSpacing: hs }}>Card Title</span>
+          <span style={{ fontFamily: `'${fb}',sans-serif`, fontSize: 13, color: bCol }}>Subtítulo de card</span>
+        </div>
+      </div>
+      {/* Dark section preview */}
+      <div className="p-5 space-y-3" style={{ background: '#0f0f12' }}>
+        <p style={{
+          fontFamily: `'${fh}',sans-serif`, fontWeight: hw,
+          fontSize: `calc(clamp(1.2rem,2.5vw,1.6rem) * ${hsc})`,
+          letterSpacing: hs, color: '#fff', margin: 0,
+        }}>
+          Seção escura — títulos em branco
+        </p>
+        <p style={{
+          fontFamily: `'${fb}',sans-serif`, fontSize: Math.max(bs - 1, 12),
+          lineHeight: bl, color: 'rgba(255,255,255,.45)', margin: 0,
+        }}>
+          Texto de corpo em seção escura. As cores aqui são controladas pelo
+          contraste de cada seção, não pela cor do corpo global.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function TabTipografia({ settings, setSetting }: { settings: Record<string, string>; setSetting: (k: string, v: string) => void }) {
+  const fh  = settings.font_heading   || 'Outfit';
+  const fb  = settings.font_body      || 'DM Sans';
+  const hw  = parseInt(settings.typo_h_weight  || '800');
+  const bs  = parseInt(settings.typo_body_size || '15');
+  const bl  = parseFloat(settings.typo_body_lh || '1.65') * 10;
+  const hs  = parseInt(settings.typo_h_spacing || '-3');
+  const hsc = parseInt(settings.typo_h_scale   || '100');
+  const pc  = settings.primary_color || '#f97316';
+
+  const WEIGHTS = [
+    { value: 400, label: 'Regular' },
+    { value: 500, label: 'Medium' },
+    { value: 600, label: 'SemiBold' },
+    { value: 700, label: 'Bold' },
+    { value: 800, label: 'ExtraBold' },
+    { value: 900, label: 'Black' },
+  ];
+
+  return (
+    <div className="space-y-5">
+
+      {/* ── Famílias de fonte ── */}
+      <div className="bg-white rounded-2xl border p-5 space-y-5" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
+        <div className="pb-2 border-b" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+          <p className="font-bold text-[#1d1d1f] text-base flex items-center gap-2">
+            <Type className="w-4 h-4 text-orange-500" /> Famílias de Fonte
+          </p>
+          <p className="text-xs text-[#98989d] mt-0.5">Escolha as fontes Google Fonts para títulos e texto</p>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Field label="Fonte dos Títulos (H1, H2, H3)" hint="Destaque, personalidade e impacto">
+            <select value={fh} onChange={e => setSetting('font_heading', e.target.value)}
+              className="w-full h-10 px-3 rounded-xl border text-sm bg-white"
+              style={{ borderColor: 'rgba(0,0,0,.1)', fontFamily: `'${fh}',sans-serif` }}>
+              {GOOGLE_FONTS_HEADING.map(f => (
+                <option key={f} value={f} style={{ fontFamily: `'${f}',sans-serif` }}>{f}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Fonte do Corpo" hint="Leitura, parágrafos e textos gerais">
+            <select value={fb} onChange={e => setSetting('font_body', e.target.value)}
+              className="w-full h-10 px-3 rounded-xl border text-sm bg-white"
+              style={{ borderColor: 'rgba(0,0,0,.1)', fontFamily: `'${fb}',sans-serif` }}>
+              {GOOGLE_FONTS_BODY.map(f => (
+                <option key={f} value={f} style={{ fontFamily: `'${f}',sans-serif` }}>{f}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
+        {/* Font preview row */}
+        <div className="grid sm:grid-cols-2 gap-3">
+          {[
+            { label: 'Heading', font: fh, text: 'Aa Bb Cc 123', size: 22, weight: hw },
+            { label: 'Body', font: fb, text: 'Texto legível e elegante', size: 15, weight: 400 },
+          ].map(({ label, font, text, size, weight }) => (
+            <div key={label} className="p-3 rounded-xl text-center"
+              style={{ background: '#f5f5f7', border: '1px solid rgba(0,0,0,.05)' }}>
+              <p className="text-[9px] font-bold text-[#98989d] uppercase tracking-widest mb-1.5">{label} · {font}</p>
+              <p style={{ fontFamily: `'${font}',sans-serif`, fontSize: size, fontWeight: weight, color: '#1d1d1f', lineHeight: 1.3 }}>{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Cores de texto ── */}
+      <div className="bg-white rounded-2xl border p-5 space-y-5" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
+        <div className="pb-2 border-b" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+          <p className="font-bold text-[#1d1d1f] text-base flex items-center gap-2">
+            <Palette className="w-4 h-4 text-orange-500" /> Cores do Texto
+          </p>
+          <p className="text-xs text-[#98989d] mt-0.5">
+            Controla a cor nos títulos, parágrafos e labels nas <strong>seções claras</strong>.
+            Seções escuras têm contraste próprio.
+          </p>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <ColorSwatchPicker
+            label="Cor dos Títulos (H1, H2, H3)"
+            hint="Seções com fundo claro/branco"
+            value={settings.typo_h_color || ''}
+            onChange={v => setSetting('typo_h_color', v)}
+          />
+          <ColorSwatchPicker
+            label="Cor do Corpo (parágrafos)"
+            hint="Textos descritivos gerais"
+            value={settings.typo_body_color || ''}
+            onChange={v => setSetting('typo_body_color', v)}
+          />
+          <ColorSwatchPicker
+            label="Cor dos Labels (eyebrow)"
+            hint="Badges / etiquetas acima dos títulos"
+            value={settings.typo_label_color || ''}
+            onChange={v => setSetting('typo_label_color', v)}
+          />
+          <div className="rounded-xl p-3 space-y-2 self-end" style={{ background: '#f5f5f7', border: '1px solid rgba(0,0,0,.06)' }}>
+            <p className="text-[9px] font-bold text-[#98989d] uppercase tracking-widest">Deixe em branco para usar padrão</p>
+            <p className="text-[10px] text-[#6e6e73] leading-relaxed">
+              Quando vazio, cada seção usa sua cor padrão otimizada para contraste.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tamanho e peso ── */}
+      <div className="bg-white rounded-2xl border p-5 space-y-5" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
+        <div className="pb-2 border-b" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+          <p className="font-bold text-[#1d1d1f] text-base">Tamanho, Peso e Espaçamento</p>
+          <p className="text-xs text-[#98989d] mt-0.5">Ajuste as proporções sem quebrar o layout responsivo</p>
+        </div>
+
+        {/* Peso dos títulos */}
+        <div>
+          <p className="text-xs font-semibold text-[#1d1d1f] mb-3">Peso dos Títulos</p>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            {WEIGHTS.map(w => (
+              <button key={w.value} onClick={() => setSetting('typo_h_weight', String(w.value))}
+                className="py-2.5 rounded-xl border text-[10px] font-semibold transition-all"
+                style={{
+                  fontFamily: `'${fh}',sans-serif`,
+                  fontWeight: w.value,
+                  borderColor: hw === w.value ? pc : 'rgba(0,0,0,.1)',
+                  background: hw === w.value ? `${pc}10` : '#fff',
+                  color: hw === w.value ? pc : '#3a3a3c',
+                  boxShadow: hw === w.value ? `0 0 0 2px ${pc}30` : 'none',
+                }}>
+                {w.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-6">
+          <SliderField
+            label="Escala dos Títulos"
+            hint="Multiplica todos os tamanhos de heading"
+            min={70} max={140} step={5} value={hsc}
+            onChange={v => setSetting('typo_h_scale', String(v))}
+            format={v => `${v}%`}
+          />
+          <SliderField
+            label="Tamanho do Texto do Corpo"
+            hint="Parágrafos e descrições"
+            min={12} max={20} step={1} value={bs}
+            onChange={v => setSetting('typo_body_size', String(v))}
+            format={v => `${v}px`}
+          />
+          <SliderField
+            label="Espaçamento entre Letras (Títulos)"
+            hint="Negativo aperta, positivo abre"
+            min={-6} max={4} step={1} value={hs}
+            onChange={v => setSetting('typo_h_spacing', String(v))}
+            format={v => `${(v / 100).toFixed(2)}em`}
+          />
+          <SliderField
+            label="Altura de Linha (Corpo)"
+            hint="Espaçamento entre linhas do texto"
+            min={13} max={22} step={1} value={Math.round(bl)}
+            onChange={v => setSetting('typo_body_lh', (v / 10).toFixed(1))}
+            format={v => `${(v / 10).toFixed(1)}×`}
+          />
+        </div>
+      </div>
+
+      {/* ── Live Preview ── */}
+      <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
+        <div className="pb-3 border-b mb-4" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+          <p className="font-bold text-[#1d1d1f] text-base flex items-center gap-2">
+            <Eye className="w-4 h-4 text-orange-500" /> Pré-visualização
+          </p>
+          <p className="text-xs text-[#98989d] mt-0.5">Atualiza em tempo real conforme você edita</p>
+        </div>
+        <TypoLivePreview settings={settings} />
+      </div>
+
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════ */
+
 function TabAparencia({ settings, setSetting }: { settings: Record<string, string>; setSetting: (k: string, v: string) => void }) {
   const pc = settings.primary_color || '#f97316';
   const sc = settings.secondary_color || '#fb923c';
@@ -535,38 +859,19 @@ function TabAparencia({ settings, setSetting }: { settings: Record<string, strin
         </div>
       </Section>
 
-      <Section title="Tipografia" desc="Fontes usadas nos títulos e textos do site">
-        <div className="grid sm:grid-cols-2 gap-5">
-          <Field label="Fonte dos Títulos" hint="Usada em H1, H2, H3 e destaque">
-            <select value={fh}
-              onChange={(e) => setSetting('font_heading', e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border text-sm bg-white"
-              style={{ borderColor: 'rgba(0,0,0,.1)' }}>
-              {['Outfit', 'Space Grotesk', 'Syne', 'Raleway', 'Montserrat', 'Playfair Display', 'Inter', 'Poppins', 'Josefin Sans', 'DM Serif Display'].map(f => (
-                <option key={f} value={f}>{f}</option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Fonte do Corpo" hint="Usada em parágrafos e textos gerais">
-            <select value={fb}
-              onChange={(e) => setSetting('font_body', e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border text-sm bg-white"
-              style={{ borderColor: 'rgba(0,0,0,.1)' }}>
-              {['DM Sans', 'Inter', 'Plus Jakarta Sans', 'Nunito', 'Lato', 'Open Sans', 'Source Sans 3', 'Roboto', 'Figtree'].map(f => (
-                <option key={f} value={f}>{f}</option>
-              ))}
-            </select>
-          </Field>
-        </div>
-        <div className="p-4 rounded-xl" style={{ background: '#f5f5f7' }}>
-          <p className="text-2xl font-bold text-[#1d1d1f] mb-1"
-            style={{ fontFamily: `'${fh}', sans-serif` }}>
-            Título de exemplo
-          </p>
-          <p className="text-sm text-[#6e6e73]"
-            style={{ fontFamily: `'${fb}', sans-serif` }}>
-            Este é um exemplo de texto de corpo com a fonte selecionada. Fácil de ler e bem espaçado.
-          </p>
+      <Section title="Tipografia" desc="Acesse a aba Tipografia para controle completo de fontes, cores e tamanhos →">
+        <div className="p-4 rounded-xl flex items-center gap-4" style={{ background: '#f5f5f7', border: '1px solid rgba(0,0,0,.06)' }}>
+          <Type className="w-8 h-8 text-orange-500 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-[#1d1d1f] mb-0.5">Controle total de tipografia disponível</p>
+            <p className="text-xs text-[#6e6e73]">
+              Na aba <strong>Tipografia</strong> você controla fontes, cores, tamanhos, pesos e espaçamentos.
+            </p>
+          </div>
+          <button onClick={() => {/* navegação via prop não disponível aqui, usuário clica na aba */}}
+            className="ml-auto text-xs font-bold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl flex-shrink-0">
+            Ver aba →
+          </button>
         </div>
       </Section>
 
@@ -1850,8 +2155,9 @@ export function Settings() {
 
         {/* Content */}
         <div className="flex-1 p-6 max-w-3xl">
-          {activeTab === 'aparencia' && <TabAparencia settings={settings} setSetting={setSetting} />}
-          {activeTab === 'empresa' && <TabEmpresa settings={settings} setSetting={setSetting} content={content} setContentKey={setContentKey} />}
+          {activeTab === 'aparencia'   && <TabAparencia   settings={settings} setSetting={setSetting} />}
+          {activeTab === 'tipografia'  && <TabTipografia  settings={settings} setSetting={setSetting} />}
+          {activeTab === 'empresa'     && <TabEmpresa     settings={settings} setSetting={setSetting} content={content} setContentKey={setContentKey} />}
           {activeTab === 'contato' && <TabContato settings={settings} setSetting={setSetting} content={content} setContentKey={setContentKey} />}
           {activeTab === 'rodape' && <TabRodape settings={settings} setSetting={setSetting} content={content} setContentKey={setContentKey} />}
           {activeTab === 'redes' && <TabRedes settings={settings} setSetting={setSetting} />}

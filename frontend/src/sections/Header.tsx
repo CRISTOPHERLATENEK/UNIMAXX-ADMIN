@@ -153,13 +153,13 @@ export function Header() {
                 boxShadow: `0 4px 16px ${pc}4D`,
               }}
             >
-              <span className="text-white font-bold leading-none" style={{ fontFamily: "'Outfit', sans-serif", fontSize: sz * 0.45 }}>
+              <span className="text-white font-bold leading-none" style={{ fontFamily: "var(--font-heading,'Outfit'), sans-serif", fontSize: sz * 0.45 }}>
                 {companyName[0]}
               </span>
             </div>
             <span
               className="font-semibold tracking-tight transition-colors duration-300"
-              style={{ fontFamily: "'Outfit', sans-serif", letterSpacing: "-0.02em", fontSize: fs, color }}
+              style={{ fontFamily: "var(--font-heading,'Outfit'), sans-serif", letterSpacing: "-0.02em", fontSize: fs, color }}
             >
               {logoValue}
             </span>
@@ -181,7 +181,7 @@ export function Header() {
         <>
           <button
             className="flex items-center gap-1 px-4 py-2 text-[13px] font-medium rounded-lg transition-all duration-200"
-            style={{ fontFamily: "'DM Sans', sans-serif", color: textColor }}
+            style={{ fontFamily: "var(--font-body,'DM Sans'), sans-serif", color: textColor }}
             onMouseEnter={(e) => { e.currentTarget.style.background = hoverBg; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
@@ -206,7 +206,7 @@ export function Header() {
                     ? "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10"
                     : "text-[#1d1d1f]/80 hover:text-[#1d1d1f] hover:bg-gray-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/[.06]"
                     }`}
-                  style={{ animationDelay: `${i * 25}ms`, fontFamily: "'DM Sans', sans-serif" }}
+                  style={{ animationDelay: `${i * 25}ms`, fontFamily: "var(--font-body,'DM Sans'), sans-serif" }}
                 >
                   {sub.label}
                   <ArrowRight className="w-3 h-3 opacity-0 group-hover/item:opacity-100 -translate-x-1 group-hover/item:translate-x-0 transition-all text-orange-500 duration-200" />
@@ -221,7 +221,7 @@ export function Header() {
           className={`px-4 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 ${isActive(item.to!) ? "font-bold" : ""
             }`}
           style={{
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--font-body,'DM Sans'), sans-serif",
             color: isActive(item.to!) ? pc : textColor,
           }}
           onMouseEnter={(e) => { e.currentTarget.style.background = hoverBg; }}
@@ -249,7 +249,7 @@ export function Header() {
               {item.dropdown ? (
                 <>
                   <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-[#98989d] uppercase tracking-[0.12em]"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                    style={{ fontFamily: "var(--font-body,'DM Sans'), sans-serif" }}>
                     {item.label}
                   </p>
                   {item.dropdown.map((subItem, idx) => (
@@ -260,7 +260,7 @@ export function Header() {
                         ? "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10"
                         : "text-[#1d1d1f] hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[.05]"
                         }`}
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      style={{ fontFamily: "var(--font-body,'DM Sans'), sans-serif" }}
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {subItem.label}
@@ -275,7 +275,7 @@ export function Header() {
                     ? "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-500/10"
                     : "text-[#1d1d1f] hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/[.05]"
                     }`}
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  style={{ fontFamily: "var(--font-body,'DM Sans'), sans-serif" }}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.label}
@@ -291,7 +291,7 @@ export function Header() {
               style={{
                 background: `linear-gradient(135deg, ${pc} 0%, ${sc} 100%)`,
                 boxShadow: `0 6px 20px ${pc}40`,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "var(--font-body,'DM Sans'), sans-serif",
               }}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -350,7 +350,7 @@ export function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-8 w-32 pl-8 pr-3 text-[12px] rounded-full border bg-gray-50 dark:bg-white/5 dark:border-white/10 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 outline-none focus:border-orange-300 transition-all"
-                  style={{ fontFamily: "'DM Sans', sans-serif", borderColor: "rgba(0,0,0,.1)" }}
+                  style={{ fontFamily: "var(--font-body,'DM Sans'), sans-serif", borderColor: "rgba(0,0,0,.1)" }}
                 />
               </div>
 
@@ -364,7 +364,7 @@ export function Header() {
                 style={{
                   borderColor: pc,
                   color: pc,
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "var(--font-body,'DM Sans'), sans-serif",
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = pc; e.currentTarget.style.color = "#fff"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = pc; }}
@@ -378,7 +378,7 @@ export function Header() {
                 style={{
                   background: `linear-gradient(135deg, ${pc}, ${sc})`,
                   boxShadow: `0 3px 12px ${pc}40`,
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "var(--font-body,'DM Sans'), sans-serif",
                 }}
               >
                 Login
@@ -429,7 +429,7 @@ export function Header() {
                 style={{
                   background: `linear-gradient(135deg, ${pc}, ${sc})`,
                   boxShadow: `0 3px 12px ${pc}50`,
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "var(--font-body,'DM Sans'), sans-serif",
                 }}
               >
                 Fale Conosco
@@ -466,7 +466,7 @@ export function Header() {
             style={{ borderBottom: `1px solid ${theme === "dark" ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.06)"}` }}
           >
             <div className="hidden lg:flex items-center gap-2 text-[12px] font-medium"
-              style={{ color: theme === "dark" ? "rgba(255,255,255,.5)" : "rgba(29,29,31,.5)", fontFamily: "'DM Sans', sans-serif" }}>
+              style={{ color: theme === "dark" ? "rgba(255,255,255,.5)" : "rgba(29,29,31,.5)", fontFamily: "var(--font-body,'DM Sans'), sans-serif" }}>
               <MapPin className="w-3.5 h-3.5" />
               <span>{content["company.address_short"] || "Localização"}</span>
             </div>
@@ -482,7 +482,7 @@ export function Header() {
               </button>
               <Link to="/cliente"
                 className="flex items-center gap-2 text-[12px] font-medium transition-colors"
-                style={{ color: theme === "dark" ? "rgba(255,255,255,.5)" : "rgba(29,29,31,.5)", fontFamily: "'DM Sans', sans-serif" }}>
+                style={{ color: theme === "dark" ? "rgba(255,255,255,.5)" : "rgba(29,29,31,.5)", fontFamily: "var(--font-body,'DM Sans'), sans-serif" }}>
                 <User className="w-3.5 h-3.5" />
                 Minha Conta
               </Link>
@@ -569,7 +569,7 @@ export function Header() {
               to="/cliente"
               className="text-[13px] font-medium px-4 py-2 rounded-lg transition-all duration-200"
               style={{
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "var(--font-body,'DM Sans'), sans-serif",
                 color: headerText
                   ? `${headerText}99`
                   : isScrolled
@@ -586,7 +586,7 @@ export function Header() {
               style={{
                 background: `linear-gradient(135deg, ${pc} 0%, ${sc} 100%)`,
                 boxShadow: `0 4px 16px ${pc}47`,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "var(--font-body,'DM Sans'), sans-serif",
               }}
             >
               Fale Conosco

@@ -71,7 +71,7 @@ function SeoPanel({ form, set }: { form: GenericPage; set: <K extends keyof Gene
   const { toast } = useToast();
 
   const siteOrigin = window?.location?.origin || 'https://seusite.com';
-  const fullUrl = `${siteOrigin}/${form.slug || 'slug'}`;
+  const fullUrl = `${siteOrigin}/p/${form.slug || 'slug'}`;
   const displayTitle = form.meta_title || form.title || 'Título da Página';
   const displayDesc = form.meta_description || 'Descrição da sua página...';
   const ogTitle = form.og_title || form.meta_title || form.title || 'Título da Página';
@@ -378,7 +378,7 @@ function ConfigPanel({ form, set, isNew }: {
           <div className="flex items-center">
             <span className="px-3 h-10 flex items-center text-[12px] bg-[#f5f5f7] border border-r-0 rounded-l-xl flex-shrink-0"
               style={{ borderColor: 'rgba(0,0,0,.1)', color: '#98989d' }}>
-              seusite.com/
+              seusite.com/p/
             </span>
             <Input value={form.slug}
               onChange={(e) => set('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
@@ -657,7 +657,7 @@ export function GenericPagesManager() {
         style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
         <AlertCircle style={{ width: 16, height: 16, color: '#2563eb', flexShrink: 0, marginTop: 1 }} />
         <p className="text-[12px] leading-relaxed" style={{ color: '#1d4ed8' }}>
-          Páginas criadas aqui ficam acessíveis em <strong>seusite.com/[slug]</strong>.
+          Páginas criadas aqui ficam acessíveis em <strong>seusite.com/p/[slug]</strong>.
           Monte o conteúdo com o <strong>Page Builder</strong> e ative quando estiver pronta.
         </p>
       </div>
@@ -714,7 +714,7 @@ export function GenericPagesManager() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {page.is_active && (
-                      <a href={`/${page.slug}`} target="_blank" rel="noreferrer"
+                      <a href={`/p/${page.slug}`} target="_blank" rel="noreferrer"
                         className="w-8 h-8 rounded-xl flex items-center justify-center transition"
                         style={{ color: '#98989d', background: '#f5f5f7' }}
                         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#e5e5ea'; }}

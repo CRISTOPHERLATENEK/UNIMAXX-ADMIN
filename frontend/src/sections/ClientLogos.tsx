@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useData } from '@/context/DataContext';
+import { useBlockTypo } from '@/hooks/useBlockTypo';
 import {
   ShoppingCart, CreditCard, BarChart3, Truck, Wifi, Bell,
   Zap, Shield, Clock, Package, Users, Star, RefreshCw,
@@ -79,7 +80,7 @@ function FeaturePill({ feat }: { feat: Feature }) {
       <span style={{ width: 26, height: 26, borderRadius: '50%', background: feat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Icon size={13} color={feat.color} strokeWidth={2.2} />
       </span>
-      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13.5, fontWeight: 600, color: 'var(--t1)', letterSpacing: '-0.01em' }}>
+      <span style={{ fontFamily: "var(--font-body,'DM Sans'), sans-serif", fontSize: 13.5, fontWeight: 600, color: 'var(--t1)', letterSpacing: '-0.01em' }}>
         {feat.label}
       </span>
     </div>
@@ -99,6 +100,7 @@ function MarqueeRow({ features, reverse = false, speed = 38 }: { features: Featu
 
 export function ClientLogos() {
   const { data, loading } = useData();
+  const bt = useBlockTypo('client_logos');
   const content = data.content || {};
   const settings = data.settings || {};
   const pc = settings.primary_color || '#f97316';
@@ -113,7 +115,7 @@ export function ClientLogos() {
       <div data-reveal="up" style={{ textAlign: 'center', marginBottom: 28 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '4px 14px', borderRadius: 999, background: `${pc}10`, border: `1px solid ${pc}25` }}>
           <span style={{ width: 5, height: 5, borderRadius: '50%', background: pc, display: 'inline-block' }} />
-          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: pc }}>
+          <span style={{ fontFamily: "var(--font-body,'DM Sans'), sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: pc }}>
             {content['clients.title'] || 'O que você encontra na Unimaxx'}
           </span>
         </div>

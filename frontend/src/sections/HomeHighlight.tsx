@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { useData } from '@/context/DataContext';
+import { useBlockTypo } from '@/hooks/useBlockTypo';
 
 const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
@@ -27,6 +28,7 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
   const imgLeft = (item.image_position || 'right') === 'left';
   const accent = ACCENTS[index % ACCENTS.length];
   const paragraphs = (item.description || '').split('\n').filter(Boolean);
+  const bt = useBlockTypo('home_highlight');
 
   const textBlock = (
     <div
@@ -46,9 +48,9 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
         top: 24,
         right: imgLeft ? 'auto' : 24,
         left: imgLeft ? 24 : 'auto',
-        fontFamily: "'Outfit', sans-serif",
+        fontFamily: "var(--font-heading,'Outfit'), sans-serif",
         fontSize: 'clamp(5rem,10vw,9rem)',
-        fontWeight: 900,
+        fontWeight: 'var(--typo-h-weight,900)',
         letterSpacing: '-0.06em',
         lineHeight: 1,
         color: accent,
@@ -71,7 +73,7 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
             fontWeight: 700,
             letterSpacing: '0.10em',
             textTransform: 'uppercase' as const,
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--font-body,'DM Sans'), sans-serif",
             color: accent,
             background: `${accent}12`,
             border: `1px solid ${accent}30`,
@@ -84,14 +86,13 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
 
       {item.title && (
         <h2 style={{
-          fontFamily: "'Outfit', sans-serif",
+          fontFamily: "var(--font-heading,'Outfit'), sans-serif",
           fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)',
-          fontWeight: 900,
+          fontWeight: 'var(--typo-h-weight,900)',
           letterSpacing: '-0.04em',
           lineHeight: 1.05,
           color: 'var(--t1)',
-          margin: '0 0 20px',
-        }}>
+          margin: '0 0 20px', ...bt.h}}>
           {item.title}
         </h2>
       )}
@@ -103,12 +104,11 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
           {paragraphs.map((p, i) => (
             <p key={i} style={{
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--font-body,'DM Sans'), sans-serif",
               fontSize: 15,
               lineHeight: 1.75,
               color: 'var(--t3)',
-              margin: 0,
-            }}>
+              margin: 0}}>
               {p}
             </p>
           ))}
@@ -126,7 +126,7 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
             borderRadius: 999,
             fontSize: 14,
             fontWeight: 700,
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--font-body,'DM Sans'), sans-serif",
             color: '#fff',
             background: accent,
             border: 'none',
@@ -159,7 +159,7 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
         position: 'relative',
         borderRadius: 'clamp(16px, 2.5vw, 28px)',
         overflow: 'hidden',
-        minHeight: 'clamp(300px, 40vw, 520px)',
+        minHeight: 'clamp(220px, 40vw, 520px)',
         background: `${accent}10`,
       }}
     >
@@ -201,7 +201,7 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
             letterSpacing: '0.08em',
             textTransform: 'uppercase' as const,
             color: '#fff',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "var(--font-body,'DM Sans'), sans-serif",
           }}>
             {item.badge || 'Destaque'}
           </div>
@@ -239,6 +239,7 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
 
 export function HomeHighlight() {
   const { data } = useData();
+  const bt = useBlockTypo('home_highlight');
   const content = data.content || {};
 
   const enabled = content['home_highlight.enabled'] !== '0';

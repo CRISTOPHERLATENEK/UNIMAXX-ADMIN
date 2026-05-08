@@ -33,7 +33,7 @@ function getBlockStyles(block: PageBlock, t: typeof DEFAULT_T) {
     title: {
       color: block.titleColor || (block.colorTheme === 'dark' || block.colorTheme === 'brand' ? '#ffffff' : '#111827'),
       fontSize: block.titleSize || 'clamp(1.5rem, 3vw, 2.5rem)',
-      fontFamily: "'Outfit', sans-serif",
+      fontFamily: "var(--font-heading,'Outfit'), sans-serif",
     },
     subtitle: {
       color: block.subtitleColor || (block.colorTheme === 'dark' || block.colorTheme === 'brand' ? 'rgba(255,255,255,0.7)' : '#4b5563'),
@@ -109,7 +109,7 @@ function SectionHead({ label, title, subtitle, t, dark = false, center = true }:
       )}
       {title && (
         <h2 style={{
-          fontFamily: "'Outfit', sans-serif",
+          fontFamily: "var(--font-heading,'Outfit'), sans-serif",
           fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)',
           fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.025em',
           color: dark ? '#fff' : '#0f172a', marginBottom: subtitle ? 16 : 0,
@@ -146,7 +146,7 @@ function FaqBlock({ block, t }: { block: PageBlock; t: typeof DEFAULT_T }) {
                   onClick={() => setOpen(isOpen ? null : i)}
                   style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', gap: 16, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                 >
-                  <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 15, color: isDark ? '#fff' : '#1e293b', lineHeight: 1.4 }}>{faq.question}</span>
+                  <span style={{ fontFamily: "var(--font-heading,'Outfit'), sans-serif", fontWeight: 700, fontSize: 15, color: isDark ? '#fff' : '#1e293b', lineHeight: 1.4 }}>{faq.question}</span>
                   <div style={{
                     width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
                     background: isOpen ? t.from : (isDark ? 'rgba(255,255,255,.08)' : '#f1f5f9'),
@@ -257,7 +257,7 @@ function BenefitsBlock({ block, t }: { block: any; t: any }) {
                         fontSize: Math.round(iconSz * 0.44), lineHeight: 1,
                       }}>{isObj ? item.icon : '⚡'}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontWeight: isObj && item.bold ? 700 : 600, color: block.colorTheme === 'dark' ? '#fff' : '#1e293b', fontSize: fs, marginBottom: (isObj && item.desc) ? 3 : 0, fontFamily: "'Outfit',sans-serif" }}>
+                        <p style={{ fontWeight: isObj && item.bold ? 700 : 600, color: block.colorTheme === 'dark' ? '#fff' : '#1e293b', fontSize: fs, marginBottom: (isObj && item.desc) ? 3 : 0, fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>
                           {isObj ? item.label : item}
                         </p>
                         {isObj && item.desc && <p style={{ color: block.colorTheme === 'dark' ? 'rgba(255,255,255,0.45)' : '#94a3b8', fontSize: ds, lineHeight: 1.55 }}>{item.desc}</p>}
@@ -419,7 +419,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
         return (
           <div style={{ position: 'relative', width: '100%', minHeight: 320, background: `linear-gradient(135deg, #0d0d10 0%, ${t.from}40 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12 }}>
             <div style={{ border: `2px dashed ${t.from}80`, borderRadius: 12, padding: '24px 40px', textAlign: 'center' }}>
-              <p style={{ color: t.from, fontFamily: "'Outfit',sans-serif", fontSize: 18, fontWeight: 700, margin: 0 }}>Bloco Hero</p>
+              <p style={{ color: t.from, fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 18, fontWeight: 700, margin: 0 }}>Bloco Hero</p>
               <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, margin: '6px 0 0' }}>Adicione um título, descrição ou imagem para visualizar</p>
             </div>
           </div>
@@ -455,14 +455,14 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
         const cols = allItems.length <= 4 ? 2 : 3;
         return (
           <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <div style={{ background: '#13141b', borderRadius: rr, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1.6fr', boxShadow: '0 32px 80px rgba(0,0,0,.25)' }}>
-              <div style={{ padding: '56px 48px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '1px solid rgba(255,255,255,.06)', background: 'linear-gradient(160deg,#16171f,#0f1015)' }}>
+            <div className="split-dark-block" style={{ background: '#13141b', borderRadius: rr, overflow: 'hidden', display: 'grid', gridTemplateColumns: '1fr 1.6fr', boxShadow: '0 32px 80px rgba(0,0,0,.25)' }}>
+              <div className="split-dark-left" style={{ padding: '56px 48px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '1px solid rgba(255,255,255,.06)', background: 'linear-gradient(160deg,#16171f,#0f1015)' }}>
                 {label && <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.14em', color: ac, marginBottom: 16, textTransform: 'uppercase' }}>{label}</p>}
-                <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.6rem,2.5vw,2.2rem)', fontWeight: 900, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.025em', marginBottom: mainSub ? 18 : 0 }}>{mainTitle}</h2>
+                <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(1.6rem,2.5vw,2.2rem)', fontWeight: 900, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.025em', marginBottom: mainSub ? 18 : 0 }}>{mainTitle}</h2>
                 {mainSub && <p style={{ fontSize: 14, color: 'rgba(255,255,255,.45)', lineHeight: 1.7 }}>{mainSub}</p>}
                 <div style={{ marginTop: 32, width: 48, height: 3, borderRadius: 99, background: `linear-gradient(90deg,${ac},${ac}40)` }} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols},1fr)`, gap: 1, background: 'rgba(255,255,255,.04)' }}>
+              <div className="split-dark-grid" style={{ display: 'grid', gridTemplateColumns: `repeat(${cols},1fr)`, gap: 1, background: 'rgba(255,255,255,.04)' }}>
                 {allItems.map((item, i) => {
                   const lbl = typeof item === 'string' ? item : item.label;
                   const ico = typeof item === 'string' ? '' : item.icon;
@@ -473,7 +473,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#13141b'; }}>
                       {ico && <div style={{ fontSize: 20, width: 38, height: 38, borderRadius: 10, background: `${ac}18`, border: `1px solid ${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{ico}</div>}
                       <div>
-                        <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#fff', lineHeight: 1.35 }}>{lbl}</p>
+                        <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 14, color: '#fff', lineHeight: 1.35 }}>{lbl}</p>
                         {dsc && <p style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', marginTop: 5, lineHeight: 1.6 }}>{dsc}</p>}
                       </div>
                     </div>
@@ -500,7 +500,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,.07)'; (e.currentTarget as HTMLElement).style.transform = ''; }}>
                       <div style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${ac}30`, background: `${ac}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 14 }}>{ico}</div>
-                      <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#fff', lineHeight: 1.35, marginBottom: dsc ? 6 : 0 }}>{lbl}</p>
+                      <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 14, color: '#fff', lineHeight: 1.35, marginBottom: dsc ? 6 : 0 }}>{lbl}</p>
                       {dsc && <p style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', lineHeight: 1.6 }}>{dsc}</p>}
                     </div>
                   );
@@ -524,7 +524,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 40, pointerEvents: 'none' }}>
                   <div style={{ textAlign: 'center', maxWidth: 640, padding: '0 20px' }}>
                     {label && <div style={{ display: 'inline-block', background: '#0f1017', color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: '.1em', padding: '5px 14px', borderRadius: 8, marginBottom: 16 }}>{label}</div>}
-                    {mainTitle && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.5rem,2.8vw,2.3rem)', fontWeight: 800, color: '#0f1017', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: mainSub ? 12 : 0 }}>{mainTitle}</h2>}
+                    {mainTitle && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(1.5rem,2.8vw,2.3rem)', fontWeight: 800, color: '#0f1017', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: mainSub ? 12 : 0 }}>{mainTitle}</h2>}
                     {mainSub && <p style={{ fontSize: 14, color: '#666', lineHeight: 1.6 }}>{mainSub}</p>}
                   </div>
                 </div>
@@ -541,7 +541,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.transform = ''; }}>
                         {ico && <div style={{ width: 40, height: 40, borderRadius: 12, background: `${ac}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{ico}</div>}
                         <div>
-                          <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#1a1a1a', lineHeight: 1.3 }}>{lbl}</p>
+                          <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 14, color: '#1a1a1a', lineHeight: 1.3 }}>{lbl}</p>
                           {dsc && <p style={{ fontSize: 12, color: '#888', marginTop: 4, lineHeight: 1.5 }}>{dsc}</p>}
                         </div>
                       </div>
@@ -559,7 +559,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,.07)'; (e.currentTarget as HTMLElement).style.transform = ''; }}>
                         {ico && <div style={{ width: 40, height: 40, borderRadius: 12, background: `${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{ico}</div>}
                         <div>
-                          <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#fff', lineHeight: 1.3 }}>{lbl}</p>
+                          <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 14, color: '#fff', lineHeight: 1.3 }}>{lbl}</p>
                           {dsc && <p style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', marginTop: 4, lineHeight: 1.5 }}>{dsc}</p>}
                         </div>
                       </div>
@@ -584,11 +584,11 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                   <div key={i} style={{ display: 'flex', gap: 14, padding: '18px', background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 14, alignItems: 'flex-start', transition: 'border-color .2s, box-shadow .2s' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 24px ${ac}12`; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 10, background: `linear-gradient(135deg,${ac},${ac}bb)`, color: '#fff', fontWeight: 800, fontSize: 13, fontFamily: "'Outfit',sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: `linear-gradient(135deg,${ac},${ac}bb)`, color: '#fff', fontWeight: 800, fontSize: 13, fontFamily: "var(--font-heading,'Outfit'),sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {String(i + 1).padStart(2, '0')}
                     </div>
                     <div style={{ paddingTop: 2 }}>
-                      <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 14, color: '#1a1a1a', lineHeight: 1.3 }}>{lbl}</p>
+                      <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 14, color: '#1a1a1a', lineHeight: 1.3 }}>{lbl}</p>
                       {dsc && <p style={{ fontSize: 12, color: '#888', marginTop: 4, lineHeight: 1.5 }}>{dsc}</p>}
                     </div>
                   </div>
@@ -613,7 +613,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                     <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg,${ac},${ac}bb)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Check style={{ width: 11, height: 11, color: '#fff', strokeWidth: 3 }} />
                     </div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a', fontFamily: "'Outfit',sans-serif" }}>{lbl}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a', fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>{lbl}</span>
                   </div>
                 );
               })}
@@ -636,7 +636,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-6px)'; (e.currentTarget as HTMLElement).style.borderColor = `${ac}40`; (e.currentTarget as HTMLElement).style.boxShadow = `0 20px 48px ${ac}18`; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,.04)'; }}>
                   {ico && <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg,${ac}20,${ac}10)`, border: `1px solid ${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 16 }}>{ico}</div>}
-                  <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 15, color: '#1a1a1a', lineHeight: 1.35, marginBottom: dsc ? 8 : 0 }}>{lbl}</p>
+                  <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 15, color: '#1a1a1a', lineHeight: 1.35, marginBottom: dsc ? 8 : 0 }}>{lbl}</p>
                   {dsc && <p style={{ fontSize: 13, color: '#888', lineHeight: 1.6 }}>{dsc}</p>}
                 </div>
               );
@@ -661,20 +661,20 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
       const contain = block.imageContain !== false;
       return (
         <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', borderRadius: rr, overflow: 'hidden', maxHeight: maxH, border: '1px solid rgba(0,0,0,.07)', boxShadow: '0 16px 48px rgba(0,0,0,.08)' }}>
+          <div className="image-text-block" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', borderRadius: rr, overflow: 'hidden', maxHeight: maxH, border: '1px solid rgba(0,0,0,.07)', boxShadow: '0 16px 48px rgba(0,0,0,.08)' }}>
             {!imgRight && (
               <div style={{ background: hasBg ? bgColor : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', order: 0 }}>
                 {imgSrc ? <img src={imgSrc} alt={block.imageAlt || ''} style={{ width: '100%', height: '100%', maxHeight: maxH, objectFit: contain ? 'contain' : 'cover', display: 'block', transition: 'transform .4s' }} onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')} onMouseLeave={e => (e.currentTarget.style.transform = '')} />
                   : <div style={{ width: '100%', height: maxH, background: hasBg ? bgColor : '#f9f9fb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80 }}>🖼️</span></div>}
               </div>
             )}
-            <div style={{ padding: '52px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#fff', order: imgRight ? 0 : 1 }}>
+            <div className="image-text-content" style={{ padding: '52px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#fff', order: imgRight ? 0 : 1 }}>
               {block.badge && (
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 50, border: `1.5px solid ${t.from}40`, color: t.from, fontSize: 12, fontWeight: 700, marginBottom: 20, alignSelf: 'flex-start', background: `${t.from}08` }}>
                   {block.badge} <ArrowRight style={{ width: 12, height: 12 }} />
                 </div>
               )}
-              {block.title && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.8rem,3vw,2.75rem)', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#0f172a', marginBottom: 16 }}>{block.title}</h2>}
+              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(1.8rem,3vw,2.75rem)', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#0f172a', marginBottom: 16 }}>{block.title}</h2>}
               {block.description && <p style={{ fontSize: '0.95rem', lineHeight: 1.7, color: '#475569', marginBottom: (block.items && block.items.length > 0) ? 24 : 0 }}>{block.description}</p>}
               {block.items && block.items.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
@@ -727,7 +727,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                   <div style={{
                     width: 56, height: 56, borderRadius: '50%',
                     background: `linear-gradient(135deg,${t.from},${t.to})`,
-                    color: '#fff', fontFamily: "'Outfit',sans-serif", fontWeight: 900, fontSize: 17,
+                    color: '#fff', fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: 17,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: `0 8px 24px ${t.glow}`, border: '3px solid #fff',
                   }}>{step.number || String(i + 1).padStart(2, '0')}</div>
@@ -741,7 +741,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                 }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${t.from}40`; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = block.colorTheme === 'dark' ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)'; }}>
-                  <h3 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 800, fontSize: 16, color: block.colorTheme === 'dark' ? '#fff' : '#0f172a', marginBottom: step.description ? 6 : 0 }}>{step.title}</h3>
+                  <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 800, fontSize: 16, color: block.colorTheme === 'dark' ? '#fff' : '#0f172a', marginBottom: step.description ? 6 : 0 }}>{step.title}</h3>
                   {step.description && <p style={{ fontSize: 14, color: block.colorTheme === 'dark' ? 'rgba(255,255,255,.55)' : '#64748b', lineHeight: 1.65 }}>{step.description}</p>}
                 </div>
               </div>
@@ -767,7 +767,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                   opacity: v ? 1 : 0, transform: v ? 'translateY(0)' : 'translateY(20px)',
                   transition: `opacity .55s ease ${i * 0.1}s, transform .55s ease ${i * 0.1}s`,
                 }}>
-                  <p style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 900, fontSize: 'clamp(2rem,4vw,3rem)', lineHeight: 1, marginBottom: 8, background: `linear-gradient(135deg,${t.from},${t.to})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{s.value}</p>
+                  <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: 'clamp(2rem,4vw,3rem)', lineHeight: 1, marginBottom: 8, background: `linear-gradient(135deg,${t.from},${t.to})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{s.value}</p>
                   <p style={{ fontSize: 14, color: block.colorTheme === 'dark' ? 'rgba(255,255,255,.5)' : '#64748b', fontWeight: 500, letterSpacing: '.01em' }}>{s.label}</p>
                 </div>
               ))}
@@ -792,9 +792,9 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
               <Quote style={{ width: 36, height: 36, margin: '0 auto 20px', color: t.from, opacity: .8 }} />
               <blockquote style={{ color: '#fff', fontSize: 'clamp(1rem,2vw,1.25rem)', fontWeight: 500, lineHeight: 1.75, fontStyle: 'italic', marginBottom: 32 }}>"{block.quote}"</blockquote>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-                <div style={{ width: 48, height: 48, borderRadius: '50%', background: `linear-gradient(135deg,${t.from},${t.to})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: "'Outfit',sans-serif", fontWeight: 800, fontSize: 16, color: '#fff' }}>{initials}</div>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: `linear-gradient(135deg,${t.from},${t.to})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 800, fontSize: 16, color: '#fff' }}>{initials}</div>
                 <div style={{ textAlign: 'left' }}>
-                  {block.author && <p style={{ color: '#fff', fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 15 }}>{block.author}</p>}
+                  {block.author && <p style={{ color: '#fff', fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 15 }}>{block.author}</p>}
                   {block.role && <p style={{ color: 'rgba(255,255,255,.5)', fontSize: 13, marginTop: 2 }}>{block.role}{(block as any).company ? ` · ${(block as any).company}` : ''}</p>}
                 </div>
               </div>
@@ -855,7 +855,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                   {block.badge && (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', background: `${t.from}18`, color: t.from, marginBottom: 12 }}>{block.badge}</span>
                   )}
-                  {block.title && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 800, fontSize: 'clamp(1.3rem,2.5vw,1.9rem)', color: isDarkCta ? '#fff' : '#0f172a', lineHeight: 1.2, letterSpacing: '-0.02em', marginBottom: block.description ? 10 : 0 }}>{block.title}</h2>}
+                  {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 800, fontSize: 'clamp(1.3rem,2.5vw,1.9rem)', color: isDarkCta ? '#fff' : '#0f172a', lineHeight: 1.2, letterSpacing: '-0.02em', marginBottom: block.description ? 10 : 0 }}>{block.title}</h2>}
                   {block.description && <p style={{ fontSize: '0.95rem', color: isDarkCta ? 'rgba(255,255,255,.6)' : '#64748b', lineHeight: 1.6, maxWidth: 480 }}>{block.description}</p>}
                 </div>
                 <div style={{ display: 'flex', gap: 12, flexShrink: 0, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -901,7 +901,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
               {block.badge && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', background: 'rgba(255,255,255,.18)', color: '#fff', backdropFilter: 'blur(8px)', marginBottom: 18, border: '1px solid rgba(255,255,255,.25)' }}>{block.badge}</span>
               )}
-              {block.title && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 900, fontSize: 'clamp(1.75rem,4vw,3rem)', color: block.titleColor || '#fff', lineHeight: 1.1, letterSpacing: '-0.025em', marginBottom: 16 }}>{block.title}</h2>}
+              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: 'clamp(1.75rem,4vw,3rem)', color: block.titleColor || '#fff', lineHeight: 1.1, letterSpacing: '-0.025em', marginBottom: 16 }}>{block.title}</h2>}
               {block.description && <p style={{ fontSize: '1.05rem', color: block.subtitleColor || 'rgba(255,255,255,.8)', marginBottom: 36, maxWidth: 520, margin: '0 auto 36px', lineHeight: 1.7 }}>{block.description}</p>}
               <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
                 {block.ctaLabel && (
@@ -940,7 +940,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
         <section style={{ padding: sectionPad(block), background: block.bgColor || (isDark ? '#0f172a' : '#fff') }} className="px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <div style={{ borderLeft: `4px solid ${t.from}`, paddingLeft: 24 }}>
-              {block.title && <h2 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 900, fontSize: 'clamp(1.4rem,2.5vw,2rem)', color: isDark ? '#fff' : '#0f172a', marginBottom: 12, letterSpacing: '-0.02em' }}>{block.title}</h2>}
+              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: 'clamp(1.4rem,2.5vw,2rem)', color: isDark ? '#fff' : '#0f172a', marginBottom: 12, letterSpacing: '-0.02em' }}>{block.title}</h2>}
               {block.description && <p style={{ color: isDark ? 'rgba(255,255,255,.65)' : '#475569', lineHeight: 1.8, fontSize: '1rem', whiteSpace: 'pre-wrap' }}>{block.description}</p>}
             </div>
           </div>

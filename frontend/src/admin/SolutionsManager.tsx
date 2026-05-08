@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type React from 'react';
 
-import { Plus, Pencil, Trash2, GripVertical, Check, Link2, Eye, EyeOff, Navigation, ChevronRight, LayoutGrid, Upload, FileEdit } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, Check, Link2, Eye, EyeOff, Navigation, ChevronRight, LayoutGrid, Upload, FileEdit, Type, RotateCcw } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useNavigate } from 'react-router-dom';
 import type { Solution } from '@/types';
@@ -67,8 +67,186 @@ const HEADER_NAV = [
 
 type EditingSolution = Solution;
 
+const FONTS_H = ['Outfit','Space Grotesk','Syne','Raleway','Montserrat','Playfair Display','Inter','Poppins','Josefin Sans','Unbounded'];
+const FONTS_B = ['DM Sans','Inter','Plus Jakarta Sans','Nunito','Lato','Open Sans','Roboto','Figtree','Mulish'];
+const WEIGHTS = [{v:'400',l:'Regular'},{v:'500',l:'Medium'},{v:'600',l:'Semi'},{v:'700',l:'Bold'},{v:'800',l:'Extra'},{v:'900',l:'Black'}];
+
+function SolTypoPanel({ sol, onChange, pc }: {
+  sol: any;
+  onChange: (s: any) => void;
+  pc: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const set = (k: string, v: string) => onChange({ ...sol, [k]: v });
+
+  const hasAny = !!(sol.card_accent_color || sol.card_title_color || sol.card_body_color || sol.card_font_heading || sol.card_font_body || sol.card_title_weight);
+
+  const clearAll = () => onChange({
+    ...sol,
+    card_accent_color: '', card_title_color: '', card_body_color: '',
+    card_font_heading: '', card_font_body: '', card_title_weight: '',
+  });
+
+  const fh = sol.card_font_heading || '';
+  const fb = sol.card_font_body    || '';
+  const hw = sol.card_title_weight  || '';
+  const ac = sol.card_accent_color  || pc;
+  const tc = sol.card_title_color   || '';
+  const bc = sol.card_body_color    || '';
+
+  return (
+    <div className="rounded-xl border overflow-hidden"
+      style={{ borderColor: hasAny ? `${pc}50` : 'rgba(0,0,0,.08)', background: hasAny ? `${pc}04` : '#fafafa' }}>
+
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-black/[.02] transition-colors">
+        <div className="flex items-center gap-2">
+          <Type className="w-4 h-4" style={{ color: hasAny ? pc : '#9ca3af' }} />
+          <span className="text-sm font-semibold" style={{ color: hasAny ? pc : '#6b7280' }}>
+            Tipografia & Estilo do Card{hasAny ? ' (personalizado)' : ''}
+          </span>
+        </div>
+        <span className="text-xs text-gray-400">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
+          <p className="text-xs text-gray-400 pt-3">
+            Sobrescreve cores e fontes <strong>somente neste card</strong>. Deixe em branco para usar o padrão da seção.
+          </p>
+
+          {/* Cor de destaque do card */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-gray-700">Cor de Destaque do Card</label>
+              {sol.card_accent_color && <button type="button" onClick={() => set('card_accent_color','')} className="text-[10px] text-gray-400 hover:text-red-500">Limpar</button>}
+            </div>
+            <p className="text-[10px] text-gray-400 mb-2">Cor do botão, gradiente e hover do card</p>
+            <div className="flex items-center gap-2">
+              <div className="relative w-9 h-9 rounded-lg border overflow-hidden flex-shrink-0" style={{ background: ac, borderColor: 'rgba(0,0,0,.1)' }}>
+                <input type="color" value={ac} onChange={e => set('card_accent_color', e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+              </div>
+              <input type="text" value={sol.card_accent_color || ''} onChange={e => set('card_accent_color', e.target.value)}
+                placeholder={`Padrão: ${pc}`}
+                className="flex-1 h-9 px-3 rounded-lg border text-xs font-mono bg-white" style={{ borderColor: 'rgba(0,0,0,.1)' }} />
+            </div>
+          </div>
+
+          {/* Cores do título e corpo */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: 'Cor do Título', key: 'card_title_color', hint: 'Card + modal' },
+              { label: 'Cor do Corpo', key: 'card_body_color', hint: 'Descrição no modal' },
+            ].map(({ label, key, hint }) => (
+              <div key={key}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-gray-700">{label}</label>
+                  {sol[key] && <button type="button" onClick={() => set(key,'')} className="text-[10px] text-gray-400 hover:text-red-500">✕</button>}
+                </div>
+                <p className="text-[10px] text-gray-400 mb-1.5">{hint}</p>
+                <div className="flex items-center gap-1.5">
+                  <div className="relative w-8 h-8 rounded-lg border overflow-hidden flex-shrink-0"
+                    style={{ background: sol[key] || '#ffffff', borderColor: 'rgba(0,0,0,.1)' }}>
+                    <input type="color" value={sol[key] || '#000000'} onChange={e => set(key, e.target.value)}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                  </div>
+                  <input type="text" value={sol[key] || ''} onChange={e => set(key, e.target.value)}
+                    placeholder="Padrão"
+                    className="flex-1 h-8 px-2 rounded-lg border text-[11px] font-mono bg-white" style={{ borderColor: 'rgba(0,0,0,.1)' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Fontes */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-1.5">Fonte do Título</label>
+              <select value={fh} onChange={e => set('card_font_heading', e.target.value)}
+                className="w-full h-9 px-2 rounded-lg border text-xs bg-white" style={{ borderColor: 'rgba(0,0,0,.1)', fontFamily: fh ? `'${fh}',sans-serif` : undefined }}>
+                <option value="">— Padrão —</option>
+                {FONTS_H.map(f => <option key={f} value={f} style={{ fontFamily: `'${f}',sans-serif` }}>{f}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-1.5">Fonte do Corpo</label>
+              <select value={fb} onChange={e => set('card_font_body', e.target.value)}
+                className="w-full h-9 px-2 rounded-lg border text-xs bg-white" style={{ borderColor: 'rgba(0,0,0,.1)', fontFamily: fb ? `'${fb}',sans-serif` : undefined }}>
+                <option value="">— Padrão —</option>
+                {FONTS_B.map(f => <option key={f} value={f} style={{ fontFamily: `'${f}',sans-serif` }}>{f}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Peso */}
+          <div>
+            <label className="text-xs font-semibold text-gray-700 block mb-2">Peso do Título</label>
+            <div className="grid grid-cols-6 gap-1">
+              {WEIGHTS.map(w => (
+                <button type="button" key={w.v}
+                  onClick={() => set('card_title_weight', hw === w.v ? '' : w.v)}
+                  className="py-1.5 rounded-lg border text-[10px] font-semibold transition-all"
+                  style={{
+                    fontWeight: parseInt(w.v),
+                    fontFamily: fh ? `'${fh}',sans-serif` : undefined,
+                    borderColor: hw === w.v ? pc : 'rgba(0,0,0,.1)',
+                    background: hw === w.v ? `${pc}12` : '#fff',
+                    color: hw === w.v ? pc : '#6b7280',
+                  }}>
+                  {w.l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+            {/* Card preview */}
+            <div className="p-4 flex items-end gap-3 min-h-[100px]"
+              style={{ background: sol.image ? `url(${sol.image}) center/cover` : `linear-gradient(165deg, ${ac} 0%, ${ac}99 100%)` }}>
+              <div className="flex-1">
+                <p style={{
+                  fontFamily: fh ? `'${fh}',sans-serif` : "var(--font-heading,'Outfit'),sans-serif",
+                  fontWeight: hw ? parseInt(hw) : 700,
+                  fontSize: 16, color: tc || '#fff', lineHeight: 1.2,
+                  textShadow: '0 1px 8px rgba(0,0,0,.4)',
+                }}>
+                  {sol.title || 'Título do Card'}
+                </p>
+              </div>
+              <div className="px-3 py-1.5 rounded-lg text-xs font-bold text-white flex-shrink-0"
+                style={{ background: ac, boxShadow: `0 4px 12px ${ac}60` }}>
+                {sol.cta_text || 'Confira'}
+              </div>
+            </div>
+            {/* Modal preview */}
+            <div className="p-3 bg-white border-t" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Modal / Página</p>
+              <p style={{ fontFamily: fh ? `'${fh}',sans-serif` : undefined, fontWeight: hw ? parseInt(hw) : 700, fontSize: 15, color: tc || '#1d1d1f' }}>
+                {sol.title || 'Título da Solução'}
+              </p>
+              <p style={{ fontFamily: fb ? `'${fb}',sans-serif` : undefined, fontSize: 12, color: bc || '#6e6e73', lineHeight: 1.5, marginTop: 4 }}>
+                {sol.description || 'Descrição da solução aparece aqui no modal expandido.'}
+              </p>
+            </div>
+          </div>
+
+          {hasAny && (
+            <button type="button" onClick={clearAll}
+              className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 transition-colors">
+              <RotateCcw className="w-3 h-3" /> Resetar tudo para o padrão
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SolutionsManager() {
   const { data, updateSolution, deleteSolution, uploadImage } = useData();
+  const pc = data?.settings?.primary_color || '#f97316';
   const navigate = useNavigate();
   const [editingSolution, setEditingSolution] = useState<EditingSolution | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -511,6 +689,9 @@ export function SolutionsManager() {
                   ))}
                 </div>
               </div>
+
+              {/* ── Tipografia & Estilo do Card ── */}
+              <SolTypoPanel sol={editingSolution} onChange={setEditingSolution} pc={pc} />
 
               <div className="flex gap-2 pt-4 border-t">
                 <Button onClick={handleSave} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white">

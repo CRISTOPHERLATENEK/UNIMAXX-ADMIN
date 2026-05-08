@@ -134,7 +134,7 @@ function Home() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--s0)' }}>
 
       {/* ─── HERO ─── */}
-      <section className="relative min-h-screen flex items-center overflow-hidden" style={{ background: '#0a0a0c' }}>
+      <section className="relative min-h-[88vh] sm:min-h-screen flex items-center overflow-hidden" style={{ background: '#0a0a0c' }}>
         {/* Orbs */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-[-80px] left-[-40px] w-[400px] h-[400px] rounded-full" style={{ background: 'rgba(249,115,22,.18)', filter: 'blur(80px)' }} />
@@ -145,8 +145,8 @@ function Home() {
         {/* Dot grid */}
         <div className="absolute inset-0 dot-grid opacity-[.35] pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
             {/* Left */}
             <div>
@@ -551,7 +551,7 @@ function Home() {
                   boxShadow: openFaq === i ? '0 0 20px rgba(249,115,22,.07)' : '0 20px 80px rgba(0,0,0,.03)',
                 }}>
                 <button
-                  className="w-full flex items-center justify-between px-7 py-5 text-left"
+                  className="w-full flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 text-left"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                 >
                   <span className="text-sm font-semibold pr-4" style={{ color: 'var(--t1)', fontFamily: "'Outfit', sans-serif" }}>
@@ -567,7 +567,7 @@ function Home() {
                   </div>
                 </button>
                 <div style={{ maxHeight: openFaq === i ? '200px' : '0', overflow: 'hidden', transition: 'max-height 0.38s cubic-bezier(0.2,0.8,0.2,1)' }}>
-                  <p className="px-7 pb-6 text-sm" style={{ color: 'var(--t3)', lineHeight: 1.75 }}>{faq.a}</p>
+                  <p className="px-5 sm:px-7 pb-5 sm:pb-6 text-sm" style={{ color: 'var(--t3)', lineHeight: 1.75 }}>{faq.a}</p>
                 </div>
               </div>
             ))}
@@ -578,7 +578,7 @@ function Home() {
       {/* ─── CONTATO ─── */}
       <section id="contato" className={`py-32 ${revealClass('contato')}`} style={{ background: 'var(--s1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
             <div>
               <span className="section-badge bg-orange-100 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 mb-6">
                 <span className="sol-dot bg-orange-500" />
@@ -693,7 +693,7 @@ function Home() {
       {/* ─── FOOTER ─── */}
       <footer style={{ background: '#060608', borderTop: '0.5px solid rgba(255,255,255,.05)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-10 md:mb-12">
             <div>
               <Link to="/" className="flex items-center gap-2.5 mb-5 group">
                 <div className="w-8 h-8 rounded-[10px] flex items-center justify-center transition-transform duration-300 group-hover:scale-105"

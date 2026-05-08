@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type React from 'react';
 import { useData } from '@/context/DataContext';
+import { useBlockTypo } from '@/hooks/useBlockTypo';
 import {
   Trophy, Heart, Lightbulb, Puzzle, Shield, Zap, Star,
   Target, Award, Rocket, TrendingUp, Users, Globe, Lock, Clock,
@@ -36,12 +37,12 @@ function DiffCard({ item, index, pc }: { item: Item; index: number; pc: string }
       }}
     >
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${c}${hov ? '60' : '20'},transparent)`, transition: 'all .3s' }} />
-      <div style={{ position: 'absolute', top: 14, right: 16, fontFamily: "'Outfit',sans-serif", fontSize: 11, fontWeight: 700, color: hov ? `${c}80` : 'rgba(255,255,255,.07)', transition: 'color .3s' }}>{String(index + 1).padStart(2, '0')}</div>
+      <div style={{ position: 'absolute', top: 14, right: 16, fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 11, fontWeight: 700, color: hov ? `${c}80` : 'rgba(255,255,255,.07)', transition: 'color .3s' }}>{String(index + 1).padStart(2, '0')}</div>
       <div style={{ width: 50, height: 50, borderRadius: 14, marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${c}18`, border: `1px solid ${c}28`, transition: 'all .3s', transform: hov ? 'scale(1.08) rotate(-5deg)' : 'none' }}>
         <Icon size={23} style={{ color: c }} />
       </div>
-      <h3 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16, fontWeight: 800, color: '#fff', margin: '0 0 10px', letterSpacing: '-0.02em' }}>{item.title}</h3>
-      <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13.5, lineHeight: 1.7, color: 'rgba(255,255,255,.4)', margin: '0 0 18px' }}>{item.description}</p>
+      <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 16, fontWeight: 800, color: '#fff', margin: '0 0 10px', letterSpacing: '-0.02em' }}>{item.title}</h3>
+      <p style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 13.5, lineHeight: 1.7, color: 'rgba(255,255,255,.4)', margin: '0 0 18px' }}>{item.description}</p>
       <div style={{ height: 2, borderRadius: 2, background: `linear-gradient(90deg,${c},transparent)`, width: hov ? '65%' : 22, transition: 'width .4s ease' }} />
     </div>
   );
@@ -64,15 +65,15 @@ function ListItem({ item, index, pc }: { item: Item; index: number; pc: string }
         transition: 'all .25s',
       }}
     >
-      <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.5rem,3vw,3rem)', fontWeight: 900, color: hov ? `${c}40` : 'rgba(255,255,255,.06)', lineHeight: 1, flexShrink: 0, letterSpacing: '-0.05em', transition: 'color .25s', minWidth: 48, textAlign: 'right' }}>
+      <span style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(1.5rem,3vw,3rem)', fontWeight: 900, color: hov ? `${c}40` : 'rgba(255,255,255,.06)', lineHeight: 1, flexShrink: 0, letterSpacing: '-0.05em', transition: 'color .25s', minWidth: 48, textAlign: 'right' }}>
         {String(index + 1).padStart(2, '0')}
       </span>
       <div style={{ width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${c}15`, border: `1px solid ${c}25`, flexShrink: 0, transition: 'all .25s', transform: hov ? 'scale(1.1)' : 'none' }}>
         <Icon size={20} style={{ color: c }} />
       </div>
       <div style={{ flex: 1 }}>
-        <h3 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16, fontWeight: 800, color: '#fff', margin: '0 0 4px', letterSpacing: '-0.02em' }}>{item.title}</h3>
-        <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13.5, lineHeight: 1.6, color: 'rgba(255,255,255,.38)', margin: 0 }}>{item.description}</p>
+        <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 16, fontWeight: 800, color: '#fff', margin: '0 0 4px', letterSpacing: '-0.02em' }}>{item.title}</h3>
+        <p style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 13.5, lineHeight: 1.6, color: 'rgba(255,255,255,.38)', margin: 0 }}>{item.description}</p>
       </div>
     </div>
   );
@@ -92,9 +93,9 @@ function SmallCard({ item, pc }: { item: Item; pc: string }) {
         <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${c}15`, border: `1px solid ${c}22`, flexShrink: 0 }}>
           <Icon size={17} style={{ color: c }} />
         </div>
-        <h3 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 15, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>{item.title}</h3>
+        <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 15, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>{item.title}</h3>
       </div>
-      <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, lineHeight: 1.65, color: 'rgba(255,255,255,.38)', margin: 0 }}>{item.description}</p>
+      <p style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 13, lineHeight: 1.65, color: 'rgba(255,255,255,.38)', margin: 0 }}>{item.description}</p>
     </div>
   );
 }
@@ -112,8 +113,8 @@ function ColorCard({ item, pc }: { item: Item; pc: string }) {
       <div style={{ width: 46, height: 46, borderRadius: 13, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', background: hov ? 'rgba(255,255,255,.2)' : `${c}18`, transition: 'all .35s' }}>
         <Icon size={21} style={{ color: hov ? '#fff' : c, transition: 'color .35s' }} />
       </div>
-      <h3 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 15, fontWeight: 800, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.02em' }}>{item.title}</h3>
-      <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, lineHeight: 1.7, color: hov ? 'rgba(255,255,255,.8)' : 'rgba(255,255,255,.38)', margin: 0, transition: 'color .35s' }}>{item.description}</p>
+      <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 15, fontWeight: 800, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.02em' }}>{item.title}</h3>
+      <p style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 13, lineHeight: 1.7, color: hov ? 'rgba(255,255,255,.8)' : 'rgba(255,255,255,.38)', margin: 0, transition: 'color .35s' }}>{item.description}</p>
     </div>
   );
 }
@@ -146,8 +147,8 @@ function LayoutFeatured({ items, pc }: { items: Item[]; pc: string }) {
         <div style={{ width: 56, height: 56, borderRadius: 16, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${fc}22`, border: `1px solid ${fc}35` }}>
           <FIcon size={26} style={{ color: fc }} />
         </div>
-        <h3 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(1.2rem,2.5vw,1.7rem)', fontWeight: 900, color: '#fff', margin: '0 0 10px', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{first?.title}</h3>
-        <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, lineHeight: 1.75, color: 'rgba(255,255,255,.5)', margin: '0 0 20px' }}>{first?.description}</p>
+        <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(1.2rem,2.5vw,1.7rem)', fontWeight: 900, color: '#fff', margin: '0 0 10px', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{first?.title}</h3>
+        <p style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 14, lineHeight: 1.75, color: 'rgba(255,255,255,.5)', margin: '0 0 20px' }}>{first?.description}</p>
         <div style={{ height: 3, borderRadius: 3, background: `linear-gradient(90deg,${fc},transparent)`, width: '40%' }} />
       </div>
       {rest.map((item, i) => <SmallCard key={i} item={item} pc={pc} />)}
@@ -166,6 +167,7 @@ function LayoutColorful({ items, pc }: { items: Item[]; pc: string }) {
 // Main
 export function Differentials() {
   const { data, loading } = useData();
+  const bt = useBlockTypo('differentials');
   const ct = data.content || {};
   const pc = data.settings?.primary_color || '#f97316';
 
@@ -205,20 +207,20 @@ export function Differentials() {
                 {badge && (
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginBottom: 16, padding: '4px 14px', borderRadius: 4, border: `1px solid ${pc}35`, width: 'fit-content' }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: pc, display: 'inline-block' }} />
-                    <span style={{ fontSize: 10.5, fontWeight: 700, color: pc, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: "'DM Sans',sans-serif" }}>{badge}</span>
+                    <span className="typo-label" style={{ fontSize: 10.5, fontWeight: 700, color: pc, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: "var(--font-body,'DM Sans'),sans-serif", ...bt.label }}>{badge}</span>
                   </div>
                 )}
                 {(heading || accent) && (
-                  <h2 style={{ fontFamily: "'Outfit',sans-serif", fontWeight: 900, fontSize: 'clamp(1.6rem,4vw,3rem)', lineHeight: 1.06, letterSpacing: '-0.035em', color: '#fff', margin: '0 0 10px' }}>
+                  <h2 className="typo-h2" style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: 'clamp(1.6rem,4vw,3rem)', lineHeight: 1.06, letterSpacing: '-0.035em', color: '#fff', margin: '0 0 10px', ...bt.h }}>
                     {heading && <>{heading} </>}
                     {accent && <span style={{ color: pc, fontStyle: 'italic' }}>{accent}</span>}
                   </h2>
                 )}
-                {desc && <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, lineHeight: 1.75, color: 'rgba(255,255,255,.38)', fontWeight: 300, margin: 0 }}>{desc}</p>}
+                {desc && <p className="typo-body" style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 14, lineHeight: 1.75, color: 'rgba(255,255,255,.38)', fontWeight: 300, margin: 0, ...bt.body }}>{desc}</p>}
               </div>
               <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(2rem,4vw,4rem)', fontWeight: 900, color: pc, lineHeight: 1, margin: 0, letterSpacing: '-0.04em' }}>{items.length}</p>
-                <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>diferenciais</p>
+                <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(2rem,4vw,4rem)', fontWeight: 900, color: pc, lineHeight: 1, margin: 0, letterSpacing: '-0.04em' }}>{items.length}</p>
+                <p style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 10, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>diferenciais</p>
               </div>
             </div>
 

@@ -11,6 +11,14 @@
   :root {
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'DM Sans', sans-serif;
+
+  /* ── Tipografia avançada (sobrescritos pelo admin) ── */
+  --typo-h-weight:  800;
+  --typo-body-size: 15px;
+  --typo-body-lh:   1.65;
+  --typo-h-spacing: -0.030em;
+  --typo-h-scale:   1.00;
+  /* --typo-h-color, --typo-body-color, --typo-label-color: injetados dinamicamente */
     --background: 0 0% 100%;
     --foreground: 220 15% 10%;
     --card: 0 0% 100%;
@@ -834,4 +842,434 @@ section {
 }
 .page-transition {
   animation: pageFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVIDADE MOBILE — AJUSTES GLOBAIS (v2)
+   Foco: telas ≤ 768px (tablet) e ≤ 480px (mobile)
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Evitar scroll horizontal global ── */
+html {
+  overflow-x: hidden;
+}
+body {
+  max-width: 100%;
+  /* NÃO usar overflow-x: hidden no body — quebra position:sticky
+     e causa scrollbar piscando. Usar overflow-x: clip é seguro. */
+  overflow-x: clip;
+}
+* { min-width: 0; }
+img, video, iframe { max-width: 100%; height: auto; }
+
+/* ── Tablet: ≤ 768px ── */
+@media (max-width: 768px) {
+
+  /* Padding lateral mais compacto em containers grandes */
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-5xl,
+  .max-w-4xl,
+  .max-w-3xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Reduzir os "py-32 / py-24" gigantes para algo aceitável */
+  .py-32 { padding-top: 3.5rem !important; padding-bottom: 3.5rem !important; }
+  .py-24 { padding-top: 3rem   !important; padding-bottom: 3rem   !important; }
+  .py-20 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+  .py-16 { padding-top: 2.25rem!important; padding-bottom: 2.25rem!important; }
+
+  /* Margens entre títulos e conteúdo */
+  .mb-16 { margin-bottom: 2.25rem !important; }
+  .mb-14 { margin-bottom: 2rem    !important; }
+  .mb-12 { margin-bottom: 1.75rem !important; }
+
+  /* Tipografia hero mais comportada */
+  h1.text-6xl, h1.text-5xl { font-size: clamp(1.9rem, 7.5vw, 2.6rem) !important; line-height: 1.1 !important; }
+  h2.text-5xl, h2.text-4xl { font-size: clamp(1.65rem, 6.5vw, 2.2rem) !important; line-height: 1.15 !important; }
+
+  /* Grids em geral: cair para 1 coluna */
+  .grid.lg\:grid-cols-2,
+  .grid.md\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+
+  /* Hero: stats não devem estourar */
+  .animate-fade-in-up.delay-300 { gap: 1.5rem !important; }
+
+  /* Botões hero: ocupar largura cheia em mobile */
+  .flex.flex-col.sm\:flex-row > a > button,
+  .flex.flex-col.sm\:flex-row > button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Footer: padding lateral menor */
+  footer .max-w-7xl,
+  footer > div > div {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* ── Mobile: ≤ 480px ── */
+@media (max-width: 480px) {
+
+  .max-w-7xl,
+  .max-w-6xl {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+  }
+
+  .py-32 { padding-top: 2.75rem !important; padding-bottom: 2.75rem !important; }
+  .py-24 { padding-top: 2.25rem !important; padding-bottom: 2.25rem !important; }
+
+  /* Hero / títulos */
+  h1 { font-size: clamp(1.75rem, 8vw, 2.25rem) !important; }
+  h2 { font-size: clamp(1.45rem, 7vw, 1.95rem) !important; }
+  h3 { font-size: clamp(1.05rem, 5vw, 1.3rem)  !important; }
+
+  /* Stats horizontais que estavam com gap-10 */
+  .gap-10 { gap: 1.25rem !important; }
+  .gap-8  { gap: 1rem    !important; }
+
+  /* Grids 4-col para 2-col em mobile pequeno */
+  .grid.lg\:grid-cols-4,
+  .grid.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Cards: padding menor */
+  .apple-card,
+  .card-glow { padding: 1.25rem !important; }
+
+  /* Section badge não estourar */
+  .section-badge {
+    font-size: 10px !important;
+    padding: 4px 10px !important;
+    letter-spacing: 0.08em !important;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   AJUSTES POR SEÇÃO ESPECÍFICA
+═══════════════════════════════════════════ */
+
+/* ── Header: top bar quebra de linha ── */
+@media (max-width: 600px) {
+  header [class*="topbar"] span,
+  header .text-\[12px\] { font-size: 11px !important; }
+}
+
+/* ── Solutions section ── */
+@media (max-width: 768px) {
+  .sol-section { padding: 3.5rem 0 !important; }
+  .sol-header-row { margin-bottom: 2rem !important; }
+  .sol-card { width: 80vw !important; max-width: 280px !important; }
+  .sol-card-inner { height: 280px !important; }
+  .sol-track { padding: 8px 16px 20px !important; gap: 12px !important; }
+  .sol-fade-l, .sol-fade-r { width: 24px !important; }
+}
+@media (max-width: 480px) {
+  .sol-grid-responsive {
+    grid-template-columns: 1fr !important;
+    justify-content: stretch !important;
+  }
+  .sol-grid-responsive .sol-card { width: 100% !important; max-width: 100% !important; }
+}
+
+/* ── Numbers: cards escuros estouravam no mobile ── */
+@media (max-width: 768px) {
+  /* Numbers LayoutDark — reduzir padding interno */
+  [style*="padding: '72px 48px'"],
+  [style*="padding:\"72px 48px\""] { padding: 2.5rem 1.25rem !important; }
+}
+
+/* ── Contact: form ocupa 1 coluna no mobile ── */
+@media (max-width: 600px) {
+  #contato form > div[style*="grid-template-columns: 1fr 1fr"],
+  #contato form > div[style*="gridTemplateColumns: '1fr 1fr'"],
+  #contato form > div[style*="1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  #contato { padding: 3rem 0 !important; }
+  #contato > div { padding: 0 1rem !important; }
+}
+
+/* ── Footer: search input + colunas ── */
+@media (max-width: 768px) {
+  footer input[type="text"] { width: 100% !important; max-width: 100%; }
+  footer > div > div { padding: 2.5rem 1rem 1.5rem !important; }
+  footer [style*="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr))"],
+  footer [style*="repeat(auto-fit"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+}
+@media (max-width: 480px) {
+  footer [style*="repeat(auto-fit"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Differentials cards ── */
+@media (max-width: 480px) {
+  .grid.lg\:grid-cols-4.md\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Segments (grid de ícones) ── */
+@media (max-width: 480px) {
+  #segmentos .grid.grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.625rem !important;
+  }
+}
+
+/* ── Dialogs / modais ── */
+@media (max-width: 480px) {
+  [role="dialog"], .sol-modal-sheet {
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+  }
+}
+
+/* ── Forms: inputs largos sem overflow ── */
+input, textarea, select { max-width: 100%; box-sizing: border-box; }
+
+/* ── WhatsApp widget não cobrir conteúdo ── */
+@media (max-width: 480px) {
+  [class*="whatsapp"], [class*="WhatsApp"] {
+    bottom: 12px !important;
+    right: 12px !important;
+  }
+}
+
+/* ── Texto longo quebra suavemente ── */
+p, h1, h2, h3, h4, span, a {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* ── QuickLinks: forçar wrap em mobile ── */
+@media (max-width: 768px) {
+  .quicklinks-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 420px) {
+  .quicklinks-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Numbers: grid 3 colunas vira 1 em mobile ── */
+@media (max-width: 600px) {
+  .numbers-grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CORREÇÕES DE RESPONSIVIDADE — v3 (source-level fixes)
+   Complementa os fixes inline nos componentes
+══════════════════════════════════════════════════════════════ */
+
+/* ── split_dark block (BlockRenderer features section) ── */
+@media (max-width: 767px) {
+  .split-dark-block {
+    grid-template-columns: 1fr !important;
+  }
+  .split-dark-left {
+    padding: 32px 24px !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255,255,255,.06) !important;
+  }
+  .split-dark-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 400px) {
+  .split-dark-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── image_text block (BlockRenderer) ── */
+@media (max-width: 767px) {
+  .image-text-block {
+    grid-template-columns: 1fr !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .image-text-block > div { order: unset !important; }
+  .image-text-content {
+    padding: 28px 24px !important;
+  }
+  .image-text-block img {
+    max-height: 240px !important;
+    object-fit: cover !important;
+  }
+}
+
+/* ── Footer default: grade de colunas de links ── */
+@media (max-width: 480px) {
+  footer [data-stagger][style*="minmax(140px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+/* ── Numbers: garantir wrap em mobile ── */
+@media (max-width: 640px) {
+  .numbers-grid-3,
+  .numbers-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 380px) {
+  .numbers-grid-3,
+  .numbers-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── HomeHighlight: garantir 1 coluna + padding mobile ── */
+@media (max-width: 768px) {
+  .highlight-block-grid {
+    grid-template-columns: 1fr !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .highlight-block-grid h2 {
+    font-size: clamp(1.6rem, 7vw, 2.4rem) !important;
+  }
+}
+
+/* ── Solutions grid responsivo ── */
+@media (max-width: 640px) {
+  .sol-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+    justify-content: stretch !important;
+  }
+  .sol-grid-responsive .sol-card { width: 100% !important; }
+}
+@media (max-width: 400px) {
+  .sol-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── QuickLinks: evitar overflow em colunas fixas ── */
+@media (max-width: 480px) {
+  .quicklinks-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── dark_cards block (BlockRenderer) ── */
+@media (max-width: 767px) {
+  /* dark_cards section padding */
+  section [style*="padding: '56px 48px'"],
+  section [style*="padding:56px"] {
+    padding: 28px 20px !important;
+  }
+}
+
+/* ── Títulos em sections que usam clamp muito agressivo ── */
+@media (max-width: 480px) {
+  section h2[style*="clamp(1.6rem"] {
+    font-size: clamp(1.3rem, 6vw, 1.6rem) !important;
+  }
+  /* Impede que texto quebre letra por letra em containers estreitos */
+  section h2, section h3 {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+}
+
+/* ── General: flex row que não deve virar coluna em mobile ── */
+@media (max-width: 640px) {
+  /* Hero stats row */
+  .flex.gap-8.text-left,
+  .flex.gap-6.text-left {
+    gap: 1.25rem !important;
+  }
+}
+/* ══════════════════════════════════════════════════════════════
+   TIPOGRAFIA GLOBAL — variáveis controladas pelo admin
+   As seções já usam var(--font-heading/body) inline.
+   Aqui aplicamos cor, peso, tamanho e escala via !important
+   para sobrescrever qualquer valor hardcoded residual.
+══════════════════════════════════════════════════════════════ */
+
+/* ── Fonte: garante var(--font-heading) em todos os títulos ── */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+}
+p, span, li, input, textarea, select, button, label {
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+}
+
+/* ── Cor dos títulos (só ativa quando --typo-h-color é definido) ──
+   Usa a variável com fallback "unset" para não sobrescrever quando
+   não configurado.                                               ── */
+:root:not([style*="--typo-h-color"]) h1,
+:root:not([style*="--typo-h-color"]) h2,
+:root:not([style*="--typo-h-color"]) h3 { /* sem override — usa cor da seção */ }
+
+:root[style*="--typo-h-color"] h1,
+:root[style*="--typo-h-color"] h2,
+:root[style*="--typo-h-color"] h3 {
+  color: var(--typo-h-color) !important;
+}
+
+/* ── Cor do corpo (só ativa quando configurado) ── */
+:root[style*="--typo-body-color"] p,
+:root[style*="--typo-body-color"] .typo-body {
+  color: var(--typo-body-color) !important;
+}
+
+/* ── Labels de seção (badges/eyebrow) ── */
+:root[style*="--typo-label-color"] .typo-label {
+  color: var(--typo-label-color) !important;
+  border-color: color-mix(in srgb, var(--typo-label-color) 35%, transparent) !important;
+}
+:root[style*="--typo-label-color"] .typo-label span { 
+  color: var(--typo-label-color) !important; 
+  background: color-mix(in srgb, var(--typo-label-color) 8%, transparent) !important;
+}
+
+/* ── Peso dos títulos ── */
+h1, h2, h3 {
+  font-weight: var(--typo-h-weight, 800);
+}
+
+/* ── Escala dos títulos — aplica multiplicador aos clamp() existentes ──
+   Como os títulos têm font-size via inline style, precisamos de !important
+   para seções que expõem classes de escala.                              ── */
+.typo-h1 {
+  font-size: calc(clamp(2.4rem, 5vw, 4.5rem) * var(--typo-h-scale, 1)) !important;
+  letter-spacing: var(--typo-h-spacing, -0.030em) !important;
+  font-weight: var(--typo-h-weight, 800) !important;
+}
+.typo-h2 {
+  font-size: calc(clamp(1.4rem, 3vw, 2.8rem) * var(--typo-h-scale, 1)) !important;
+  letter-spacing: var(--typo-h-spacing, -0.030em) !important;
+  font-weight: var(--typo-h-weight, 800) !important;
+}
+.typo-h3 {
+  font-size: calc(clamp(1rem, 2vw, 1.5rem) * var(--typo-h-scale, 1)) !important;
+  letter-spacing: var(--typo-h-spacing, -0.020em) !important;
+  font-weight: var(--typo-h-weight, 700) !important;
+}
+.typo-body {
+  font-size: var(--typo-body-size, 15px) !important;
+  line-height: var(--typo-body-lh, 1.65) !important;
 }

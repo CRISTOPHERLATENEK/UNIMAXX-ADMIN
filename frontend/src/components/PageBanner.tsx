@@ -92,8 +92,8 @@ function ParallaxBannerSlide({ banner, c, hasImage, hasText }: { banner: Banner;
       {hasText && (
         <div style={{
           position: 'relative', zIndex: 3,
-          maxWidth: '80rem', margin: '0 auto', padding: '0 2rem',
-          display: 'flex', alignItems: 'center', minHeight: 452,
+          maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)',
+          display: 'flex', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)",
         }}>
           <div style={{ maxWidth: 640 }}>
             <SlideContent banner={banner} c={c} />
@@ -144,7 +144,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
         )}
         {/* Lado direito: cor + conteúdo */}
         <div style={{ position: 'absolute', inset: '0 0 0 50%', background: `linear-gradient(150deg,${c}ee,${c}88)` }} />
-        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 2rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', minHeight: 452 }}>
+        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)" }}>
           <div style={{ maxWidth: 460, width: '100%' }}>
             <SlideContent banner={banner} c="#fff" dark={false} />
           </div>
@@ -162,7 +162,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
             </div>
           : <div style={{ position: 'absolute', top: 0, right: 0, width: '42%', height: '100%', clipPath: 'polygon(12% 0,100% 0,100% 100%,0% 100%)', background: `linear-gradient(160deg,${c},${c}88)` }} />
         }
-        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 2rem', display: 'flex', alignItems: 'center', minHeight: 452 }}>
+        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)', display: 'flex', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)" }}>
           <div style={{ maxWidth: 540, paddingRight: '8%' }}>
             <SlideContent banner={banner} c={c} dark={false} />
           </div>
@@ -176,7 +176,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
       <div style={{ position: 'relative', width: '100%', minHeight: 520, paddingTop: 68, background: '#0e0e11', overflow: 'hidden' }}>
         {hasImage && <img src={imgUrl(banner.image)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .22 }} />}
         <div style={{ position: 'absolute', top: 0, right: 0, width: '36%', height: '100%', clipPath: 'polygon(18% 0,100% 0,100% 100%,0% 100%)', background: c, opacity: .92 }} />
-        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 2rem', display: 'flex', alignItems: 'center', minHeight: 452 }}>
+        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)', display: 'flex', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)" }}>
           <div style={{ maxWidth: 680 }}>
             <SlideContent banner={banner} c={c} />
           </div>
@@ -194,7 +194,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
         <div style={{ position: 'absolute', top: -100, right: '8%', width: 520, height: 520, borderRadius: '50%', background: `${c}22`, filter: 'blur(110px)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: -120, left: '3%', width: 340, height: 340, borderRadius: '50%', background: `${c}14`, filter: 'blur(90px)', pointerEvents: 'none' }} />
         {hasImage && <img src={imgUrl(banner.image)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .12 }} />}
-        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 2rem', display: 'flex', alignItems: 'center', minHeight: 452 }}>
+        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)', display: 'flex', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)" }}>
           <div style={{ maxWidth: 680 }}>
             <SlideContent banner={banner} c={c} />
           </div>
@@ -230,7 +230,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
 
         {hasImage && <img src={imgUrl(banner.image)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .25 }} />}
         
-        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 2rem', display: 'flex', alignItems: 'center', minHeight: 452 }}>
+        <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)', display: 'flex', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)" }}>
           <div style={{ maxWidth: 640 }}>
             <SlideContent banner={banner} c={c} />
           </div>
@@ -251,7 +251,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
       {!hasImage && (
         <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 70% 50%,${c}15 0%,transparent 60%)` }} />
       )}
-      <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 2rem', display: 'flex', alignItems: 'center', minHeight: 452 }}>
+      <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)', display: 'flex', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)" }}>
         <div style={{ maxWidth: 640 }}>
           <SlideContent banner={banner} c={c} />
         </div>
@@ -277,7 +277,7 @@ function SlideContent({ banner, c, dark = true }: { banner: Banner; c: string; d
           width: 'fit-content',
         }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: c, display: 'inline-block', flexShrink: 0 }} />
-          <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 700, color: c, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          <span style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 11, fontWeight: 700, color: c, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
             {banner.subtitle}
           </span>
         </div>
@@ -286,7 +286,7 @@ function SlideContent({ banner, c, dark = true }: { banner: Banner; c: string; d
       {/* Título */}
       {banner.title?.trim() && (
         <h1 style={{
-          fontFamily: "'Outfit',sans-serif",
+          fontFamily: "var(--font-heading,'Outfit'),sans-serif",
           fontSize: 'clamp(2rem,4.5vw,3.8rem)',
           fontWeight: 900, lineHeight: 1.06, letterSpacing: '-0.03em',
           color: textPrimary, margin: '0 0 14px', maxWidth: 620,
@@ -298,7 +298,7 @@ function SlideContent({ banner, c, dark = true }: { banner: Banner; c: string; d
       {/* Descrição */}
       {banner.description?.trim() && (
         <p style={{
-          fontFamily: "'DM Sans',sans-serif",
+          fontFamily: "var(--font-body,'DM Sans'),sans-serif",
           fontSize: 'clamp(0.9rem,1.4vw,1.05rem)',
           fontWeight: 300, lineHeight: 1.72,
           color: textSecondary, margin: '0 0 30px', maxWidth: 500,
@@ -317,7 +317,7 @@ function SlideContent({ banner, c, dark = true }: { banner: Banner; c: string; d
               padding: '13px 28px', borderRadius: 999,
               background: `linear-gradient(135deg,${c},${c}cc)`,
               boxShadow: `0 10px 36px ${c}40,0 2px 8px ${c}25`,
-              color: '#fff', fontFamily: "'DM Sans',sans-serif",
+              color: '#fff', fontFamily: "var(--font-body,'DM Sans'),sans-serif",
               fontWeight: 800, fontSize: 14, textDecoration: 'none',
               transition: 'transform .2s,box-shadow .2s',
             }}

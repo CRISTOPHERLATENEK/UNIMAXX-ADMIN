@@ -165,24 +165,23 @@ function AnalyticsInjector() {
   const fontH = data?.settings?.font_heading || 'Outfit';
   const fontB = data?.settings?.font_body || 'DM Sans';
 
+  // ── Fontes ──────────────────────────────────────────
   useEffect(() => {
-    const fontNames = [fontH, fontB].filter(Boolean).join('&family=');
+    const fontNames = [...new Set([fontH, fontB])].join('&family=');
     const linkId = 'dynamic-fonts';
     const existing = document.getElementById(linkId);
     const href = `https://fonts.googleapis.com/css2?family=${fontNames.replace(/ /g, '+')}:wght@300;400;500;600;700;800;900&display=swap`;
-    if (existing) {
-      (existing as HTMLLinkElement).href = href;
-    } else {
+    if (existing) { (existing as HTMLLinkElement).href = href; }
+    else {
       const link = document.createElement('link');
-      link.id = linkId;
-      link.rel = 'stylesheet';
-      link.href = href;
+      link.id = linkId; link.rel = 'stylesheet'; link.href = href;
       document.head.appendChild(link);
     }
     document.documentElement.style.setProperty('--font-heading', `'${fontH}', sans-serif`);
     document.documentElement.style.setProperty('--font-body', `'${fontB}', sans-serif`);
   }, [fontH, fontB]);
 
+  // ── Cores principais ────────────────────────────────
   const pc = data?.settings?.primary_color;
   useEffect(() => {
     if (pc) {
@@ -190,6 +189,33 @@ function AnalyticsInjector() {
       document.documentElement.style.setProperty('--orange', pc);
     }
   }, [pc]);
+
+  // ── Tipografia avançada ─────────────────────────────
+  const s = data?.settings || {};
+  useEffect(() => {
+    const set = (v: string, val: string) => document.documentElement.style.setProperty(v, val);
+
+    // Cores de texto
+    if (s.typo_h_color)     set('--typo-h-color',     s.typo_h_color);
+    else document.documentElement.style.removeProperty('--typo-h-color');
+
+    if (s.typo_body_color)  set('--typo-body-color',  s.typo_body_color);
+    else document.documentElement.style.removeProperty('--typo-body-color');
+
+    if (s.typo_label_color) set('--typo-label-color', s.typo_label_color);
+    else document.documentElement.style.removeProperty('--typo-label-color');
+
+    // Peso e espaçamento
+    set('--typo-h-weight',  s.typo_h_weight  || '800');
+    set('--typo-body-size', `${s.typo_body_size || '15'}px`);
+    set('--typo-body-lh',   s.typo_body_lh   || '1.65');
+    set('--typo-h-spacing', `${(parseInt(s.typo_h_spacing || '-3') / 100).toFixed(3)}em`);
+    set('--typo-h-scale',   `${(parseInt(s.typo_h_scale || '100') / 100).toFixed(2)}`);
+  }, [
+    s.typo_h_color, s.typo_body_color, s.typo_label_color,
+    s.typo_h_weight, s.typo_body_size, s.typo_body_lh,
+    s.typo_h_spacing, s.typo_h_scale,
+  ]);
 
   useEffect(() => {
     if (!gid) return;

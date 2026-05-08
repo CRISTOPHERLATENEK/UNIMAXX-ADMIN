@@ -6,6 +6,7 @@ import {
   Calendar, BarChart2, Target, Award, Shield, Lock, Briefcase, FileText, Tag, Plug,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
+import { useBlockTypo } from '@/hooks/useBlockTypo';
 import { Link } from 'react-router-dom';
 
 // Inject CSS once at module level — avoids inline <style> in JSX (React reconciliation issue)
@@ -25,6 +26,7 @@ const iconMap: { [key: string]: React.ElementType } = {
 
 export function Segments() {
   const { data, loading } = useData();
+  const bt = useBlockTypo('segments');
   const content = data.content || {};
   const settings = data.settings || {};
   const primaryColor = settings.primary_color || '#f97316';
@@ -49,7 +51,7 @@ export function Segments() {
             style={{
               background: `${primaryColor}12`,
               color: primaryColor,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--font-body,'DM Sans'), sans-serif",
             }}
           >
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: primaryColor }} />
@@ -57,7 +59,7 @@ export function Segments() {
           </div>
           <h2
             className="text-[clamp(2rem,4vw,3.5rem)] font-bold text-[#1d1d1f] leading-tight mb-4"
-            style={{ fontFamily: "'Outfit', sans-serif" }}
+            style={{ fontFamily: "var(--font-heading,'Outfit'), sans-serif", ...bt.h }}
           >
             {content['segments.title'] || 'Atendemos todos os'}{' '}
             <span className="text-orange-gradient">
@@ -66,7 +68,7 @@ export function Segments() {
           </h2>
           <p
             className="text-[#6e6e73] max-w-md mx-auto text-base leading-relaxed"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
+            style={{ fontFamily: "var(--font-body,'DM Sans'), sans-serif", ...bt.body }}
           >
             {content['segments.description'] ||
               'Soluções especializadas para cada tipo de negócio no varejo.'}
@@ -132,7 +134,7 @@ export function Segments() {
                 </div>
                 <span
                   className="text-[11.5px] font-semibold text-center leading-tight transition-colors duration-300 group-hover:text-white/90 relative z-10"
-                  style={{ fontFamily: "'DM Sans', sans-serif", color: 'var(--t1)' }}
+                  style={{ fontFamily: "var(--font-body,'DM Sans'), sans-serif", color: 'var(--t1)' }}
                 >
                   {segment.name}
                 </span>
@@ -149,7 +151,7 @@ export function Segments() {
             style={{
               border: `2px solid ${primaryColor}`,
               color: primaryColor,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--font-body,'DM Sans'), sans-serif",
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLElement;

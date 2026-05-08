@@ -3,6 +3,7 @@ import type React from 'react';
 
 import { ChevronLeft, ChevronRight, Star, Quote } from 'lucide-react';
 import { useData } from '@/context/DataContext';
+import { useBlockTypo } from '@/hooks/useBlockTypo';
 
 const API_URL  = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
@@ -14,6 +15,7 @@ function initials(name: string) {
 
 export function Testimonials() {
   const { data, loading } = useData();
+  const bt = useBlockTypo('testimonials');
   const settings = data.settings || {};
   const content  = data.content || {};
   const pc = settings.primary_color || '#f97316';
@@ -77,10 +79,9 @@ export function Testimonials() {
             {content['testimonials.label'] || 'Depoimentos'}
           </div>
           <h2 style={{
-            fontFamily: "'Outfit', sans-serif",
+            fontFamily: "var(--font-heading,'Outfit'), sans-serif",
             fontSize: 'clamp(1.9rem, 4vw, 3rem)',
-            fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--t1)', lineHeight: 1.1,
-          }}>
+            fontWeight: 'var(--typo-h-weight,900)', letterSpacing: '-0.03em', color: 'var(--t1)', lineHeight: 1.1, ...bt.h}}>
             {content['testimonials.title'] || 'O que nossos'}{' '}
             <span style={{ color: pc }}>{content['testimonials.subtitle'] || 'clientes dizem'}</span>
           </h2>
@@ -92,7 +93,7 @@ export function Testimonials() {
           boxShadow: '0 24px 80px rgba(0,0,0,.09)',
         }}>
           <div style={{ height: 4, background: `linear-gradient(90deg, ${pc}, ${sc})` }} />
-          <div style={{ padding: 'clamp(28px,5vw,52px)', minHeight: 260 }}>
+          <div style={{ padding: 'clamp(20px,5vw,52px)', minHeight: 'clamp(220px, 35vw, 260px)' }}>
             <div style={slideStyle}>
               <Quote style={{ width: 32, height: 32, color: `${pc}30`, marginBottom: 18 }} />
               <div style={{ display: 'flex', gap: 4, marginBottom: 18 }}>
@@ -101,10 +102,9 @@ export function Testimonials() {
                 ))}
               </div>
               <p style={{
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "var(--font-body,'DM Sans'), sans-serif",
                 fontSize: 'clamp(.95rem,2vw,1.15rem)', lineHeight: 1.75,
-                color: '#3a3a3c', marginBottom: 28,
-              }}>"{t.content}"</p>
+                color: '#3a3a3c', marginBottom: 28, ...bt.body}}>"{t.content}"</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
                 {t.author_photo ? (
                   <img src={imgSrc(t.author_photo)} alt={t.author_name}
@@ -114,12 +114,12 @@ export function Testimonials() {
                     width: 50, height: 50, borderRadius: '50%', flexShrink: 0,
                     background: `linear-gradient(135deg, ${pc}, ${sc})`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 16, fontWeight: 800, color: '#fff',
+                    fontSize: 16, fontWeight: 'var(--typo-h-weight,800)', color: '#fff',
                   }}>{initials(t.author_name)}</div>
                 )}
                 <div>
-                  <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 15, fontWeight: 800, color: 'var(--t1)' }}>{t.author_name}</p>
-                  <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: 'var(--t3)', marginTop: 2 }}>
+                  <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 15, fontWeight: 'var(--typo-h-weight,800)', color: 'var(--t1)' }}>{t.author_name}</p>
+                  <p style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 13, color: 'var(--t3)', marginTop: 2 }}>
                     {t.author_role}{t.author_company ? ` · ${t.author_company}` : ''}
                   </p>
                 </div>
@@ -130,7 +130,7 @@ export function Testimonials() {
           {list.length > 1 && (
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '14px 28px 22px', borderTop: '1px solid rgba(0,0,0,.05)',
+              padding: 'clamp(12px,3vw,14px) clamp(16px,4vw,28px) clamp(16px,4vw,22px)', borderTop: '1px solid rgba(0,0,0,.05)',
             }}>
               <div style={{ display: 'flex', gap: 6 }}>
                 {list.map((_: unknown, i: number) => (
@@ -181,14 +181,14 @@ export function Testimonials() {
                   <div style={{
                     width: 22, height: 22, borderRadius: '50%',
                     background: `linear-gradient(135deg, ${pc}, ${sc})`,
-                    fontSize: 8, fontWeight: 800, color: '#fff',
+                    fontSize: 8, fontWeight: 'var(--typo-h-weight,800)', color: '#fff',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>{initials(item.author_name)}</div>
                 )}
                 <span style={{
                   fontSize: 12, fontWeight: i === cur ? 700 : 500,
                   color: i === cur ? '#1d1d1f' : '#98989d',
-                  fontFamily: "'DM Sans',sans-serif",
+                  fontFamily: "var(--font-body,'DM Sans'),sans-serif",
                 }}>{item.author_name.split(' ')[0]}</span>
               </button>
             ))}

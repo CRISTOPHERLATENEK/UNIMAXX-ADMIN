@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type React from 'react';
 
 import { useData } from '@/context/DataContext';
+import { useBlockTypo } from '@/hooks/useBlockTypo';
 import { MapsEmbed } from '@/components/MapsEmbed';
 
 // Inject spin keyframe once — <style> inline no JSX causa insertBefore crash
@@ -16,6 +17,7 @@ if (typeof document !== 'undefined' && !document.getElementById('contact-spin-st
 
 export function Contact() {
   const { data } = useData();
+  const bt = useBlockTypo('contact');
   const content  = data.content;
   const settings = data.settings || {};
   const pc = settings.primary_color || '#f97316';
@@ -64,14 +66,14 @@ export function Contact() {
     width: '100%', padding: '12px 16px', background: 'var(--s0)',
     border: '1px solid rgba(0,0,0,.1)', borderRadius: 12,
     fontSize: 14, color: 'var(--t1)', outline: 'none',
-    fontFamily: "'DM Sans', sans-serif", boxSizing: 'border-box',
+    fontFamily: "var(--font-body,'DM Sans'), sans-serif", boxSizing: 'border-box',
     transition: 'border-color 0.2s, box-shadow 0.2s',
     ...style,
   });
 
   return (
     <section id="contato" style={{ padding: '7rem 0', background: 'var(--s0)' }}>
-      <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 2rem' }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)' }}>
 
         {/* Header */}
         <div data-reveal="up" style={{ textAlign: 'center', marginBottom: '4rem' }}>
@@ -81,23 +83,22 @@ export function Contact() {
             background: `${pc}12`, border: `1px solid ${pc}28`, marginBottom: 16,
           }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: pc, display: 'inline-block' }} />
-            <span style={{ fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 700, color: pc, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <span style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: pc, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               Entre em Contato
             </span>
           </div>
           <h2 style={{
-            fontFamily: "'Outfit'", fontSize: 'clamp(2rem,4vw,3rem)',
-            fontWeight: 900, color: 'var(--t1)', letterSpacing: '-0.03em', lineHeight: 1.08,
-          }}>
+            fontFamily: "var(--font-heading,'Outfit')", fontSize: 'clamp(2rem,4vw,3rem)',
+            fontWeight: 'var(--typo-h-weight,900)', color: 'var(--t1)', letterSpacing: '-0.03em', lineHeight: 1.08, ...bt.h}}>
             {content['contact.title'] || 'Vamos'}{' '}
             <span style={{ color: pc }}>{content['contact.subtitle'] || 'conversar?'}</span>
           </h2>
-          <p style={{ fontFamily: "'DM Sans'", fontSize: 15, color: 'var(--t3)', marginTop: 12, maxWidth: 480, margin: '12px auto 0', lineHeight: 1.7 }}>
+          <p style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 15, color: 'var(--t3)', marginTop: 12, maxWidth: 480, margin: '12px auto 0', lineHeight: 1.7 }}>
             {content['contact.description'] || 'Ligamos para você em até 1h. Fale sobre os desafios do seu negócio.'}
           </p>
         </div>
 
-        <div data-stagger style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 32 }}>
+        <div data-stagger style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 'clamp(1.25rem, 3vw, 2rem)' }}>
 
           {/* Left — info */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -114,8 +115,8 @@ export function Contact() {
                   <Icon size={18} style={{ color: pc }} />
                 </div>
                 <div>
-                  <p style={{ fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{label}</p>
-                  <p style={{ fontFamily: "'DM Sans'", fontSize: 14, fontWeight: 600, color: '#1d1d1f' }}>{value}</p>
+                  <p style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{label}</p>
+                  <p style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 14, fontWeight: 600, color: '#1d1d1f' }}>{value}</p>
                 </div>
               </div>
             ))}
@@ -125,10 +126,10 @@ export function Contact() {
               padding: '20px 18px', borderRadius: 16, marginTop: 4,
               background: `linear-gradient(135deg, ${pc}, ${sc})`,
             }}>
-              <p style={{ fontFamily: "'Outfit'", fontWeight: 800, fontSize: 16, color: '#fff', marginBottom: 6 }}>
+              <p style={{ fontFamily: "var(--font-heading,'Outfit')", fontWeight: 'var(--typo-h-weight,800)', fontSize: 16, color: '#fff', marginBottom: 6 }}>
                 Resposta em até 1 hora
               </p>
-              <p style={{ fontFamily: "'DM Sans'", fontSize: 13, color: 'rgba(255,255,255,.8)', lineHeight: 1.6 }}>
+              <p style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 13, color: 'rgba(255,255,255,.8)', lineHeight: 1.6 }}>
                 Nossa equipe está pronta para apresentar a melhor solução para seu negócio.
               </p>
             </div>
@@ -139,7 +140,7 @@ export function Contact() {
             background: 'var(--s2)', borderRadius: 24, padding: 'clamp(1.5rem,4vw,2.5rem)',
             border: '1px solid rgba(0,0,0,.06)',
           }}>
-            <h3 style={{ fontFamily: "'Outfit'", fontWeight: 800, fontSize: 20, color: 'var(--t1)', marginBottom: 24 }}>
+            <h3 style={{ fontFamily: "var(--font-heading,'Outfit')", fontWeight: 'var(--typo-h-weight,800)', fontSize: 20, color: 'var(--t1)', marginBottom: 24 }}>
               {content['contact.form.title'] || 'Receba uma ligação'}
             </h3>
 
@@ -152,23 +153,23 @@ export function Contact() {
                 }}>
                   <CheckCircle size={36} style={{ color: pc }} />
                 </div>
-                <h4 style={{ fontFamily: "'Outfit'", fontWeight: 800, fontSize: 20, color: 'var(--t1)', marginBottom: 8 }}>
+                <h4 style={{ fontFamily: "var(--font-heading,'Outfit')", fontWeight: 'var(--typo-h-weight,800)', fontSize: 20, color: 'var(--t1)', marginBottom: 8 }}>
                   Mensagem enviada!
                 </h4>
-                <p style={{ fontFamily: "'DM Sans'", fontSize: 14, color: 'var(--t3)', lineHeight: 1.6, marginBottom: 20 }}>
+                <p style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 14, color: 'var(--t3)', lineHeight: 1.6, marginBottom: 20 }}>
                   Recebemos seu contato e entraremos em breve.
                 </p>
                 <button onClick={() => setSubmitted(false)} style={{
                   padding: '10px 24px', borderRadius: 999, border: 'none',
                   background: `${pc}12`, color: pc, cursor: 'pointer',
-                  fontFamily: "'DM Sans'", fontWeight: 700, fontSize: 13,
+                  fontFamily: "var(--font-body,'DM Sans')", fontWeight: 700, fontSize: 13,
                 }}>Enviar outra mensagem</button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div>
-                    <label style={{ fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
+                    <label style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
                       Nome *
                     </label>
                     <input style={inp()} placeholder="Seu nome" required value={formData.name}
@@ -177,7 +178,7 @@ export function Contact() {
                       onBlur={e => { e.target.style.borderColor = 'rgba(0,0,0,.1)'; e.target.style.boxShadow = 'none'; }} />
                   </div>
                   <div>
-                    <label style={{ fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
+                    <label style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
                       Telefone *
                     </label>
                     <input style={inp()} type="tel" placeholder="(00) 00000-0000" required value={formData.phone}
@@ -188,7 +189,7 @@ export function Contact() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>E-mail</label>
+                  <label style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>E-mail</label>
                   <input style={inp()} type="email" placeholder="seu@email.com" value={formData.email}
                     onChange={e => setFormData(p => ({...p, email: e.target.value}))}
                     onFocus={e => { e.target.style.borderColor = pc; e.target.style.boxShadow = `0 0 0 3px ${pc}18`; }}
@@ -196,7 +197,7 @@ export function Contact() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Segmento</label>
+                  <label style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Segmento</label>
                   <select style={{ ...inp(), appearance: 'none' }} value={formData.segment}
                     onChange={e => setFormData(p => ({...p, segment: e.target.value}))}
                     onFocus={e => { (e.target as HTMLElement).style.borderColor = pc; (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${pc}18`; }}
@@ -207,7 +208,7 @@ export function Contact() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Mensagem</label>
+                  <label style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Mensagem</label>
                   <textarea style={{ ...inp({ resize: 'none' }), height: 100 }} placeholder="Conte sobre seu negócio..." value={formData.message}
                     onChange={e => setFormData(p => ({...p, message: e.target.value}))}
                     onFocus={e => { e.target.style.borderColor = pc; e.target.style.boxShadow = `0 0 0 3px ${pc}18`; }}
@@ -215,7 +216,7 @@ export function Contact() {
                 </div>
 
                 {error && (
-                  <div style={{ padding: '10px 14px', borderRadius: 10, background: '#fef2f2', border: '1px solid #fecaca', fontFamily: "'DM Sans'", fontSize: 13, color: '#dc2626' }}>
+                  <div style={{ padding: '10px 14px', borderRadius: 10, background: '#fef2f2', border: '1px solid #fecaca', fontFamily: "var(--font-body,'DM Sans')", fontSize: 13, color: '#dc2626' }}>
                     {error}
                   </div>
                 )}
@@ -225,7 +226,7 @@ export function Contact() {
                   padding: '14px', borderRadius: 999, border: 'none', cursor: loading ? 'wait' : 'pointer',
                   background: loading ? '#ccc' : `linear-gradient(135deg, ${pc}, ${sc})`,
                   boxShadow: loading ? 'none' : `0 8px 24px ${pc}35`,
-                  color: '#fff', fontFamily: "'DM Sans'", fontWeight: 800, fontSize: 14,
+                  color: '#fff', fontFamily: "var(--font-body,'DM Sans')", fontWeight: 'var(--typo-h-weight,800)', fontSize: 14,
                   transition: 'all 0.2s',
                 }}>
                   {loading ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Enviando...</> : <><Send size={15} /> {content['contact.form.submit'] || 'Solicitar Contato'}</>}

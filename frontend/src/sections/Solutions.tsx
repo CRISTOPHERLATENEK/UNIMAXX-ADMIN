@@ -8,6 +8,7 @@ import {
   Package, Star, Layers, FileText, X, Check, Phone, ExternalLink,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
+import { useBlockTypo } from '@/hooks/useBlockTypo';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchSolutionPageBySlug } from '@/services/solutionPagesService';
 import type { SolutionPage } from '@/types';
@@ -60,8 +61,8 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
               <Icon style={{ width: 22, height: 22, color: '#fff' }} />
             </div>
             <div>
-              <p style={{ color: 'rgba(255,255,255,.6)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: 2, fontFamily: "'DM Sans',sans-serif" }}>Solução Unimaxx</p>
-              <h2 style={{ color: '#fff', fontWeight: 700, fontSize: 20, lineHeight: 1.2, fontFamily: "'Outfit',sans-serif" }}>{sol.title}</h2>
+              <p style={{ color: 'rgba(255,255,255,.6)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: 2, fontFamily: "var(--font-body,'DM Sans'),sans-serif" }}>Solução Unimaxx</p>
+              <h2 style={{ color: sol.card_title_color || '#fff', fontWeight: sol.card_title_weight ? parseInt(sol.card_title_weight) : 700, fontSize: 20, lineHeight: 1.2, fontFamily: sol.card_font_heading ? `'${sol.card_font_heading}',sans-serif` : "var(--font-heading,'Outfit'),sans-serif" }}>{sol.title}</h2>
             </div>
           </div>
         </div>
@@ -76,15 +77,15 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
               {((page as any)?.subtitle || (page as any)?.description || sol.description) && (
                 <div>
-                  {(page as any)?.subtitle && <p style={{ fontWeight: 700, color: '#1d1d1f', fontSize: 15, marginBottom: 6, fontFamily: "'Outfit',sans-serif" }}>{(page as any).subtitle}</p>}
-                  <p style={{ color: '#6e6e73', fontSize: 14, lineHeight: 1.6 }}>{(page as any)?.description || sol.description}</p>
+                  {(page as any)?.subtitle && <p style={{ fontWeight: 700, color: '#1d1d1f', fontSize: 15, marginBottom: 6, fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>{(page as any).subtitle}</p>}
+                  <p style={{ color: sol.card_body_color || '#6e6e73', fontSize: 14, lineHeight: 1.6, fontFamily: sol.card_font_body ? `'${sol.card_font_body}',sans-serif` : undefined }}>{(page as any)?.description || sol.description}</p>
                 </div>
               )}
               {(page as any)?.stats_json && (page as any).stats_json.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {(page as any).stats_json.slice(0, 4).map((s: any, i: number) => (
                     <div key={i} style={{ borderRadius: 16, padding: '14px 12px', textAlign: 'center', background: `${themeColor}08`, border: `1px solid ${themeColor}18` }}>
-                      <p style={{ fontWeight: 700, fontSize: 22, marginBottom: 2, color: themeColor, fontFamily: "'Outfit',sans-serif" }}>{s.value}</p>
+                      <p style={{ fontWeight: 700, fontSize: 22, marginBottom: 2, color: themeColor, fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>{s.value}</p>
                       <p style={{ fontSize: 12, color: '#6e6e73' }}>{s.label}</p>
                     </div>
                   ))}
@@ -163,13 +164,18 @@ function SolCard({ sol, index, pc, onClick }: {
   const Icon = ICON_MAP[sol.icon] || Building2;
   const photo = resolveImg(sol.image);
   const [c1, c2] = GRADIENTS[index % GRADIENTS.length];
+  // per-card overrides
+  const cardPc     = sol.card_accent_color  || pc;
+  const titleColor = sol.card_title_color   || '#fff';
+  const fontH      = sol.card_font_heading  ? `'${sol.card_font_heading}',sans-serif` : "var(--font-heading,'Outfit'),sans-serif";
+  const titleW     = sol.card_title_weight  ? parseInt(sol.card_title_weight) : 700;
 
   return (
     <div className="sol-card" onClick={onClick}>
       <div className="sol-card-inner">
         {photo
           ? <img src={photo} alt={sol.title} className="sol-card-bg-img" />
-          : <div className="sol-card-bg-grad" style={{ background: `linear-gradient(165deg,${c1} 0%,${c2} 100%)` }} />
+          : <div className="sol-card-bg-grad" style={{ background: `linear-gradient(165deg,${sol.card_accent_color ? cardPc + 'cc' : c1} 0%,${sol.card_accent_color ? cardPc + '88' : c2} 100%)` }} />
         }
         <div className="sol-card-overlay" />
 
@@ -180,12 +186,12 @@ function SolCard({ sol, index, pc, onClick }: {
 
         {/* título central — aparece no hover */}
         <div className="sol-card-hover-title">
-          <span>{sol.title}</span>
+          <span style={{ fontFamily: fontH, fontWeight: titleW, color: titleColor }}>{sol.title}</span>
         </div>
 
         <div className="sol-card-bottom">
-          <p className="sol-card-name">{sol.title}</p>
-          <button className="sol-card-btn" style={{ background: pc, boxShadow: `0 4px 14px ${pc}50` }}>
+          <p className="sol-card-name" style={{ fontFamily: fontH, fontWeight: titleW, color: titleColor }}>{sol.title}</p>
+          <button className="sol-card-btn" style={{ background: cardPc, boxShadow: `0 4px 14px ${cardPc}50` }}>
             {sol.cta_text || 'Confira'}
           </button>
         </div>
@@ -197,6 +203,7 @@ function SolCard({ sol, index, pc, onClick }: {
 // ── Main Section ──────────────────────────────────────────────────────────
 export function Solutions() {
   const { data, loading } = useData();
+  const bt = useBlockTypo('solutions');
   const navigate = useNavigate();
   const solutions = (data.solutions || []).filter((s: any) => s.active === 1);
   const content = data.content || {};
@@ -230,14 +237,14 @@ export function Solutions() {
           /* Carousel header: title left, desc+arrows right */
           <div data-reveal="up" className="sol-header-row">
             <div>
-              <div className="sol-label" style={{ background: `${pc}12`, color: pc }}>
+              <div className="sol-label" style={{ background: `${pc}12`, color: pc, ...bt.label }}>
                 <span className="sol-dot" style={{ background: pc }} />
                 {content['solutions.label'] || 'Portfólio Completo'}
               </div>
-              <h2 className="sol-title">{content['solutions.title'] || 'Nossas Soluções'}</h2>
+              <h2 className="sol-title" style={{...bt.h}}>{content['solutions.title'] || 'Nossas Soluções'}</h2>
             </div>
             <div className="sol-header-right">
-              <p className="sol-desc">{content['solutions.description'] || 'Tecnologia especializada para o varejo.'}</p>
+              <p className="sol-desc" style={{...bt.body}}>{content['solutions.description'] || 'Tecnologia especializada para o varejo.'}</p>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 {([-1, 1] as const).map((d) => (
                   <button key={d} onClick={() => scroll(d)}
@@ -253,14 +260,14 @@ export function Solutions() {
         ) : (
           /* Grid header: everything centered */
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <div className="sol-label" style={{ background: `${pc}12`, color: pc }}>
+            <div className="sol-label" style={{ background: `${pc}12`, color: pc, ...bt.label }}>
               <span className="sol-dot" style={{ background: pc }} />
               {content['solutions.label'] || 'Portfólio Completo'}
             </div>
-            <h2 className="sol-title" style={{ marginBottom: 16 }}>
+            <h2 className="sol-title" style={{ marginBottom: 16, ...bt.h }}>
               {content['solutions.title'] || 'Nossas Soluções'}
             </h2>
-            <p style={{ color: 'var(--t3)', fontSize: 16, maxWidth: 480, margin: '0 auto', fontFamily: "'DM Sans',sans-serif", lineHeight: 1.6 }}>
+            <p style={{ color: 'var(--t3)', fontSize: 16, maxWidth: 480, margin: '0 auto', fontFamily: "var(--font-body,'DM Sans'),sans-serif", lineHeight: 1.6, ...bt.body }}>
               {content['solutions.description'] || 'Tecnologia especializada para o varejo.'}
             </p>
           </div>
