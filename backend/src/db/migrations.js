@@ -164,6 +164,21 @@ function runMigrations() {
       'ALTER TABLE solution_pages ADD COLUMN secondary_cta_label TEXT DEFAULT \'\'',
       'ALTER TABLE solution_pages ADD COLUMN secondary_cta_link TEXT DEFAULT \'\'',
       'ALTER TABLE solution_pages ADD COLUMN page_template TEXT DEFAULT \'default\'',
+      'ALTER TABLE banners ADD COLUMN starts_at DATETIME',
+  'ALTER TABLE banners ADD COLUMN ends_at DATETIME',
+  // ↓↓ NOVOS CAMPOS ↓↓
+  'ALTER TABLE banners ADD COLUMN image_opacity REAL DEFAULT 0.5',
+  'ALTER TABLE banners ADD COLUMN text_align TEXT DEFAULT "left"',
+  'ALTER TABLE banners ADD COLUMN text_position TEXT DEFAULT "left"',
+  'ALTER TABLE banners ADD COLUMN banner_height TEXT DEFAULT "md"',
+  'ALTER TABLE banners ADD COLUMN overlay_intensity REAL DEFAULT 0.85',
+  'ALTER TABLE banners ADD COLUMN cta2_text TEXT DEFAULT ""',
+  'ALTER TABLE banners ADD COLUMN cta2_link TEXT DEFAULT ""',
+  'ALTER TABLE banners ADD COLUMN badge_icon TEXT DEFAULT ""',
+  'ALTER TABLE banners ADD COLUMN accent_color2 TEXT DEFAULT ""',
+
+
+      
     ].forEach(sql => db.run(sql, [], () => {}));
 
     // ── Páginas Genéricas (CMS via Page Builder) ──────────────────────────

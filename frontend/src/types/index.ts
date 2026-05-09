@@ -52,15 +52,25 @@ export interface Banner {
   image: string;
   cta_text?: string;
   cta_link?: string;
+  cta2_text?: string;
+  cta2_link?: string;
   order_num: number;
   active: number;
   use_default_bg: number;
   use_style: number;
   bg_color?: string;
+  accent_color2?: string;
   page?: string;
   banner_style?: string;
   starts_at?: string;
   ends_at?: string;
+  // Novos campos de controle avançado
+  image_opacity?: number;          // 0.05–1.0 (default 0.5)
+  text_align?: 'left' | 'center' | 'right';
+  text_position?: 'left' | 'center' | 'right';
+  banner_height?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  overlay_intensity?: number;      // 0.1–1.0 (default 0.85)
+  badge_icon?: string;
 }
 
 export interface ClientLogo {

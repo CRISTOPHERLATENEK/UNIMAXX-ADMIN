@@ -282,8 +282,7 @@ function SpacingRadiusControls({ block, onChange }: { block: PageBlock; onChange
       </div>
 
 
-      <ContinuousBgControls block={block} onChange={onChange} />
-      <SectionShapeControls block={block} onChange={onChange} />
+
     </>
   );
 }
@@ -1395,10 +1394,17 @@ function RichItemEditor({ items, onChange, accent = '#f97316', placeholder = 'Ad
   // Sync upward
   const update = (updated: RichItem[]) => { setRichItems(updated); onChange(updated); };
 
-  // Sync downward when items prop changes externally
+  // Sync downward when items prop changes externally.
+  // Use JSON.stringify so ALL property changes (desc, align, accentColor, width, padding…)
+  // trigger a re-sync, not just length changes (which was the original bug).
+  // Compare with current richItems to avoid a feedback loop when the change came from inside.
+  const itemsKey = JSON.stringify(items);
   useEffect(() => {
-    setRichItems(toRichItems(items));
-  }, [items.length]);
+    if (itemsKey !== JSON.stringify(richItems)) {
+      setRichItems(toRichItems(items));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemsKey]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -1954,7 +1960,6 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
     const featLayouts: { v: string; label: string; desc: string; preview: string }[] = [
       { v: 'split_dark', label: 'Split Dark', desc: 'Título à esq., cards colunados à dir. — fundo escuro', preview: '◧' },
       { v: 'dark_cards', label: 'Dark Cards', desc: 'Cards escuros com ícone grande no topo', preview: '▦' },
-      { v: 'half_split', label: 'Half & Half', desc: 'Fundo claro/escuro dividido, cards em grade', preview: '◑' },
       { v: 'highlight_list', label: 'Lista Numerada', desc: 'Número em destaque + texto, 2 colunas', preview: '⑆' },
       { v: 'checklist', label: 'Checklist', desc: 'Check com pílula arredondada', preview: '✓' },
       { v: 'cards_hover', label: 'Cards Hover', desc: 'Cards com animação no hover', preview: '▣' },
@@ -3001,16 +3006,107 @@ function Inspector({ block, onChange, onRemove, onMoveUp, onMoveDown, onDuplicat
 
 function BlockDesignEditor({ block, onChange }: { block: PageBlock; onChange: (b: PageBlock) => void }) {
   const set = (k: string, v: any) => onChange({ ...block, [k]: v });
+
+  // Campos de cor específicos por tipo de bloco
+  const colorFields: { label: string; key: keyof PageBlock; default: string }[] = (() => {
+    switch (block.type) {
+      case 'hero':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#0f1015' },
+          { label: 'Título', key: 'titleColor', default: '#ffffff' },
+          { label: 'Subtítulo', key: 'subtitleColor', default: 'rgba(255,255,255,0.7)' },
+          { label: 'Botão (fundo)', key: 'ctaBgColor', default: '#f97316' },
+          { label: 'Botão (texto)', key: 'ctaTextColor', default: '#ffffff' },
+        ];
+      case 'features':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#0f1015' },
+          { label: 'Título', key: 'titleColor', default: '#ffffff' },
+          { label: 'Subtítulo', key: 'subtitleColor', default: 'rgba(255,255,255,0.7)' },
+        ];
+      case 'benefits':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#0f1015' },
+          { label: 'Título', key: 'titleColor', default: '#ffffff' },
+          { label: 'Subtítulo', key: 'subtitleColor', default: 'rgba(255,255,255,0.7)' },
+        ];
+      case 'cta':
+        return [
+          { label: 'Fundo da seção', key: 'bgColor', default: 'transparent' },
+          { label: 'Fundo do card', key: 'ctaBgColor', default: '#f97316' },
+          { label: 'Título', key: 'titleColor', default: '#ffffff' },
+          { label: 'Descrição', key: 'subtitleColor', default: 'rgba(255,255,255,0.8)' },
+          { label: 'Botão (fundo)', key: 'ctaBtnBg', default: '#ffffff' },
+          { label: 'Botão (texto)', key: 'ctaBtnText', default: '#f97316' },
+        ];
+      case 'steps':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#ffffff' },
+          { label: 'Título', key: 'titleColor', default: '#111827' },
+          { label: 'Subtítulo', key: 'subtitleColor', default: '#4b5563' },
+        ];
+      case 'stats':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#0f1015' },
+          { label: 'Título', key: 'titleColor', default: '#ffffff' },
+        ];
+      case 'testimonial':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#0f1015' },
+          { label: 'Texto', key: 'titleColor', default: '#ffffff' },
+          { label: 'Nome / Role', key: 'subtitleColor', default: 'rgba(255,255,255,0.7)' },
+        ];
+      case 'faq':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#ffffff' },
+          { label: 'Título', key: 'titleColor', default: '#111827' },
+        ];
+      case 'video':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#0f1015' },
+          { label: 'Título', key: 'titleColor', default: '#ffffff' },
+        ];
+      case 'text':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#ffffff' },
+          { label: 'Título', key: 'titleColor', default: '#111827' },
+          { label: 'Texto', key: 'subtitleColor', default: '#4b5563' },
+        ];
+      case 'image_text':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#0f1015' },
+          { label: 'Título', key: 'titleColor', default: '#ffffff' },
+          { label: 'Descrição', key: 'subtitleColor', default: 'rgba(255,255,255,0.7)' },
+          { label: 'Botão (fundo)', key: 'ctaBgColor', default: '#f97316' },
+          { label: 'Botão (texto)', key: 'ctaTextColor', default: '#ffffff' },
+        ];
+      case 'integrations':
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#ffffff' },
+          { label: 'Título', key: 'titleColor', default: '#111827' },
+        ];
+      default:
+        return [
+          { label: 'Fundo', key: 'bgColor', default: '#ffffff' },
+        ];
+    }
+  })();
+
   return (
     <div className="space-y-6">
-      <div className="space-y-3">
-        <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Cores</h4>
-        <ColorField label="Fundo" value={block.bgColor || '#ffffff'} onChange={v => set('bgColor', v)} />
-        <ColorField label="Título" value={block.titleColor || '#111827'} onChange={v => set('titleColor', v)} />
-        <ColorField label="Subtítulo" value={block.subtitleColor || '#4b5563'} onChange={v => set('subtitleColor', v)} />
-        <ColorField label="Botão (fundo)" value={block.ctaBgColor || '#2563eb'} onChange={v => set('ctaBgColor', v)} />
-        <ColorField label="Botão (texto)" value={block.ctaTextColor || '#ffffff'} onChange={v => set('ctaTextColor', v)} />
-      </div>
+      {colorFields.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Cores</h4>
+          {colorFields.map(f => (
+            <ColorField
+              key={f.key as string}
+              label={f.label}
+              value={(block[f.key] as string) || f.default}
+              onChange={v => set(f.key as string, v)}
+            />
+          ))}
+        </div>
+      )}
       <SpacingRadiusControls block={block} onChange={onChange} />
     </div>
   );
