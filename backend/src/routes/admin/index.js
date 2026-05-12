@@ -17,5 +17,6 @@ router.use('/leads',           require('./leads'));
 router.use('/newsletter',      require('./newsletter'));
 router.use('/analytics',       require('./analytics'));
 router.use('/preview-tokens',  require('./preview-tokens'));
+router.use('/trash',           require('./trash'));
 
 module.exports = router;

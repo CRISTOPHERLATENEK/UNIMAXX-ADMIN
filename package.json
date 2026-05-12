@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "claude": "^0.1.1",
     "react-helmet-async": "^2.0.5"
   }
 }

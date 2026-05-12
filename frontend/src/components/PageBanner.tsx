@@ -12,6 +12,21 @@ function imgUrl(src: string): string {
   return resolveImgSrc(src);
 }
 
+// Renderiza <picture> com <source mobile> + <img desktop> quando há image_mobile.
+// Spread de props (style, alt, className) vai pro <img> interno — não afeta layout.
+function BannerImg({ banner, ...rest }: { banner: Banner } & React.ImgHTMLAttributes<HTMLImageElement>) {
+  const mobile = banner.image_mobile?.trim();
+  if (!mobile) {
+    return <img src={imgUrl(banner.image)} alt="" {...rest} />;
+  }
+  return (
+    <picture>
+      <source media="(max-width: 768px)" srcSet={imgUrl(mobile)} />
+      <img src={imgUrl(banner.image)} alt="" {...rest} />
+    </picture>
+  );
+}
+
 // ─── Parallax Slide ──────────────────────────────────────────────────────────
 function ParallaxBannerSlide({ banner, c, hasImage, hasText }: { banner: Banner; c: string; hasImage: boolean; hasText: boolean }) {
   const imgRef = useRef<HTMLDivElement>(null);
@@ -58,8 +73,8 @@ function ParallaxBannerSlide({ banner, c, hasImage, hasText }: { banner: Banner;
             transition: 'transform 0.05s linear',
           }}
         >
-          <img
-            src={imgUrl(banner.image)}
+          <BannerImg
+            banner={banner}
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }}
           />
@@ -114,8 +129,8 @@ export function BannerSlide({ banner }: { banner: Banner }) {
   if (hasImage && (banner.use_style ?? 1) === 0) {
     return (
       <div style={{ position: 'relative', width: '100%', minHeight: 520, paddingTop: 68, background: '#000', overflow: 'hidden' }}>
-        <img
-          src={imgUrl(banner.image)}
+        <BannerImg
+          banner={banner}
           alt={banner.title || ''}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
@@ -138,7 +153,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
         {/* Lado esquerdo: imagem */}
         {hasImage && (
           <div style={{ position: 'absolute', inset: '0 50% 0 0', overflow: 'hidden' }}>
-            <img src={imgUrl(banner.image)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <BannerImg banner={banner} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,transparent,rgba(12,12,15,.5))' }} />
           </div>
         )}
@@ -158,7 +173,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
       <div style={{ position: 'relative', width: '100%', minHeight: 520, paddingTop: 68, background: 'var(--s1)', overflow: 'hidden' }}>
         {hasImage
           ? <div style={{ position: 'absolute', top: 0, right: 0, width: '42%', height: '100%', overflow: 'hidden', clipPath: 'polygon(12% 0,100% 0,100% 100%,0% 100%)' }}>
-              <img src={imgUrl(banner.image)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: .55, mixBlendMode: 'multiply' }} />
+              <BannerImg banner={banner} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: .55, mixBlendMode: 'multiply' }} />
             </div>
           : <div style={{ position: 'absolute', top: 0, right: 0, width: '42%', height: '100%', clipPath: 'polygon(12% 0,100% 0,100% 100%,0% 100%)', background: `linear-gradient(160deg,${c},${c}88)` }} />
         }
@@ -174,7 +189,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
   if (style === 'bold') {
     return (
       <div style={{ position: 'relative', width: '100%', minHeight: 520, paddingTop: 68, background: '#0e0e11', overflow: 'hidden' }}>
-        {hasImage && <img src={imgUrl(banner.image)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .22 }} />}
+        {hasImage && <BannerImg banner={banner} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .22 }} />}
         <div style={{ position: 'absolute', top: 0, right: 0, width: '36%', height: '100%', clipPath: 'polygon(18% 0,100% 0,100% 100%,0% 100%)', background: c, opacity: .92 }} />
         <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)', display: 'flex', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)" }}>
           <div style={{ maxWidth: 680 }}>
@@ -193,7 +208,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
         {/* Orbs */}
         <div style={{ position: 'absolute', top: -100, right: '8%', width: 520, height: 520, borderRadius: '50%', background: `${c}22`, filter: 'blur(110px)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: -120, left: '3%', width: 340, height: 340, borderRadius: '50%', background: `${c}14`, filter: 'blur(90px)', pointerEvents: 'none' }} />
-        {hasImage && <img src={imgUrl(banner.image)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .12 }} />}
+        {hasImage && <BannerImg banner={banner} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .12 }} />}
         <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)', display: 'flex', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)" }}>
           <div style={{ maxWidth: 680 }}>
             <SlideContent banner={banner} c={c} />
@@ -228,7 +243,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
         {/* Overlay de gradiente escuro */}
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(5,5,8,0.9) 0%, rgba(5,5,8,0.4) 50%, rgba(5,5,8,0.9) 100%)' }} />
 
-        {hasImage && <img src={imgUrl(banner.image)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .25 }} />}
+        {hasImage && <BannerImg banner={banner} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .25 }} />}
         
         <div style={{ position: 'relative', zIndex: 3, maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)', display: 'flex', alignItems: 'center', minHeight: "clamp(280px, 50vw, 452px)" }}>
           <div style={{ maxWidth: 640 }}>
@@ -244,7 +259,7 @@ export function BannerSlide({ banner }: { banner: Banner }) {
     <div style={{ position: 'relative', width: '100%', minHeight: 520, paddingTop: 68, background: '#070709', overflow: 'hidden' }}>
       {hasImage && (
         <>
-          <img src={imgUrl(banner.image)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .5 }} />
+          <BannerImg banner={banner} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .5 }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(110deg,rgba(5,5,8,.96) 0%,rgba(5,5,8,.72) 42%,rgba(5,5,8,.08) 100%)' }} />
         </>
       )}

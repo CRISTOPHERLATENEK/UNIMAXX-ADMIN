@@ -13,6 +13,7 @@ import { useData } from '@/context/DataContext';
 import { useToast } from '@/hooks/use-toast';
 import { HomeSectionModal } from '@/admin/HomeSectionModal';
 import { HOME_SECTION_CONFIGS } from '@/admin/homeSectionConfigs';
+import { AdminEmptyState } from '@/components/admin/primitives';
 import { Switch } from '@/components/ui/switch';
 
 // ── Ícones disponíveis ────────────────────────────────────────────────────────
@@ -319,17 +320,17 @@ export function QuickLinksManager() {
             </div>
 
             {links.length === 0 ? (
-              <div className="flex flex-col items-center py-12 text-center px-6">
-                <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center mb-3">
-                  <Zap size={20} className="text-orange-400" />
-                </div>
-                <p className="font-semibold text-[#1d1d1f] mb-1">Nenhum card</p>
-                <p className="text-sm text-[#98989d] mb-4">Adicione cards de acesso rápido</p>
-                <button onClick={addLink}
-                  className="px-4 py-2 rounded-xl border text-sm font-medium text-orange-600 border-orange-200 hover:bg-orange-50 transition">
-                  <Plus size={13} className="inline mr-1" /> Adicionar card
-                </button>
-              </div>
+              <AdminEmptyState
+                icon={<Zap size={24} />}
+                title="Nenhum card"
+                description="Cards de acesso rápido aparecem na home como atalhos para suas principais áreas."
+                action={
+                  <button onClick={addLink}
+                    className="px-4 py-2 rounded-xl border text-sm font-medium text-orange-600 border-orange-200 hover:bg-orange-50 transition">
+                    <Plus size={13} className="inline mr-1" /> Adicionar card
+                  </button>
+                }
+              />
             ) : (
               <div className="divide-y" style={{ borderColor: 'rgba(0,0,0,.05)' }}>
                 {links.map((link, i) => {

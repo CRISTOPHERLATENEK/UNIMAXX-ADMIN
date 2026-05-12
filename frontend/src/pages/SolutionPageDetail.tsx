@@ -28,7 +28,7 @@ export default function SolutionPageDetail() {
   }, [page]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--s0)' }}>
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 rounded-full border-2 border-gray-200 animate-spin" style={{ borderTopColor: '#f97316' }} />
         <p className="text-gray-400 text-sm">Carregando...</p>
@@ -38,7 +38,7 @@ export default function SolutionPageDetail() {
 
   if (error || !page) return (
     <><Header />
-      <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--s0)' }}>
         <div className="text-center max-w-md">
           <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-400" />
@@ -94,12 +94,12 @@ export default function SolutionPageDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]" style={{ fontFamily: "'DM Sans',sans-serif" }}>
+    <div className="min-h-screen" style={{ fontFamily: "'DM Sans',sans-serif", background: 'var(--s0)' }}>
       <Header />
       {blocks.length > 0
         ? groups.map((g, gi) => {
             if (g.kind === 'single') {
-              return <BlockRenderer key={g.block.id || `single-${gi}`} block={g.block} t={t} />;
+              return <BlockRenderer key={g.block.id || `single-${gi}`} block={g.block} t={t} isFirstBlock={gi === 0} />;
             }
             // Parent group: shared background wrapper
             const isImage = g.bgType === 'image';
@@ -115,7 +115,7 @@ export default function SolutionPageDetail() {
                   opacity: g.opacity,
                 }} />
                 <div style={{ position: 'relative', zIndex: 1 }}>
-                  {g.blocks.map((block, bi) => <BlockRenderer key={block.id || `block-${gi}-${bi}`} block={block} t={t} />)}
+                  {g.blocks.map((block, bi) => <BlockRenderer key={block.id || `block-${gi}-${bi}`} block={block} t={t} isFirstBlock={gi === 0 && bi === 0} />)}
                 </div>
               </div>
             );

@@ -151,9 +151,18 @@ export function Footer() {
     .slice(0, 5)
     .map((s: any) => ({ label: s.title, to: s.nav_link?.trim() || `/solucao-page/${s.solution_id}` }));
 
+  // Esconde links de páginas desabilitadas (carreiras/blog/imprensa/sobre)
+  // Evita que o footer aponte pra "Página indisponível" — má UX
+  const empresaLinks = [
+    content['sobre.enabled'] !== '0' && { label: "Sobre Nós", to: "/sobre" },
+    content['carreiras.enabled'] !== '0' && { label: "Carreiras", to: "/carreiras" },
+    content['imprensa.enabled'] !== '0' && { label: "Imprensa", to: "/imprensa" },
+    content['blog.enabled'] !== '0' && { label: "Blog", to: "/blog" },
+  ].filter(Boolean) as { label: string; to: string }[];
+
   const defaultCols = [
     { title: "Soluções", links: [{ label: "Todas as Soluções", to: "/solucoes" }, ...solutionLinks] },
-    { title: "Empresa", links: [{ label: "Sobre Nós", to: "/sobre" }, { label: "Carreiras", to: "/carreiras" }, { label: "Imprensa", to: "/imprensa" }, { label: "Blog", to: "/blog" }] },
+    ...(empresaLinks.length > 0 ? [{ title: "Empresa", links: empresaLinks }] : []),
     { title: "Suporte", links: [{ label: "Central de Ajuda", to: "/suporte" }, { label: "Fale Conosco", to: "/cliente" }] },
   ];
 
@@ -163,13 +172,14 @@ export function Footer() {
 
   const linkCols = customColsNorm.length > 0 ? customColsNorm : defaultCols;
 
+  // Footer nav esconde links desabilitados pra não levar visitante pra "Página indisponível"
   const footerNav = [
     { label: "Home", to: "/" },
     { label: content["header.nav.solutions"] || "Soluções", to: "/solucoes" },
-    { label: "Blog", to: "/blog" },
+    content['blog.enabled'] !== '0' && { label: "Blog", to: "/blog" },
     { label: "Central de Ajuda", to: "/suporte" },
-    { label: "Sobre", to: "/sobre" },
-  ];
+    content['sobre.enabled'] !== '0' && { label: "Sobre", to: "/sobre" },
+  ].filter(Boolean) as { label: string; to: string }[];
 
   const socials = [
     { Icon: Youtube, href: settings.social_youtube, label: "YouTube" },
@@ -326,19 +336,19 @@ export function Footer() {
      columns-white
   ═══════════════════════════════════════ */
   if (footerLayout === "columns-white") return (
-    <footer className="fr" style={{ background: "#fff", color: "#1d1d1f" }}>
+    <footer className="fr" style={{ background: "var(--s0)", color: "var(--t1)" }}>
       <Styles />
       <div style={{ height: 1, background: `linear-gradient(90deg,transparent,${pc}25,${sc}25,transparent)` }} />
       <div style={{ maxWidth: "80rem", margin: "0 auto", padding: "clamp(2.5rem,5vw,4rem) clamp(1rem,3vw,2rem) 0" }}>
         <div className="fr-search-row">
-          <Logo color="#1d1d1f" />
+          <Logo color="var(--t1)" />
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <div style={{ position: "relative" }}>
-              <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#98989d", pointerEvents: "none" }} />
+              <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--t4)", pointerEvents: "none" }} />
               <input type="text" placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ height: 38, width: "min(200px,100%)", paddingLeft: 34, paddingRight: 12, fontSize: 13, borderRadius: 10, border: "1px solid rgba(0,0,0,.1)", background: "#f5f5f7", color: "#1d1d1f", outline: "none", fontFamily: FONT, transition: "border-color 0.2s" }}
+                style={{ height: 38, width: "min(200px,100%)", paddingLeft: 34, paddingRight: 12, fontSize: 13, borderRadius: 10, border: "1px solid var(--b1)", background: "var(--s2)", color: "var(--t1)", outline: "none", fontFamily: FONT, transition: "border-color 0.2s" }}
                 onFocus={(e) => (e.target.style.borderColor = `${pc}60`)}
-                onBlur={(e) => (e.target.style.borderColor = "rgba(0,0,0,.1)")} />
+                onBlur={(e) => (e.target.style.borderColor = "var(--b1)")} />
             </div>
             <button style={{ height: 38, padding: "0 18px", borderRadius: 10, border: "none", background: `linear-gradient(135deg,${pc},${sc})`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: FONT, boxShadow: `0 4px 14px ${pc}35`, transition: "opacity 0.2s" }}
               onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.85")}
@@ -346,21 +356,21 @@ export function Footer() {
             >Buscar</button>
           </div>
         </div>
-        <div style={{ height: 1, background: "rgba(0,0,0,.07)", marginBottom: "2.5rem" }} />
+        <div style={{ height: 1, background: "var(--b1)", marginBottom: "2.5rem" }} />
         <div className="fr-cols" style={{ marginBottom: "2.5rem" }}>
-          {linkCols.map((col, i) => <Col key={i} col={col} i={i} tc="#1d1d1f" mc="rgba(29,29,31,.3)" bc="rgba(0,0,0,.08)" />)}
+          {linkCols.map((col, i) => <Col key={i} col={col} i={i} tc="var(--t1)" mc="var(--t4)" bc="var(--b1)" />)}
         </div>
-        <div style={{ borderTop: "1px solid rgba(0,0,0,.07)", paddingBottom: "1.5rem" }}>
+        <div style={{ borderTop: "1px solid var(--b1)", paddingBottom: "1.5rem" }}>
           <div className="fr-bottom" style={{ paddingTop: 20 }}>
-            <p style={{ fontFamily: FONT, fontSize: 12, color: "rgba(29,29,31,.35)", margin: 0 }}>{copyrightText}</p>
+            <p style={{ fontFamily: FONT, fontSize: 12, color: "var(--t4)", margin: 0 }}>{copyrightText}</p>
             <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
               {[{ label: "Privacidade", to: "/privacidade" }, { label: "Termos", to: "/termos" }].map((l) => (
-                <Link key={l.to} to={l.to} style={{ fontFamily: FONT, fontSize: 12, color: "rgba(29,29,31,.35)", transition: "color 0.2s" }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#1d1d1f")}
-                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(29,29,31,.35)")}
+                <Link key={l.to} to={l.to} style={{ fontFamily: FONT, fontSize: 12, color: "var(--t4)", transition: "color 0.2s" }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--t1)")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--t4)")}
                 >{l.label}</Link>
               ))}
-              <Socials iconColor="rgba(29,29,31,.45)" hoverBg={pc} bg="rgba(0,0,0,.04)" border="rgba(0,0,0,.08)" sz={34} />
+              <Socials iconColor="var(--t3)" hoverBg={pc} bg="var(--s2)" border="var(--b1)" sz={34} />
             </div>
           </div>
         </div>

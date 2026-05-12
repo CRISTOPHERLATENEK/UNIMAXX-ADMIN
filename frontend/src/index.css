@@ -331,6 +331,157 @@
 /* Footer */
 .dark footer { background-color: #060608 !important; }
 
+/* Shadow softening — light shadows look harsh on dark surfaces */
+.dark .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,.4) !important; }
+.dark .shadow    { box-shadow: 0 1px 3px 0 rgba(0,0,0,.5), 0 1px 2px -1px rgba(0,0,0,.5) !important; }
+.dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,.5), 0 2px 4px -2px rgba(0,0,0,.5) !important; }
+.dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,.55), 0 4px 6px -4px rgba(0,0,0,.55) !important; }
+
+/* Extra background catches */
+.dark .bg-\[\#fff\]      { background-color: var(--s2) !important; }
+.dark .bg-\[\#ffffff\]   { background-color: var(--s2) !important; }
+.dark .bg-\[\#f8f8f8\]   { background-color: var(--s1) !important; }
+.dark .bg-\[\#f5f5f7\]   { background-color: var(--s2) !important; }
+
+/* Slate / neutral / zinc / stone — Tailwind default light palettes */
+.dark .bg-slate-50  { background-color: var(--s1) !important; }
+.dark .bg-slate-100 { background-color: var(--s2) !important; }
+.dark .bg-slate-200 { background-color: var(--s3) !important; }
+.dark .bg-neutral-50  { background-color: var(--s1) !important; }
+.dark .bg-neutral-100 { background-color: var(--s2) !important; }
+.dark .bg-neutral-200 { background-color: var(--s3) !important; }
+.dark .bg-zinc-50  { background-color: var(--s1) !important; }
+.dark .bg-zinc-100 { background-color: var(--s2) !important; }
+.dark .bg-zinc-200 { background-color: var(--s3) !important; }
+.dark .bg-stone-50  { background-color: var(--s1) !important; }
+.dark .bg-stone-100 { background-color: var(--s2) !important; }
+.dark .bg-stone-200 { background-color: var(--s3) !important; }
+
+/* Slate borders */
+.dark .border-slate-200 { border-color: var(--b1) !important; }
+.dark .border-slate-300 { border-color: var(--b2) !important; }
+.dark .border-neutral-200 { border-color: var(--b1) !important; }
+.dark .border-zinc-200 { border-color: var(--b1) !important; }
+
+/* Slate text — common patterns */
+.dark .text-slate-900 { color: var(--t1) !important; }
+.dark .text-slate-800 { color: var(--t1) !important; }
+.dark .text-slate-700 { color: var(--t2) !important; }
+.dark .text-slate-600 { color: var(--t3) !important; }
+.dark .text-slate-500 { color: var(--t3) !important; }
+.dark .text-slate-400 { color: var(--t4) !important; }
+.dark .text-slate-300 { color: var(--t4) !important; }
+
+/* hr separators */
+.dark hr { border-color: var(--b1) !important; }
+
+/* Tables with default light styling */
+.dark table { background-color: transparent !important; }
+.dark thead { background-color: var(--s2) !important; }
+.dark tbody tr { border-color: var(--b1) !important; }
+
+/* Catch-all for inline style="background-color: rgb(255, 255, 255)" / hex */
+.dark [style*="background-color: rgb(255, 255, 255)"]:not(.admin-panel *):not([data-keep-light]):not(button):not([class*="text-white"]),
+.dark [style*="background-color: #fff"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="background-color: #ffffff"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="background-color: white"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="background-color: rgb(245, 245, 247)"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="background-color: rgb(241, 245, 249)"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="background-color: rgb(248, 250, 252)"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="background-color: rgb(250, 250, 250)"]:not(.admin-panel *):not([data-keep-light]):not(button) {
+  background-color: var(--s1) !important;
+}
+
+/* Hero gradients with hardcoded slate often look fine, leave alone */
+
+/* Extra border catches for legacy hardcoded utilities */
+.dark .border-\[rgba\(0\,0\,0\,0\.06\)\] { border-color: var(--b1) !important; }
+.dark .border-\[rgba\(0\,0\,0\,0\.07\)\] { border-color: var(--b1) !important; }
+.dark .border-\[rgba\(0\,0\,0\,0\.08\)\] { border-color: var(--b1) !important; }
+
+/* ═══════════════════════════════════════════
+   AGGRESSIVE INLINE-STYLE BACKGROUND OVERRIDES
+   Catches hardcoded white/light backgrounds that
+   inline styles set (these can't be reached by
+   class-based dark mode CSS otherwise).
+   Excluded: .admin-panel (kept light by design)
+             [data-keep-light] (opt-out)
+             button (white CTAs on dark backgrounds)
+             span.badge / span with backdrop-filter
+═══════════════════════════════════════════ */
+
+/* Sections, divs and articles — full width containers */
+.dark section[style*="background: #fff"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background:#fff"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: '#fff'"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: rgb(255, 255, 255)"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: white"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background:#ffffff"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: #ffffff"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: #f5f5f7"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background:#f5f5f7"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: #fafafa"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: #f8fafc"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: #f9f9fb"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: #f1f5f9"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: #f4f4f6"]:not(.admin-panel *):not([data-keep-light]),
+.dark section[style*="background: #e2e8f0"]:not(.admin-panel *):not([data-keep-light]) {
+  background: var(--s0) !important;
+}
+
+/* Wrappers / page containers */
+.dark .min-h-screen[style*="background: #fff"]:not(.admin-panel *):not([data-keep-light]),
+.dark .min-h-screen[style*="background: '#fff'"]:not(.admin-panel *):not([data-keep-light]),
+.dark .min-h-screen[style*="background: white"]:not(.admin-panel *):not([data-keep-light]),
+.dark .min-h-screen[style*="background: #f5f5f7"]:not(.admin-panel *):not([data-keep-light]),
+.dark .min-h-screen[style*="background: #fafafa"]:not(.admin-panel *):not([data-keep-light]) {
+  background: var(--s0) !important;
+}
+
+/* Cards inside sections (medium-size containers) — only when class hints indicate card-like */
+.dark [class*="rounded-"][style*="background: #fff"]:not(button):not(.admin-panel *):not([data-keep-light]),
+.dark [class*="rounded-"][style*="background: '#fff'"]:not(button):not(.admin-panel *):not([data-keep-light]),
+.dark [class*="rounded-"][style*="background: rgb(255, 255, 255)"]:not(button):not(.admin-panel *):not([data-keep-light]),
+.dark [class*="rounded-"][style*="background: #f5f5f7"]:not(button):not(.admin-panel *):not([data-keep-light]),
+.dark [class*="rounded-"][style*="background:#f5f5f7"]:not(button):not(.admin-panel *):not([data-keep-light]),
+.dark [class*="rounded-"][style*="background: #f1f5f9"]:not(button):not(.admin-panel *):not([data-keep-light]),
+.dark [class*="rounded-"][style*="background: #fafafa"]:not(button):not(.admin-panel *):not([data-keep-light]) {
+  background: var(--s1) !important;
+}
+
+/* Hardcoded text colors in inline styles — common dark hex */
+.dark [style*="color: #1d1d1f"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color:#1d1d1f"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: rgb(29, 29, 31)"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: #1e293b"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: #111827"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: #0f172a"]:not(.admin-panel *):not([data-keep-light]) {
+  color: var(--t1) !important;
+}
+
+.dark [style*="color: #6e6e73"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: #64748b"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: #475569"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: #4b5563"]:not(.admin-panel *):not([data-keep-light]) {
+  color: var(--t3) !important;
+}
+
+.dark [style*="color: #98989d"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: #94a3b8"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: #cbd5e1"]:not(.admin-panel *):not([data-keep-light]),
+.dark [style*="color: #9ca3af"]:not(.admin-panel *):not([data-keep-light]) {
+  color: var(--t4) !important;
+}
+
+/* Hardcoded borders inline — convert to var(--b1) */
+.dark [style*="border: 1px solid rgba(0, 0, 0"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="border: 1px solid rgba(0,0,0"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="border-color: rgba(0, 0, 0"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="border-color: rgba(0,0,0"]:not(.admin-panel *):not([data-keep-light]):not(button),
+.dark [style*="borderColor: rgba(0,0,0"]:not(.admin-panel *):not([data-keep-light]):not(button) {
+  border-color: var(--b1) !important;
+}
+
 /* ═══════════════════════════════════════════
    ADMIN PANEL — isolated from dark mode
 ═══════════════════════════════════════════ */
@@ -1272,4 +1423,187 @@ h1, h2, h3 {
 .typo-body {
   font-size: var(--typo-body-size, 15px) !important;
   line-height: var(--typo-body-lh, 1.65) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE — CORREÇÕES ABRANGENTES DE CONVERGÊNCIA (v4)
+   Resolve: backgrounds hardcoded, blocos desalinhados,
+   bordas e textos que não adaptam ao tema escuro.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Regra raiz: garante que o body usa sempre --s0 ── */
+.dark body,
+.dark #root {
+  background-color: var(--s0) !important;
+}
+
+/* ── Seções que usam background: 'var(--s0/s1/s2)' inline ──
+   Já funcionam. Este bloco protege classes Tailwind residuais. ── */
+.dark section {
+  background-color: var(--s0);
+}
+
+/* ── Segmentos: força bg da section ── */
+.dark #segmentos {
+  background-color: var(--s1) !important;
+}
+
+/* ── Testimonials: seção e card ── */
+.dark section[style*="var(--s1)"] {
+  background-color: var(--s1);
+}
+
+/* ── Numbers LayoutDark: garante que o card container tenha
+   aparência de superfície elevada no dark (não preta chapada) ── */
+.dark .numbers-dark-card {
+  background: var(--s1) !important;
+  border-color: var(--b2) !important;
+}
+
+/* ── Partners: section bg via CSS class hook ── */
+.dark .pc-section {
+  background-color: var(--s0) !important;
+}
+/* Fade masks: garantia extra via CSS (já corrigido no TSX) */
+.dark .pc-viewport::before {
+  background: linear-gradient(90deg,  var(--s0) 0%, transparent 100%) !important;
+}
+.dark .pc-viewport::after  {
+  background: linear-gradient(270deg, var(--s0) 0%, transparent 100%) !important;
+}
+
+/* ── Footer default (dark layout) ── */
+.dark footer.fr[style*="#0b0f18"],
+.dark footer.fr[style*="0b0f18"] {
+  background: var(--s0) !important;
+}
+
+/* ── Footer columns-white no dark: já usa var(--s0), mas garante
+   que inputs dentro dele peguem o tema correto ── */
+.dark footer.fr input[type="text"] {
+  background: var(--s3) !important;
+  border-color: var(--b2) !important;
+  color: var(--t1) !important;
+}
+.dark footer.fr input::placeholder {
+  color: var(--t4) !important;
+}
+
+/* ── Contact: inputs do formulário de contato ── */
+.dark #contato input,
+.dark #contato textarea,
+.dark #contato select {
+  background: var(--s2) !important;
+  border-color: var(--b2) !important;
+  color: var(--t1) !important;
+}
+.dark #contato input::placeholder,
+.dark #contato textarea::placeholder {
+  color: var(--t4) !important;
+}
+
+/* ── Contact: card de info (telefone, e-mail, endereço) ── */
+.dark #contato [style*="background: 'var(--s0)'"],
+.dark #contato [style*="var(--s0)"] {
+  background: var(--s1) !important;
+}
+
+/* ── Erro inline (vermelho) no contact form ── */
+.dark #contato [style*="#fef2f2"] {
+  background: rgba(220,38,38,.12) !important;
+  border-color: rgba(220,38,38,.3) !important;
+  color: #fca5a5 !important;
+}
+
+/* ── Sol card: garante fundo das seções Solutions ── */
+.dark .sol-section {
+  background: var(--s0) !important;
+}
+.dark .sol-fade-l { background: linear-gradient(to right,  var(--s0), transparent) !important; }
+.dark .sol-fade-r { background: linear-gradient(to left,   var(--s0), transparent) !important; }
+.dark .sol-arrow-btn {
+  background: var(--s2) !important;
+  border-color: var(--b2) !important;
+}
+.dark .sol-modal-sheet {
+  background: var(--s2) !important;
+}
+
+/* ── HomeHighlight: blocos alternam var(--s0)/var(--s1) — ok ──
+   Porém o número decorativo transparente pode ficar muito visível.
+   Já está com opacity 0.06, não precisa override. ── */
+
+/* ── QuickLinks: hover bg para dark ── */
+.dark [style*="background: isHov ? c"] {
+  /* Não dá para sobrescrever inline com JS — handled no TSX */
+}
+
+/* ── Differentials: seção escura por design, sem override ── */
+
+/* ── apple-card dark: garante convergência completa ── */
+.dark .apple-card {
+  background: var(--s2) !important;
+  border-color: var(--b1) !important;
+}
+.dark .apple-card:hover {
+  background: var(--s3) !important;
+  border-color: var(--b2) !important;
+}
+
+/* ── card-glow dark ── */
+.dark .card-glow {
+  background: var(--s2);
+  border-color: var(--b1);
+}
+
+/* ── Dropdowns / popovers / modais ── */
+.dark [role="dialog"],
+.dark [data-radix-popper-content-wrapper] > div {
+  background: var(--s2) !important;
+  border-color: var(--b1) !important;
+  color: var(--t1) !important;
+}
+
+/* ── Inputs shadcn/ui ── */
+.dark .dark\:bg-\[var\(--s3\)\] { background: var(--s3) !important; }
+
+/* ── Tabelas e dividers ── */
+.dark hr { border-color: var(--b1) !important; }
+.dark table { background: var(--s1) !important; }
+.dark th { background: var(--s2) !important; color: var(--t2) !important; }
+.dark td { border-color: var(--b1) !important; }
+
+/* ── Badge / section-badge no dark ── */
+.dark .section-badge {
+  border-color: var(--b2);
+}
+
+/* ── Corrija links de copyright no footer default dark ── */
+.dark footer a[style*="rgba(255,255,255,.35)"] {
+  color: var(--t4) !important;
+}
+.dark footer a[style*="rgba(255,255,255,.35)"]:hover {
+  color: var(--t1) !important;
+}
+
+/* ── Glass dark: já definido, garante cobertura total ── */
+.dark .glass {
+  background: rgba(14,14,16,.95) !important;
+  border-color: var(--b1) !important;
+}
+
+/* ── Scrollbar dark ── */
+.dark ::-webkit-scrollbar-track {
+  background: var(--s1);
+}
+
+/* ── Prevent flash: transição suave de fundo em todo o site ── */
+body, section, footer, header, main, aside, article, div {
+  transition-property: background-color, border-color, color;
+  transition-duration: .22s;
+  transition-timing-function: ease;
+}
+/* Exceção para animações que não devem ser afetadas */
+[class*="animate-"], [style*="animation"], canvas {
+  transition-property: none !important;
 }

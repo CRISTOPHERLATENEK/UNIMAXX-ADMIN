@@ -19,7 +19,7 @@ function makeSegmentId(inputName) {
 }
 
 router.get('/', (req, res) => {
-  db.all('SELECT * FROM segments ORDER BY order_num', [], (err, rows) => {
+  db.all('SELECT * FROM segments WHERE deleted_at IS NULL ORDER BY order_num', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro' });
     res.json(rows || []);
   });
@@ -59,22 +59,12 @@ router.put('/:id', validateParams(idParamSchema), validateBody(segmentSchema.omi
 
 router.delete('/:id', validateParams(idParamSchema), (req, res) => {
   const { id } = req.validatedParams;
-  
-  db.get('SELECT image FROM segments WHERE segment_id=?', [id], (err, row) => {
-    if (err || !row) return res.status(404).json({ error: 'Segmento não encontrado' });
-    const imagePath = row.image;
-    
-    db.run('DELETE FROM segments WHERE segment_id=?', [id], async function (err2) {
-      if (err2) return res.status(500).json({ error: 'Erro' });
-      if (this.changes > 0 && imagePath) {
-        const fullPath = path.join(UPLOAD_DIR, path.basename(imagePath));
-        if (fs.existsSync(fullPath)) {
-          fs.unlinkSync(fullPath);
-        }
-      }
-      await logAudit(req, { userId: req.user?.id, action: 'delete_segment', entity: 'segments', entityId: id });
-      res.json({ message: 'Excluído' });
-    });
+  // Soft-delete (vai para Lixeira). Arquivos físicos só removidos em purge.
+  db.run('UPDATE segments SET deleted_at = CURRENT_TIMESTAMP WHERE segment_id=? AND deleted_at IS NULL', [id], async function (err) {
+    if (err) return res.status(500).json({ error: 'Erro' });
+    if (this.changes === 0) return res.status(404).json({ error: 'Segmento não encontrado' });
+    await logAudit(req, { userId: req.user?.id, action: 'soft_delete_segment', entity: 'segments', entityId: id });
+    res.json({ message: 'Movido para a Lixeira', soft: true });
   });
 });
 

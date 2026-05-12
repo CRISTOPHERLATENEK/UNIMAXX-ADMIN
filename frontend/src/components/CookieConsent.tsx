@@ -46,6 +46,7 @@ export function CookieConsent() {
           {btnLabel}
         </button>
         <button onClick={accept}
+          aria-label="Fechar e aceitar cookies"
           className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/10 transition">
           <X className="w-3.5 h-3.5" />
         </button>

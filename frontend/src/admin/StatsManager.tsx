@@ -7,6 +7,7 @@ import type { NumberStat } from '@/types';
 import { Button } from '@/components/ui/button';
 import { HomeSectionModal } from '@/admin/HomeSectionModal';
 import { HOME_SECTION_CONFIGS } from '@/admin/homeSectionConfigs';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 // ── Layouts disponíveis ───────────────────────────────────────────────────────
 
@@ -266,10 +267,19 @@ export function StatsManager() {
                 </button>
               </div>
               {stats.length === 0 ? (
-                <div className="bg-white rounded-2xl border flex flex-col items-center py-14 text-center" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
-                  <TrendingUp size={28} className="text-gray-200 mb-3" />
-                  <p className="text-sm text-[#98989d]">Nenhuma estatística cadastrada</p>
-                  <button onClick={() => handleAdd('numbers')} className="mt-3 text-xs font-medium" style={{ color: pc }}>+ Adicionar a primeira</button>
+                <div className="bg-white rounded-2xl border" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
+                  <AdminEmptyState
+                    icon={<TrendingUp size={28} />}
+                    title="Nenhuma estatística cadastrada"
+                    description="Números de destaque aparecem na home — ex: '900 clientes', '4K pedidos', '17 anos'."
+                    action={
+                      <button onClick={() => handleAdd('numbers')}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white"
+                        style={{ background: pc }}>
+                        <Plus size={14} /> Adicionar a primeira
+                      </button>
+                    }
+                  />
                 </div>
               ) : stats.map((s: any) => <StatRow key={s.stat_id} stat={s} />)}
             </div>
@@ -290,9 +300,19 @@ export function StatsManager() {
               </button>
             </div>
             {segStats.length === 0 ? (
-              <div className="bg-white rounded-2xl border flex flex-col items-center py-14 text-center" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
-                <TrendingUp size={28} className="text-gray-200 mb-3" />
-                <p className="text-sm text-[#98989d]">Nenhum item cadastrado</p>
+              <div className="bg-white rounded-2xl border" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
+                <AdminEmptyState
+                  icon={<TrendingUp size={28} />}
+                  title="Nenhum item na faixa"
+                  description="Adicione números que aparecem abaixo do banner em /segmentos."
+                  action={
+                    <button onClick={() => handleAdd('segmentos-strip')}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white"
+                      style={{ background: pc }}>
+                      <Plus size={14} /> Adicionar
+                    </button>
+                  }
+                />
               </div>
             ) : segStats.map((s: any) => <StatRow key={s.stat_id} stat={s} />)}
           </div>

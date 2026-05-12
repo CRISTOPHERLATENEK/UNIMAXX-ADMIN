@@ -64,7 +64,7 @@ export function Contact() {
 
   const inp = (style: React.CSSProperties = {}): React.CSSProperties => ({
     width: '100%', padding: '12px 16px', background: 'var(--s0)',
-    border: '1px solid rgba(0,0,0,.1)', borderRadius: 12,
+    border: '1px solid var(--b1)', borderRadius: 12,
     fontSize: 14, color: 'var(--t1)', outline: 'none',
     fontFamily: "var(--font-body,'DM Sans'), sans-serif", boxSizing: 'border-box',
     transition: 'border-color 0.2s, box-shadow 0.2s',
@@ -116,7 +116,7 @@ export function Contact() {
                 </div>
                 <div>
                   <p style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{label}</p>
-                  <p style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 14, fontWeight: 600, color: '#1d1d1f' }}>{value}</p>
+                  <p style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 14, fontWeight: 600, color: 'var(--t1)' }}>{value}</p>
                 </div>
               </div>
             ))}
@@ -138,7 +138,7 @@ export function Contact() {
           {/* Right — form */}
           <div style={{
             background: 'var(--s2)', borderRadius: 24, padding: 'clamp(1.5rem,4vw,2.5rem)',
-            border: '1px solid rgba(0,0,0,.06)',
+            border: '1px solid var(--b1)',
           }}>
             <h3 style={{ fontFamily: "var(--font-heading,'Outfit')", fontWeight: 'var(--typo-h-weight,800)', fontSize: 20, color: 'var(--t1)', marginBottom: 24 }}>
               {content['contact.form.title'] || 'Receba uma ligação'}
@@ -175,7 +175,7 @@ export function Contact() {
                     <input style={inp()} placeholder="Seu nome" required value={formData.name}
                       onChange={e => setFormData(p => ({...p, name: e.target.value}))}
                       onFocus={e => { e.target.style.borderColor = pc; e.target.style.boxShadow = `0 0 0 3px ${pc}18`; }}
-                      onBlur={e => { e.target.style.borderColor = 'rgba(0,0,0,.1)'; e.target.style.boxShadow = 'none'; }} />
+                      onBlur={e => { e.target.style.borderColor = 'var(--b1)'; e.target.style.boxShadow = 'none'; }} />
                   </div>
                   <div>
                     <label style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
@@ -184,7 +184,7 @@ export function Contact() {
                     <input style={inp()} type="tel" placeholder="(00) 00000-0000" required value={formData.phone}
                       onChange={e => setFormData(p => ({...p, phone: e.target.value}))}
                       onFocus={e => { e.target.style.borderColor = pc; e.target.style.boxShadow = `0 0 0 3px ${pc}18`; }}
-                      onBlur={e => { e.target.style.borderColor = 'rgba(0,0,0,.1)'; e.target.style.boxShadow = 'none'; }} />
+                      onBlur={e => { e.target.style.borderColor = 'var(--b1)'; e.target.style.boxShadow = 'none'; }} />
                   </div>
                 </div>
 
@@ -193,7 +193,7 @@ export function Contact() {
                   <input style={inp()} type="email" placeholder="seu@email.com" value={formData.email}
                     onChange={e => setFormData(p => ({...p, email: e.target.value}))}
                     onFocus={e => { e.target.style.borderColor = pc; e.target.style.boxShadow = `0 0 0 3px ${pc}18`; }}
-                    onBlur={e => { e.target.style.borderColor = 'rgba(0,0,0,.1)'; e.target.style.boxShadow = 'none'; }} />
+                    onBlur={e => { e.target.style.borderColor = 'var(--b1)'; e.target.style.boxShadow = 'none'; }} />
                 </div>
 
                 <div>
@@ -201,7 +201,7 @@ export function Contact() {
                   <select style={{ ...inp(), appearance: 'none' }} value={formData.segment}
                     onChange={e => setFormData(p => ({...p, segment: e.target.value}))}
                     onFocus={e => { (e.target as HTMLElement).style.borderColor = pc; (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${pc}18`; }}
-                    onBlur={e => { (e.target as HTMLElement).style.borderColor = 'rgba(0,0,0,.1)'; (e.target as HTMLElement).style.boxShadow = 'none'; }}>
+                    onBlur={e => { (e.target as HTMLElement).style.borderColor = 'var(--b1)'; (e.target as HTMLElement).style.boxShadow = 'none'; }}>
                     <option value="">Selecione seu segmento</option>
                     {segmentOptions.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
@@ -212,7 +212,7 @@ export function Contact() {
                   <textarea style={{ ...inp({ resize: 'none' }), height: 100 }} placeholder="Conte sobre seu negócio..." value={formData.message}
                     onChange={e => setFormData(p => ({...p, message: e.target.value}))}
                     onFocus={e => { e.target.style.borderColor = pc; e.target.style.boxShadow = `0 0 0 3px ${pc}18`; }}
-                    onBlur={e => { e.target.style.borderColor = 'rgba(0,0,0,.1)'; e.target.style.boxShadow = 'none'; }} />
+                    onBlur={e => { e.target.style.borderColor = 'var(--b1)'; e.target.style.boxShadow = 'none'; }} />
                 </div>
 
                 {error && (

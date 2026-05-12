@@ -30,6 +30,7 @@ router.get('/banners/all', cache(30), (req, res) => {
   db.all(
     `SELECT * FROM banners
      WHERE active=1
+       AND deleted_at IS NULL
        AND title IS NOT NULL AND title != ''
        AND (starts_at IS NULL OR starts_at <= datetime('now'))
        AND (ends_at IS NULL OR ends_at >= datetime('now'))
@@ -44,7 +45,7 @@ router.get('/banners/all', cache(30), (req, res) => {
 
 // ── Soluções ──────────────────────────────────────────────────────────────
 router.get('/solutions', cache(60), (req, res) => {
-  db.all('SELECT * FROM solutions WHERE active=1 ORDER BY order_num', [], (err, rows) => {
+  db.all('SELECT * FROM solutions WHERE active=1 AND deleted_at IS NULL ORDER BY order_num', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro' });
     res.json((rows || []).map(r => ({ ...r, features: parseArr(r.features) })));
   });
@@ -52,7 +53,7 @@ router.get('/solutions', cache(60), (req, res) => {
 
 // ── Segmentos ─────────────────────────────────────────────────────────────
 router.get('/segments', cache(60), (req, res) => {
-  db.all('SELECT * FROM segments WHERE active=1 ORDER BY order_num', [], (err, rows) => {
+  db.all('SELECT * FROM segments WHERE active=1 AND deleted_at IS NULL ORDER BY order_num', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro' });
     res.json(rows || []);
   });
@@ -60,7 +61,7 @@ router.get('/segments', cache(60), (req, res) => {
 
 // ── Stats ─────────────────────────────────────────────────────────────────
 router.get('/stats', cache(120), (req, res) => {
-  db.all('SELECT * FROM stats ORDER BY order_num', [], (err, rows) => {
+  db.all('SELECT * FROM stats WHERE deleted_at IS NULL ORDER BY order_num', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro' });
     res.json(rows || []);
   });
@@ -68,21 +69,21 @@ router.get('/stats', cache(120), (req, res) => {
 
 // ── Social proof ──────────────────────────────────────────────────────────
 router.get('/client-logos', cache(120), (req, res) => {
-  db.all('SELECT * FROM client_logos WHERE active=1 ORDER BY order_num', [], (err, rows) => {
+  db.all('SELECT * FROM client_logos WHERE active=1 AND deleted_at IS NULL ORDER BY order_num', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro' });
     res.json(rows || []);
   });
 });
 
 router.get('/testimonials', cache(120), (req, res) => {
-  db.all('SELECT * FROM testimonials WHERE active=1 ORDER BY order_num', [], (err, rows) => {
+  db.all('SELECT * FROM testimonials WHERE active=1 AND deleted_at IS NULL ORDER BY order_num', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro' });
     res.json(rows || []);
   });
 });
 
 router.get('/partners', cache(120), (req, res) => {
-  db.all('SELECT * FROM partners WHERE active=1 ORDER BY order_num', [], (err, rows) => {
+  db.all('SELECT * FROM partners WHERE active=1 AND deleted_at IS NULL ORDER BY order_num', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro' });
     res.json(rows || []);
   });
@@ -93,7 +94,7 @@ router.get('/partners', cache(120), (req, res) => {
 router.get('/solution-pages', cache(60), (req, res) => {
   db.all(
     `SELECT id, slug, title, icon, color_theme, meta_title, meta_description, is_active, created_at, updated_at
-     FROM solution_pages WHERE is_active=1 ORDER BY id ASC`,
+     FROM solution_pages WHERE is_active=1 AND deleted_at IS NULL ORDER BY id ASC`,
     [],
     (err, rows) => {
       if (err) return res.status(500).json({ error: 'Erro' });
@@ -105,7 +106,7 @@ router.get('/solution-pages', cache(60), (req, res) => {
 // Detalhe público por slug — helper compartilhado
 function querySolutionPageBySlug(slug, res) {
   db.get(
-    'SELECT id, slug, title, icon, color_theme, meta_title, meta_description, is_active, blocks_json, created_at, updated_at FROM solution_pages WHERE slug=? AND is_active=1',
+    'SELECT id, slug, title, icon, color_theme, meta_title, meta_description, is_active, blocks_json, created_at, updated_at FROM solution_pages WHERE slug=? AND is_active=1 AND deleted_at IS NULL',
     [slug],
     (err, row) => {
       if (err) return res.status(500).json({ error: 'Erro' });
@@ -132,7 +133,7 @@ router.get('/solution-pages/:slug', (req, res) => {
 // ── Páginas Genéricas ─────────────────────────────────────────────────────
 router.get('/pages/:slug', (req, res) => {
   db.get(
-    'SELECT id, slug, title, meta_title, meta_description, is_active, blocks_json, created_at, updated_at FROM generic_pages WHERE slug=? AND is_active=1',
+    'SELECT id, slug, title, meta_title, meta_description, is_active, blocks_json, created_at, updated_at FROM generic_pages WHERE slug=? AND is_active=1 AND deleted_at IS NULL',
     [req.params.slug],
     (err, row) => {
       if (err) return res.status(500).json({ error: 'Erro' });

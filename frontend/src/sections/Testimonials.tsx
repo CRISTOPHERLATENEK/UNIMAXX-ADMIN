@@ -4,6 +4,7 @@ import type React from 'react';
 import { ChevronLeft, ChevronRight, Star, Quote } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useBlockTypo } from '@/hooks/useBlockTypo';
+import { SafeImg } from '@/components/SafeImg';
 
 const API_URL  = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
@@ -106,17 +107,19 @@ export function Testimonials() {
                 fontSize: 'clamp(.95rem,2vw,1.15rem)', lineHeight: 1.75,
                 color: '#3a3a3c', marginBottom: 28, ...bt.body}}>"{t.content}"</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 13 }}>
-                {t.author_photo ? (
-                  <img src={imgSrc(t.author_photo)} alt={t.author_name}
-                    style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${pc}30`, flexShrink: 0 }} />
-                ) : (
-                  <div style={{
-                    width: 50, height: 50, borderRadius: '50%', flexShrink: 0,
-                    background: `linear-gradient(135deg, ${pc}, ${sc})`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 16, fontWeight: 'var(--typo-h-weight,800)', color: '#fff',
-                  }}>{initials(t.author_name)}</div>
-                )}
+                <SafeImg
+                  src={t.author_photo ? imgSrc(t.author_photo) : ''}
+                  alt={t.author_name}
+                  fallback={
+                    <div style={{
+                      width: 50, height: 50, borderRadius: '50%', flexShrink: 0,
+                      background: `linear-gradient(135deg, ${pc}, ${sc})`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 16, fontWeight: 'var(--typo-h-weight,800)', color: '#fff',
+                    }}>{initials(t.author_name)}</div>
+                  }
+                  style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${pc}30`, flexShrink: 0 }}
+                />
                 <div>
                   <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 15, fontWeight: 'var(--typo-h-weight,800)', color: 'var(--t1)' }}>{t.author_name}</p>
                   <p style={{ fontFamily: "var(--font-body,'DM Sans'),sans-serif", fontSize: 13, color: 'var(--t3)', marginTop: 2 }}>
@@ -175,19 +178,22 @@ export function Testimonials() {
                   cursor: 'pointer', transition: 'all 0.25s',
                   boxShadow: i === cur ? '0 4px 14px rgba(0,0,0,.07)' : 'none',
                 }}>
-                {item.author_photo ? (
-                  <img src={imgSrc(item.author_photo)} style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{
-                    width: 22, height: 22, borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${pc}, ${sc})`,
-                    fontSize: 8, fontWeight: 'var(--typo-h-weight,800)', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>{initials(item.author_name)}</div>
-                )}
+                <SafeImg
+                  src={item.author_photo ? imgSrc(item.author_photo) : ''}
+                  alt={item.author_name || ''}
+                  fallback={
+                    <div style={{
+                      width: 22, height: 22, borderRadius: '50%',
+                      background: `linear-gradient(135deg, ${pc}, ${sc})`,
+                      fontSize: 8, fontWeight: 'var(--typo-h-weight,800)', color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>{initials(item.author_name)}</div>
+                  }
+                  style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }}
+                />
                 <span style={{
                   fontSize: 12, fontWeight: i === cur ? 700 : 500,
-                  color: i === cur ? '#1d1d1f' : '#98989d',
+                  color: i === cur ? 'var(--t1)' : '#98989d',
                   fontFamily: "var(--font-body,'DM Sans'),sans-serif",
                 }}>{item.author_name.split(' ')[0]}</span>
               </button>

@@ -50,27 +50,18 @@ export interface Banner {
   subtitle?: string;
   description?: string;
   image: string;
+  image_mobile?: string;
   cta_text?: string;
   cta_link?: string;
-  cta2_text?: string;
-  cta2_link?: string;
   order_num: number;
   active: number;
   use_default_bg: number;
   use_style: number;
   bg_color?: string;
-  accent_color2?: string;
   page?: string;
   banner_style?: string;
   starts_at?: string;
   ends_at?: string;
-  // Novos campos de controle avançado
-  image_opacity?: number;          // 0.05–1.0 (default 0.5)
-  text_align?: 'left' | 'center' | 'right';
-  text_position?: 'left' | 'center' | 'right';
-  banner_height?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
-  overlay_intensity?: number;      // 0.1–1.0 (default 0.85)
-  badge_icon?: string;
 }
 
 export interface ClientLogo {
@@ -147,7 +138,13 @@ export type BlockType =
   | 'integrations'
   | 'alert_banner'
   | 'image_text'
-  | 'divider';
+  | 'divider'
+  // ── Novos blocos premium ──────────────────────────────────────────────────
+  | 'pricing'          // Tabela de planos com toggle mensal/anual
+  | 'demo_form'        // Form inline de captura de lead
+  | 'team'             // Cards de equipe (foto + cargo + social)
+  | 'tabs'             // Conteúdo tabulado (multi-painel)
+  | 'comparison_table';// Matriz de comparação (features × planos/produtos)
 
 // Variantes de layout para blocks específicos
 export type FeaturesLayout = 'dark_numbered' | 'grid' | 'checklist' | 'cards_hover' | 'bento' | 'highlight_list' | 'minimal_pills' | 'split_dark' | 'dark_cards' | 'half_split' | 'community_connect';
@@ -282,6 +279,83 @@ export interface PageBlock {
   logoItems?: { name: string; imageUrl: string }[];
   // ── Testimonial block ─────────────────────────────────────────────────────
   company?: string;
+
+  // ── PRICING block ─────────────────────────────────────────────────────────
+  pricingPlans?: {
+    name: string;
+    description?: string;
+    priceMonthly: string;       // ex: "99" — sem moeda
+    priceAnnual?: string;       // ex: "79" (preço mensal pago anualmente)
+    priceCurrency?: string;     // ex: "R$" — default
+    priceSuffix?: string;       // ex: "/mês" — default
+    features: string[];         // lista de bullets
+    ctaLabel?: string;
+    ctaLink?: string;
+    highlighted?: boolean;      // plano em destaque (escala + sombra)
+    badge?: string;             // ex: "Mais popular"
+    color?: string;             // tema do card (hex)
+  }[];
+  pricingShowToggle?: boolean;          // mostrar toggle Mensal/Anual
+  pricingAnnualDiscountLabel?: string;  // ex: "Economize 20%"
+  pricingFootnote?: string;             // texto fino abaixo dos planos
+
+  // ── DEMO_FORM block ───────────────────────────────────────────────────────
+  formTitle?: string;
+  formDescription?: string;
+  formFields?: {
+    name: string;                 // chave do campo: 'name' / 'email' / 'phone'
+    label: string;                // rótulo visível
+    type: 'text' | 'email' | 'tel' | 'select' | 'textarea';
+    placeholder?: string;
+    required?: boolean;
+    options?: string[];           // só pra select
+    fullWidth?: boolean;          // ocupa linha inteira no grid 2-col
+  }[];
+  formSubmitLabel?: string;
+  formSuccessTitle?: string;
+  formSuccessMessage?: string;
+  formApiEndpoint?: string;       // default: '/api/leads'
+  formLayout?: 'inline' | 'split'; // 'split' = form à direita + benefícios à esquerda
+  formBenefits?: string[];        // bullets do lado esquerdo (só em layout 'split')
+
+  // ── TEAM block ────────────────────────────────────────────────────────────
+  teamMembers?: {
+    name: string;
+    role: string;
+    bio?: string;
+    photo?: string;
+    linkedin?: string;
+    twitter?: string;
+    email?: string;
+  }[];
+  teamLayout?: 'grid' | 'list';   // grid (cards) ou list (linha horizontal)
+  teamColumns?: 2 | 3 | 4;        // colunas no grid
+
+  // ── TABS block ────────────────────────────────────────────────────────────
+  tabsOrientation?: 'horizontal' | 'vertical';
+  tabsItems?: {
+    label: string;                // texto da aba
+    icon?: string;                // emoji opcional
+    title?: string;               // título dentro do painel
+    description?: string;         // texto do painel
+    imageUrl?: string;            // imagem opcional ao lado do texto
+    ctaLabel?: string;
+    ctaLink?: string;
+    bullets?: string[];           // lista de pontos
+  }[];
+
+  // ── COMPARISON_TABLE block ────────────────────────────────────────────────
+  comparisonColumns?: {
+    name: string;                 // ex: "Plano Pro" ou "Concorrente X"
+    highlighted?: boolean;
+    badge?: string;
+  }[];
+  comparisonRows?: {
+    feature: string;              // nome da feature/critério
+    values: (boolean | string)[]; // valor por coluna — bool = ✓/✗, string = texto custom
+    category?: string;            // agrupa linhas (header de seção)
+  }[];
+  comparisonShowCategories?: boolean; // exibir headers de categoria
 }
 
 // ─── Solution Pages (lean — conteúdo vive em blocks_json) ────────────────────

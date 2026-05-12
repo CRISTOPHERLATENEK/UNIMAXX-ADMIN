@@ -26,7 +26,7 @@ function buildValues(b) {
 }
 
 router.get('/', (req, res) => {
-  db.all('SELECT * FROM generic_pages ORDER BY id DESC', [], (err, rows) => {
+  db.all('SELECT * FROM generic_pages WHERE deleted_at IS NULL ORDER BY id DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro ao listar páginas' });
     res.json((rows || []).map(parseRow));
   });
@@ -68,11 +68,11 @@ router.put('/:id', validateParams(numericIdParamSchema), validateBody(genericPag
 });
 
 router.delete('/:id', validateParams(numericIdParamSchema), (req, res) => {
-  db.run('DELETE FROM generic_pages WHERE id=?', [req.validatedParams.id], async function (err) {
+  db.run('UPDATE generic_pages SET deleted_at = CURRENT_TIMESTAMP WHERE id=? AND deleted_at IS NULL', [req.validatedParams.id], async function (err) {
     if (err) return res.status(500).json({ error: 'Erro' });
     if (this.changes === 0) return res.status(404).json({ error: 'Página não encontrada' });
-    await logAudit(req, { userId: req.user?.id, action: 'delete_generic_page', entity: 'generic_pages', entityId: req.validatedParams.id });
-    res.json({ message: 'Excluído' });
+    await logAudit(req, { userId: req.user?.id, action: 'soft_delete_generic_page', entity: 'generic_pages', entityId: req.validatedParams.id });
+    res.json({ message: 'Movido para a Lixeira', soft: true });
   });
 });
 

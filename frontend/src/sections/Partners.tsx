@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { useBlockTypo } from '@/hooks/useBlockTypo';
+import { SafeImg } from '@/components/SafeImg';
 
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -26,8 +27,8 @@ const CSS = `
     z-index: 10;
     pointer-events: none;
   }
-  .pc-viewport::before { left: 0;  background: linear-gradient(90deg,  #fff 0%, transparent 100%); }
-  .pc-viewport::after  { right: 0; background: linear-gradient(270deg, #fff 0%, transparent 100%); }
+  .pc-viewport::before { left: 0;  background: linear-gradient(90deg,  var(--s0) 0%, transparent 100%); }
+  .pc-viewport::after  { right: 0; background: linear-gradient(270deg, var(--s0) 0%, transparent 100%); }
 
   .pc-track {
     display: flex;
@@ -98,7 +99,7 @@ export function Partners() {
   const IMG_H = 260;
 
   return (
-    <section style={{ background: '#fff', paddingTop: 'clamp(4rem,8vw,6.5rem)', paddingBottom: 'clamp(4rem,8vw,6.5rem)', overflow: 'hidden' }}>
+    <section className="pc-section" style={{ background: 'var(--s0)', paddingTop: 'clamp(4rem,8vw,6.5rem)', paddingBottom: 'clamp(4rem,8vw,6.5rem)', overflow: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       {/* ── Header ── */}
@@ -117,7 +118,7 @@ export function Partners() {
         <h2 style={{
           fontFamily: FONT, fontWeight: 'var(--typo-h-weight,800)',
           fontSize: 'clamp(1.8rem,4vw,3rem)',
-          color: '#0f172a', lineHeight: 1.2,
+          color: 'var(--t1)', lineHeight: 1.2,
           margin: '0 auto 16px', maxWidth: 640,
           letterSpacing: '-0.025em', ...bt.h}}>
           {content['partners.title'] || 'Conectado com as principais operadoras do mercado'}
@@ -125,7 +126,7 @@ export function Partners() {
 
         <p style={{
           fontFamily: FONT, fontSize: 'clamp(14px,1.6vw,16px)',
-          color: '#64748b', maxWidth: 480, margin: '0 auto',
+          color: 'var(--t3)', maxWidth: 480, margin: '0 auto',
           lineHeight: 1.65,
         }}>
           {content['partners.description'] || 'Nossa plataforma integra-se perfeitamente com as principais máquinas de cartão'}
@@ -140,9 +141,9 @@ export function Partners() {
               style={{
                 padding: '7px 20px', borderRadius: 999, fontSize: 13, fontWeight: 600,
                 fontFamily: FONT, cursor: 'pointer', transition: 'all 0.2s ease',
-                background: activeCategory === cat ? primaryColor : 'rgba(0,0,0,.04)',
-                color: activeCategory === cat ? '#fff' : '#64748b',
-                border: activeCategory === cat ? `1px solid ${primaryColor}` : '1px solid transparent',
+                background: activeCategory === cat ? primaryColor : 'var(--s2)',
+                color: activeCategory === cat ? '#fff' : 'var(--t3)',
+                border: activeCategory === cat ? `1px solid ${primaryColor}` : '1px solid var(--b1)',
                 boxShadow: activeCategory === cat ? `0 4px 14px ${primaryColor}35` : 'none',
               }}>
               {cat}
@@ -168,10 +169,11 @@ export function Partners() {
                 rel="noopener noreferrer"
                 style={{ display: 'block' }}
               >
-                <img
+                <SafeImg
                   src={imgSrc(partner.image)}
                   alt={partner.name}
-                  style={{ height: IMG_H, width: 'auto', maxWidth: 180 }}
+                  placeholderMode="initials"
+                  style={{ height: IMG_H, width: 'auto', maxWidth: 180, minWidth: 80, borderRadius: 8 }}
                 />
               </a>
             </div>

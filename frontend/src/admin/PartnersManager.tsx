@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import type React from 'react';
 
-import { Plus, Pencil, Trash2, Eye, EyeOff, X, Save, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, X, Save, Upload, Handshake } from 'lucide-react';
 import { ImageUploadField, SPECS } from '@/components/ImageUploadField';
 import { resolveImgSrc } from '@/utils/imageUtils';
 import { useData } from '@/context/DataContext';
 import { toast } from 'sonner';
 import type { Partner } from '@/types';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 const CATEGORIES = ['parceiro', 'integração', 'bandeira', 'marketplace', 'outro'];
 const empty = (): Partial<Partner> => ({ name: '', image: '', url: '', category: 'parceiro', order_num: 0, active: 1 });
@@ -84,13 +85,30 @@ export function PartnersManager() {
         </div>
       )}
 
+      {/* Empty state */}
+      {filtered.length === 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100">
+          <AdminEmptyState
+            icon={<Handshake size={28} />}
+            title={partners.length === 0 ? 'Nenhum parceiro cadastrado' : 'Nenhum parceiro nesta categoria'}
+            description={partners.length === 0
+              ? 'Adicione logos de parceiros, integrações e marketplaces que aparecem no site.'
+              : 'Tente outra categoria ou adicione um novo parceiro.'}
+            action={
+              <button onClick={() => setEditing({ ...empty(), order_num: partners.length })}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold"
+                style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}>
+                <Plus className="w-4 h-4" /> Adicionar Parceiro
+              </button>
+            }
+          />
+        </div>
+      )}
+
       {/* Grid */}
+      {filtered.length > 0 && (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {filtered.length === 0 ? (
-          <div className="col-span-5 py-16 text-center bg-white rounded-2xl border border-gray-100 text-gray-400">
-            <p className="text-sm">Nenhum parceiro cadastrado.</p>
-          </div>
-        ) : filtered.map((p) => (
+        {filtered.map((p) => (
           <div key={p.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col items-center gap-3 group"
             style={{ opacity: p.active === 1 ? 1 : 0.5 }}>
             {imgSrc(p.image) ? (
@@ -117,6 +135,7 @@ export function PartnersManager() {
           </div>
         ))}
       </div>
+      )}
 
       {/* Modal */}
       {editing && (

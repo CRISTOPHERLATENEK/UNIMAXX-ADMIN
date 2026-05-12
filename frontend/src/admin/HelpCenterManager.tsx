@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from 'sonner';
 
 import { resolveImgSrc } from '@/utils/imageUtils';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 interface HelpCategory {
   id: number;
@@ -284,9 +285,17 @@ export function HelpCenterManager() {
       {activeTab === 'categories' && (
         <div className="space-y-4">
           {filteredCategories.length === 0 ? (
-            <Card className="p-8 text-center">
-              <AlertCircle className="mx-auto text-gray-400 mb-2" size={32} />
-              <p className="text-gray-600">Nenhuma categoria encontrada</p>
+            <Card>
+              <AdminEmptyState
+                icon={<AlertCircle size={28} />}
+                title="Nenhuma categoria"
+                description="Categorias agrupam artigos da Central de Ajuda. Crie a primeira pra começar."
+                action={
+                  <Button onClick={() => { setCategoryForm({}); setShowCategoryModal(true); }} className="gap-2">
+                    <Plus size={14} /> Nova categoria
+                  </Button>
+                }
+              />
             </Card>
           ) : filteredCategories.map(category => (
             <Card key={category.id} className="p-6 hover:shadow-lg transition-shadow">
@@ -319,9 +328,17 @@ export function HelpCenterManager() {
       {activeTab === 'articles' && (
         <div className="space-y-4">
           {filteredArticles.length === 0 ? (
-            <Card className="p-8 text-center">
-              <AlertCircle className="mx-auto text-gray-400 mb-2" size={32} />
-              <p className="text-gray-600">Nenhum artigo encontrado</p>
+            <Card>
+              <AdminEmptyState
+                icon={<AlertCircle size={28} />}
+                title="Nenhum artigo"
+                description="Artigos respondem dúvidas comuns dos usuários. Crie o primeiro para começar."
+                action={
+                  <Button onClick={() => { setArticleForm({}); setShowArticleModal(true); }} className="gap-2">
+                    <Plus size={14} /> Novo artigo
+                  </Button>
+                }
+              />
             </Card>
           ) : filteredArticles.map(article => (
             <Card key={article.id} className="p-6 hover:shadow-lg transition-shadow">

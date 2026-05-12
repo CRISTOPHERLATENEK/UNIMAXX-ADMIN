@@ -143,6 +143,7 @@ const bannerSchema = z.object({
   subtitle: optionalString(500),
   description: optionalString(5000),
   image: optionalUrlLike(2048),
+  image_mobile: optionalUrlLike(2048),
   cta_text: optionalString(120),
   cta_link: optionalUrlLike(2048),
   order_num: intField(0, 0, 100000),

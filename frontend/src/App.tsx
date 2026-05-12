@@ -58,6 +58,7 @@ import { HelpCenterManager } from '@/admin/HelpCenterManager';
 import { ClientLogosManager } from '@/admin/ClientLogosManager';
 import { TestimonialsManager } from '@/admin/TestimonialsManager';
 import { PartnersManager } from '@/admin/PartnersManager';
+import { TrashManager } from '@/admin/TrashManager';
 import { PageLayoutManager } from '@/admin/PageLayoutManager';
 import { parseLayout } from '@/admin/PageLayoutManager';
 import SolutionPageDetail from '@/pages/SolutionPageDetail';
@@ -281,6 +282,7 @@ function AppRoutes() {
           <Route path="logos-clientes" element={<ClientLogosManager />} />
           <Route path="depoimentos" element={<TestimonialsManager />} />
           <Route path="parceiros" element={<PartnersManager />} />
+          <Route path="lixeira" element={<TrashManager />} />
           <Route path="layout" element={<PageLayoutManager />} />
           <Route path="paginas" element={<GenericPagesManager />} />
           {/* paginas-solucoes removida — use /admin/solucoes (UnifiedSolutionsManager) */}

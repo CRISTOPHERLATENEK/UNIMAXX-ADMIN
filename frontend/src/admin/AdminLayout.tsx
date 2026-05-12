@@ -7,7 +7,7 @@ import {
   Star, Layers, BarChart2, Tag, MessageSquare, Handshake,
   HelpCircle, Building2, Scale, Inbox, Mail,
   Settings, LogOut, Menu, ChevronDown, User, X, Globe,
-  ChevronRight, Search, Zap, ChevronLeft, Image,
+  ChevronRight, Search, Zap, ChevronLeft, Image, Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { GlobalSearch } from '@/admin/GlobalSearch';
@@ -72,6 +72,7 @@ const menuGroups: MenuGroup[] = [
       { path: '/admin/legal', label: 'Termos & Privacidade', icon: Scale },
       { path: '/admin/leads', label: 'Leads & Contatos', icon: Inbox, unreadBadge: true },
       { path: '/admin/newsletter', label: 'Newsletter', icon: Mail },
+      { path: '/admin/lixeira', label: 'Lixeira', icon: Trash2 },
       { path: '/admin/configuracoes', label: 'Configurações', icon: Settings, badge: true },
     ],
   },

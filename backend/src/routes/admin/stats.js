@@ -30,11 +30,11 @@ router.put('/:id', validateParams(idParamSchema), validateBody(statUpdateSchema)
 });
 
 router.delete('/:id', validateParams(idParamSchema), (req, res) => {
-  db.run('DELETE FROM stats WHERE stat_id=?', [req.validatedParams.id], async function (err) {
+  db.run('UPDATE stats SET deleted_at = CURRENT_TIMESTAMP WHERE stat_id=? AND deleted_at IS NULL', [req.validatedParams.id], async function (err) {
     if (err) return res.status(500).json({ error: 'Erro' });
     if (this.changes === 0) return res.status(404).json({ error: 'Estatística não encontrada' });
-    await logAudit(req, { userId: req.user?.id, action: 'delete_stat', entity: 'stats', entityId: req.validatedParams.id });
-    res.json({ message: 'Excluído' });
+    await logAudit(req, { userId: req.user?.id, action: 'soft_delete_stat', entity: 'stats', entityId: req.validatedParams.id });
+    res.json({ message: 'Movido para a Lixeira', soft: true });
   });
 });
 

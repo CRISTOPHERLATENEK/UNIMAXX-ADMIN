@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { API_URL } from '../config';
 import { resolveImg } from '@/components/ImageUploadField';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Stat { label: string; value: string; }
@@ -994,15 +995,19 @@ export default function SolutionPagesManager() {
       {!loading && !error && (
         <>
           {filtered.length === 0 ? (
-            <div className="text-center py-16 border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
-              <Layers className="w-12 h-12 text-[#c7c7cc] mx-auto mb-4" />
-              <p className="text-[#6e6e73] mb-2 font-medium">{search ? 'Nenhuma página encontrada' : 'Nenhuma página criada ainda'}</p>
-              {!search && <p className="text-[#98989d] text-sm mb-6">Crie uma página para cada solução da empresa</p>}
-              {!search && (
-                <Button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }} variant="outline" className="gap-2">
-                  <Plus className="w-4 h-4" /> Criar primeira página
-                </Button>
-              )}
+            <div className="bg-white rounded-2xl border" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+              <AdminEmptyState
+                icon={<Layers size={28} />}
+                title={search ? 'Nenhuma página encontrada' : 'Nenhuma página criada ainda'}
+                description={search
+                  ? `Sua busca por "${search}" não retornou resultados. Tente outro termo.`
+                  : 'Crie uma página completa para cada solução da empresa — com features, benefícios, FAQ, depoimento e mais.'}
+                action={!search && (
+                  <Button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }} variant="outline" className="gap-2">
+                    <Plus className="w-4 h-4" /> Criar primeira página
+                  </Button>
+                )}
+              />
             </div>
           ) : (
             <>

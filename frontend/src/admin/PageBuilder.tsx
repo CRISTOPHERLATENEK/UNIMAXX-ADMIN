@@ -65,6 +65,12 @@ const BLOCK_CATALOG = [
   { type: 'integrations' as BlockType, label: 'Grid de Logos', description: 'Badges de sistemas integrados', emoji: '🔌', color: 'bg-zinc-500', icon: Settings },
   { type: 'image_text' as BlockType, label: 'Coluna Misto', description: 'Imagem ao lado de texto', emoji: '🖼️', color: 'bg-teal-500', icon: ImageIcon },
   { type: 'divider' as BlockType, label: 'Linha Separadora', description: 'Espaço ou linha entre blocos', emoji: '➖', color: 'bg-gray-400', icon: MinusIcon },
+  // ── Novos blocos premium ─────────────────────────────────────────────────
+  { type: 'pricing' as BlockType, label: 'Pricing — Planos', description: 'Tabela de planos com toggle Mensal/Anual', emoji: '💰', color: 'bg-emerald-600', icon: Box },
+  { type: 'demo_form' as BlockType, label: 'Form de Captura', description: 'Formulário inline pra agendar demo / falar com vendedor', emoji: '📋', color: 'bg-blue-600', icon: MousePointer2 },
+  { type: 'team' as BlockType, label: 'Equipe', description: 'Cards de membros com foto, cargo e redes sociais', emoji: '👥', color: 'bg-violet-500', icon: MessageSquare },
+  { type: 'tabs' as BlockType, label: 'Abas de Conteúdo', description: 'Painéis tabulados — horizontal ou vertical', emoji: '🗂️', color: 'bg-sky-500', icon: List },
+  { type: 'comparison_table' as BlockType, label: 'Tabela Comparativa', description: 'Matriz features × planos / produtos', emoji: '📊', color: 'bg-fuchsia-500', icon: Box },
 ];
 
 function MinusIcon(props: any) { return <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /></svg>; }
@@ -135,6 +141,100 @@ function makeBlock(type: BlockType): PageBlock {
   if (type === 'integrations') return { ...b, title: 'Integrações', items: [], colorTheme: 'light' };
   if (type === 'image_text') return { ...b, title: '', description: '', imageUrl: '', imageAlt: '', imagePosition: 'right', colorTheme: 'dark', blockSpacing: 'normal', blockRadius: 'large' };
   if (type === 'divider') return { ...b, dividerStyle: 'line', colorTheme: 'light' };
+
+  // ── PRICING — 3 planos default já preenchidos pra o usuário não começar do zero
+  if (type === 'pricing') return {
+    ...b,
+    title: 'Planos para todo tamanho de negócio',
+    subtitle: 'Comece pequeno. Cresça quando quiser.',
+    colorTheme: 'light',
+    pricingShowToggle: true,
+    pricingAnnualDiscountLabel: 'Economize 20%',
+    pricingFootnote: 'Todos os planos incluem 14 dias de teste grátis. Sem cartão de crédito.',
+    pricingPlans: [
+      { name: 'Starter', description: 'Para começar', priceMonthly: '99', priceAnnual: '79', priceCurrency: 'R$', priceSuffix: '/mês',
+        features: ['Até 500 produtos', '1 ponto de venda', 'Suporte por email'], ctaLabel: 'Começar grátis', ctaLink: '/cliente' },
+      { name: 'Pro', description: 'Mais escolhido', priceMonthly: '249', priceAnnual: '199', priceCurrency: 'R$', priceSuffix: '/mês',
+        features: ['Produtos ilimitados', 'Até 5 pontos de venda', 'Integrações fiscais', 'Suporte prioritário', 'Relatórios avançados'],
+        ctaLabel: 'Falar com vendas', ctaLink: '/cliente', highlighted: true, badge: 'Mais popular' },
+      { name: 'Enterprise', description: 'Operação completa', priceMonthly: '599', priceAnnual: '499', priceCurrency: 'R$', priceSuffix: '/mês',
+        features: ['Tudo do Pro', 'Pontos de venda ilimitados', 'API dedicada', 'Gerente de conta', 'SLA 99.9%'],
+        ctaLabel: 'Agendar reunião', ctaLink: '/cliente' },
+    ],
+  };
+
+  // ── DEMO_FORM — campos mais comuns já configurados
+  if (type === 'demo_form') return {
+    ...b,
+    formTitle: 'Agendar uma demonstração',
+    formDescription: 'Veja como o Unimaxx funciona na prática. Sem compromisso.',
+    colorTheme: 'light',
+    formLayout: 'split',
+    formBenefits: ['Demo personalizada para seu segmento', 'Sem compromisso de contratação', 'Resposta em até 1 dia útil'],
+    formSubmitLabel: 'Quero ver na prática',
+    formSuccessTitle: '✅ Recebemos seu contato!',
+    formSuccessMessage: 'Nossa equipe vai te ligar em até 1 dia útil.',
+    formApiEndpoint: '/api/leads',
+    formFields: [
+      { name: 'name', label: 'Nome completo', type: 'text', placeholder: 'Como você se chama?', required: true },
+      { name: 'email', label: 'E-mail', type: 'email', placeholder: 'voce@empresa.com.br', required: true },
+      { name: 'phone', label: 'WhatsApp', type: 'tel', placeholder: '(00) 00000-0000', required: true },
+      { name: 'company', label: 'Empresa', type: 'text', placeholder: 'Nome da sua empresa', required: false },
+      { name: 'segment', label: 'Segmento', type: 'select', options: ['Moda', 'Alimentação', 'Varejo Geral', 'E-commerce', 'Outro'], required: false, fullWidth: true },
+      { name: 'message', label: 'Como podemos ajudar?', type: 'textarea', placeholder: 'Conte um pouco sobre seu negócio…', required: false, fullWidth: true },
+    ],
+  };
+
+  // ── TEAM
+  if (type === 'team') return {
+    ...b,
+    title: 'Nossa equipe',
+    subtitle: 'Pessoas que fazem o Unimaxx acontecer.',
+    colorTheme: 'light',
+    teamLayout: 'grid',
+    teamColumns: 3,
+    teamMembers: [
+      { name: 'Nome do Membro', role: 'Cargo · Diretoria', bio: 'Breve descrição da pessoa — anos de experiência, especialidade, etc.', photo: '', linkedin: '', email: '' },
+    ],
+  };
+
+  // ── TABS
+  if (type === 'tabs') return {
+    ...b,
+    title: 'Para cada tipo de operação',
+    subtitle: 'Veja como o Unimaxx se adapta ao seu negócio.',
+    colorTheme: 'light',
+    tabsOrientation: 'horizontal',
+    tabsItems: [
+      { label: 'Lojas Físicas', icon: '🏪', title: 'Pra quem vende presencialmente', description: 'Frente de caixa rápida, integração com balança, código de barras e fiscal automático.', bullets: ['PDV em 3 cliques', 'Compatível com qualquer impressora', 'Funciona offline'] },
+      { label: 'E-commerce', icon: '🛒', title: 'Pra quem vende online', description: 'Sincronia com seu site, marketplaces e ERP em tempo real.', bullets: ['Integração com Shopify, Nuvemshop, etc', 'Anti-fraude embutido', 'Cálculo de frete automático'] },
+      { label: 'Distribuição', icon: '🚛', title: 'Pra operações maiores', description: 'Multi-CD, transferência entre lojas, controle de transportadoras.', bullets: ['Lote de pedidos', 'Roteirização inteligente', 'NF-e em massa'] },
+    ],
+  };
+
+  // ── COMPARISON_TABLE
+  if (type === 'comparison_table') return {
+    ...b,
+    title: 'Por que escolher o Unimaxx',
+    subtitle: 'Compare com soluções alternativas do mercado.',
+    colorTheme: 'light',
+    comparisonShowCategories: true,
+    comparisonColumns: [
+      { name: 'Unimaxx', highlighted: true, badge: 'Nossa solução' },
+      { name: 'Concorrente A' },
+      { name: 'Planilha / Manual' },
+    ],
+    comparisonRows: [
+      { category: 'Funcionalidades', feature: 'PDV integrado com fiscal', values: [true, true, false] },
+      { category: 'Funcionalidades', feature: 'Multi-loja em tempo real', values: [true, false, false] },
+      { category: 'Funcionalidades', feature: 'Relatórios automáticos', values: [true, 'Limitado', false] },
+      { category: 'Suporte', feature: 'Atendimento humano 24/7', values: [true, false, false] },
+      { category: 'Suporte', feature: 'Implantação assistida', values: [true, 'Pago à parte', false] },
+      { category: 'Custos', feature: 'Sem taxa de setup', values: [true, false, true] },
+      { category: 'Custos', feature: 'Atualizações grátis', values: [true, false, '—'] },
+    ],
+  };
+
   return b;
 }
 
@@ -2604,6 +2704,410 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
     );
   }
 
+  // ════════════════════════════════════════════════════════════════════════
+  // PRICING — editor com array de planos, toggle anual, footnote
+  // ════════════════════════════════════════════════════════════════════════
+  if (block.type === 'pricing') {
+    const plans = block.pricingPlans || [];
+    const updatePlan = (i: number, patch: Partial<NonNullable<PageBlock['pricingPlans']>[number]>) => {
+      const next = [...plans]; next[i] = { ...next[i], ...patch };
+      set('pricingPlans', next);
+    };
+    return (
+      <div className="space-y-3">
+        <AppearanceControls />
+        <div><FL>Título da seção</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Planos para todo tamanho" className="h-9" /></div>
+        <div><FL>Subtítulo</FL><Input value={block.subtitle || ''} onChange={e => set('subtitle', e.target.value)} placeholder="Comece pequeno. Cresça quando quiser." className="h-9" /></div>
+
+        <div className="flex items-center justify-between p-3 rounded-xl bg-[#f5f5f7]">
+          <div>
+            <p className="text-[12px] font-semibold text-[#1d1d1f]">Toggle Mensal / Anual</p>
+            <p className="text-[11px] text-[#98989d]">Permite visitante comparar preços</p>
+          </div>
+          <Switch checked={block.pricingShowToggle !== false} onCheckedChange={v => set('pricingShowToggle', v)} />
+        </div>
+        <div><FL>Label do desconto anual</FL><Input value={block.pricingAnnualDiscountLabel || ''} onChange={e => set('pricingAnnualDiscountLabel', e.target.value)} placeholder="Economize 20%" className="h-9" /></div>
+        <div><FL>Texto fino abaixo dos planos (opcional)</FL><Textarea value={block.pricingFootnote || ''} onChange={e => set('pricingFootnote', e.target.value)} rows={2} className="resize-none text-[13px]" /></div>
+
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <FL>Planos ({plans.length})</FL>
+            <Button size="sm" variant="outline" onClick={() => set('pricingPlans', [...plans, { name: 'Novo Plano', priceMonthly: '0', priceCurrency: 'R$', priceSuffix: '/mês', features: [] }])}
+              className="h-7 text-[11px] gap-1">+ Adicionar plano</Button>
+          </div>
+          {plans.map((p, i) => (
+            <details key={i} className="rounded-xl border mb-2" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+              <summary className="cursor-pointer px-3 py-2.5 text-[12px] font-semibold flex items-center justify-between">
+                <span className="flex items-center gap-2">{p.highlighted && <Star size={11} className="text-orange-500" />} {p.name || '(sem nome)'}</span>
+                <span className="flex items-center gap-1">
+                  <button onClick={(e) => { e.preventDefault(); set('pricingPlans', plans.filter((_, j) => j !== i)); }}
+                    className="p-1 text-red-400 hover:text-red-600"><Trash2 size={12} /></button>
+                </span>
+              </summary>
+              <div className="p-3 space-y-2 border-t" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><FL>Nome</FL><Input value={p.name} onChange={e => updatePlan(i, { name: e.target.value })} className="h-8 text-[12px]" /></div>
+                  <div><FL>Descrição</FL><Input value={p.description || ''} onChange={e => updatePlan(i, { description: e.target.value })} placeholder="Para começar" className="h-8 text-[12px]" /></div>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div><FL>Moeda</FL><Input value={p.priceCurrency || 'R$'} onChange={e => updatePlan(i, { priceCurrency: e.target.value })} className="h-8 text-[12px]" /></div>
+                  <div><FL>Preço mensal</FL><Input value={p.priceMonthly} onChange={e => updatePlan(i, { priceMonthly: e.target.value })} placeholder="99" className="h-8 text-[12px]" /></div>
+                  <div><FL>Preço anual</FL><Input value={p.priceAnnual || ''} onChange={e => updatePlan(i, { priceAnnual: e.target.value })} placeholder="79" className="h-8 text-[12px]" /></div>
+                </div>
+                <div><FL>Sufixo do preço</FL><Input value={p.priceSuffix || '/mês'} onChange={e => updatePlan(i, { priceSuffix: e.target.value })} className="h-8 text-[12px]" /></div>
+                <div><FL hint="Uma feature por linha">Features (uma por linha)</FL>
+                  <Textarea value={(p.features || []).join('\n')} onChange={e => updatePlan(i, { features: e.target.value.split('\n').filter(Boolean) })} rows={4} className="text-[12px] resize-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><FL>Texto do botão</FL><Input value={p.ctaLabel || ''} onChange={e => updatePlan(i, { ctaLabel: e.target.value })} placeholder="Começar grátis" className="h-8 text-[12px]" /></div>
+                  <div><FL>Link do botão</FL><Input value={p.ctaLink || ''} onChange={e => updatePlan(i, { ctaLink: e.target.value })} placeholder="/cliente" className="h-8 text-[12px]" /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><FL>Badge (opcional)</FL><Input value={p.badge || ''} onChange={e => updatePlan(i, { badge: e.target.value })} placeholder="Mais popular" className="h-8 text-[12px]" /></div>
+                  <div><FL>Cor do tema (hex)</FL><Input value={p.color || ''} onChange={e => updatePlan(i, { color: e.target.value })} placeholder="#f97316" className="h-8 text-[12px] font-mono" /></div>
+                </div>
+                <label className="flex items-center gap-2 text-[12px] cursor-pointer pt-1">
+                  <input type="checkbox" checked={!!p.highlighted} onChange={e => updatePlan(i, { highlighted: e.target.checked })} />
+                  <span>Destacar este plano (escala + sombra)</span>
+                </label>
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // DEMO_FORM — editor com campos custom, success message, integração API
+  // ════════════════════════════════════════════════════════════════════════
+  if (block.type === 'demo_form') {
+    const fields = block.formFields || [];
+    const benefits = block.formBenefits || [];
+    const updateField = (i: number, patch: Partial<NonNullable<PageBlock['formFields']>[number]>) => {
+      const next = [...fields]; next[i] = { ...next[i], ...patch };
+      set('formFields', next);
+    };
+    return (
+      <div className="space-y-3">
+        <AppearanceControls />
+        <div><FL>Título do form</FL><Input value={block.formTitle || ''} onChange={e => set('formTitle', e.target.value)} placeholder="Agendar uma demonstração" className="h-9" /></div>
+        <div><FL>Descrição</FL><Textarea value={block.formDescription || ''} onChange={e => set('formDescription', e.target.value)} rows={2} className="resize-none text-[13px]" /></div>
+
+        <div><FL>Layout</FL>
+          <div className="grid grid-cols-2 gap-2">
+            {(['inline', 'split'] as const).map(l => (
+              <button key={l} onClick={() => set('formLayout', l)}
+                className="p-2 rounded-lg border text-[11px] font-medium transition"
+                style={{ borderColor: (block.formLayout || 'inline') === l ? '#f97316' : 'rgba(0,0,0,.1)', background: (block.formLayout || 'inline') === l ? '#fff7ed' : '#fff' }}>
+                {l === 'inline' ? 'Centralizado (form só)' : 'Split (benefícios + form)'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {(block.formLayout === 'split') && (
+          <div><FL hint="Uma por linha — aparece à esquerda do form">Benefícios (lista)</FL>
+            <Textarea value={benefits.join('\n')} onChange={e => set('formBenefits', e.target.value.split('\n').filter(Boolean))} rows={3} className="text-[12px] resize-none" />
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-2">
+          <div><FL>Texto do botão</FL><Input value={block.formSubmitLabel || ''} onChange={e => set('formSubmitLabel', e.target.value)} placeholder="Enviar" className="h-9" /></div>
+          <div><FL hint="Backend que recebe o POST">Endpoint API</FL><Input value={block.formApiEndpoint || ''} onChange={e => set('formApiEndpoint', e.target.value)} placeholder="/api/leads" className="h-9 font-mono text-[11px]" /></div>
+        </div>
+        <div><FL>Título de sucesso</FL><Input value={block.formSuccessTitle || ''} onChange={e => set('formSuccessTitle', e.target.value)} placeholder="✅ Recebemos seu contato!" className="h-9" /></div>
+        <div><FL>Mensagem de sucesso</FL><Textarea value={block.formSuccessMessage || ''} onChange={e => set('formSuccessMessage', e.target.value)} rows={2} className="resize-none text-[13px]" /></div>
+
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <FL>Campos do formulário ({fields.length})</FL>
+            <Button size="sm" variant="outline" onClick={() => set('formFields', [...fields, { name: `field${fields.length}`, label: 'Novo campo', type: 'text' }])}
+              className="h-7 text-[11px] gap-1">+ Adicionar</Button>
+          </div>
+          {fields.map((f, i) => (
+            <details key={i} className="rounded-xl border mb-2" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+              <summary className="cursor-pointer px-3 py-2.5 text-[12px] font-semibold flex items-center justify-between">
+                <span>{f.label || '(sem label)'} <span className="text-[10px] text-[#98989d] font-normal">· {f.type}</span></span>
+                <button onClick={(e) => { e.preventDefault(); set('formFields', fields.filter((_, j) => j !== i)); }}
+                  className="p-1 text-red-400 hover:text-red-600"><Trash2 size={12} /></button>
+              </summary>
+              <div className="p-3 space-y-2 border-t" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><FL hint="Chave enviada à API">Nome (key)</FL><Input value={f.name} onChange={e => updateField(i, { name: e.target.value.replace(/[^a-z0-9_]/gi, '') })} className="h-8 text-[12px] font-mono" /></div>
+                  <div><FL>Tipo</FL>
+                    <select value={f.type} onChange={e => updateField(i, { type: e.target.value as any })} className="w-full h-8 px-2 rounded border text-[12px]" style={{ borderColor: 'rgba(0,0,0,.1)' }}>
+                      <option value="text">Texto</option>
+                      <option value="email">Email</option>
+                      <option value="tel">Telefone</option>
+                      <option value="select">Seleção</option>
+                      <option value="textarea">Texto longo</option>
+                    </select>
+                  </div>
+                </div>
+                <div><FL>Label visível</FL><Input value={f.label} onChange={e => updateField(i, { label: e.target.value })} className="h-8 text-[12px]" /></div>
+                <div><FL>Placeholder</FL><Input value={f.placeholder || ''} onChange={e => updateField(i, { placeholder: e.target.value })} className="h-8 text-[12px]" /></div>
+                {f.type === 'select' && (
+                  <div><FL hint="Uma opção por linha">Opções</FL>
+                    <Textarea value={(f.options || []).join('\n')} onChange={e => updateField(i, { options: e.target.value.split('\n').filter(Boolean) })} rows={3} className="text-[12px] resize-none" />
+                  </div>
+                )}
+                <div className="flex gap-3 pt-1">
+                  <label className="flex items-center gap-1.5 text-[12px] cursor-pointer">
+                    <input type="checkbox" checked={!!f.required} onChange={e => updateField(i, { required: e.target.checked })} />
+                    <span>Obrigatório</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 text-[12px] cursor-pointer">
+                    <input type="checkbox" checked={!!f.fullWidth} onChange={e => updateField(i, { fullWidth: e.target.checked })} />
+                    <span>Largura total</span>
+                  </label>
+                </div>
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // TEAM — editor com array de membros
+  // ════════════════════════════════════════════════════════════════════════
+  if (block.type === 'team') {
+    const members = block.teamMembers || [];
+    const updateMember = (i: number, patch: Partial<NonNullable<PageBlock['teamMembers']>[number]>) => {
+      const next = [...members]; next[i] = { ...next[i], ...patch };
+      set('teamMembers', next);
+    };
+    return (
+      <div className="space-y-3">
+        <AppearanceControls />
+        <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} className="h-9" /></div>
+        <div><FL>Subtítulo</FL><Input value={block.subtitle || ''} onChange={e => set('subtitle', e.target.value)} className="h-9" /></div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div><FL>Layout</FL>
+            <select value={block.teamLayout || 'grid'} onChange={e => set('teamLayout', e.target.value as any)} className="w-full h-9 px-2 rounded-lg border text-[12px]" style={{ borderColor: 'rgba(0,0,0,.1)' }}>
+              <option value="grid">Grid (cards)</option>
+              <option value="list">Lista (horizontal)</option>
+            </select>
+          </div>
+          <div><FL>Colunas (grid)</FL>
+            <select value={block.teamColumns || 3} onChange={e => set('teamColumns', Number(e.target.value) as any)} className="w-full h-9 px-2 rounded-lg border text-[12px]" style={{ borderColor: 'rgba(0,0,0,.1)' }}>
+              <option value={2}>2 colunas</option>
+              <option value={3}>3 colunas</option>
+              <option value={4}>4 colunas</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <FL>Membros ({members.length})</FL>
+            <Button size="sm" variant="outline" onClick={() => set('teamMembers', [...members, { name: 'Novo membro', role: 'Cargo' }])}
+              className="h-7 text-[11px] gap-1">+ Adicionar</Button>
+          </div>
+          {members.map((m, i) => (
+            <details key={i} className="rounded-xl border mb-2" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+              <summary className="cursor-pointer px-3 py-2.5 text-[12px] font-semibold flex items-center justify-between">
+                <span>{m.name || '(sem nome)'} <span className="text-[10px] text-[#98989d] font-normal">· {m.role}</span></span>
+                <button onClick={(e) => { e.preventDefault(); set('teamMembers', members.filter((_, j) => j !== i)); }}
+                  className="p-1 text-red-400 hover:text-red-600"><Trash2 size={12} /></button>
+              </summary>
+              <div className="p-3 space-y-2 border-t" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><FL>Nome</FL><Input value={m.name} onChange={e => updateMember(i, { name: e.target.value })} className="h-8 text-[12px]" /></div>
+                  <div><FL>Cargo / função</FL><Input value={m.role} onChange={e => updateMember(i, { role: e.target.value })} className="h-8 text-[12px]" /></div>
+                </div>
+                <div><FL>Bio curta</FL><Textarea value={m.bio || ''} onChange={e => updateMember(i, { bio: e.target.value })} rows={2} className="text-[12px] resize-none" /></div>
+                <div><FL hint="URL da foto (upload ou link). Se vazio, mostra iniciais.">Foto</FL><Input value={m.photo || ''} onChange={e => updateMember(i, { photo: e.target.value })} placeholder="/uploads/avatar.jpg ou https://..." className="h-8 text-[12px]" /></div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div><FL>LinkedIn</FL><Input value={m.linkedin || ''} onChange={e => updateMember(i, { linkedin: e.target.value })} placeholder="https://linkedin.com/in/..." className="h-8 text-[11px]" /></div>
+                  <div><FL>X / Twitter</FL><Input value={m.twitter || ''} onChange={e => updateMember(i, { twitter: e.target.value })} placeholder="https://x.com/..." className="h-8 text-[11px]" /></div>
+                  <div><FL>Email</FL><Input value={m.email || ''} onChange={e => updateMember(i, { email: e.target.value })} placeholder="email@empresa.com" className="h-8 text-[11px]" /></div>
+                </div>
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // TABS — editor com array de abas
+  // ════════════════════════════════════════════════════════════════════════
+  if (block.type === 'tabs') {
+    const tabs = block.tabsItems || [];
+    const updateTab = (i: number, patch: Partial<NonNullable<PageBlock['tabsItems']>[number]>) => {
+      const next = [...tabs]; next[i] = { ...next[i], ...patch };
+      set('tabsItems', next);
+    };
+    return (
+      <div className="space-y-3">
+        <AppearanceControls />
+        <div><FL>Título da seção</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} className="h-9" /></div>
+        <div><FL>Subtítulo</FL><Input value={block.subtitle || ''} onChange={e => set('subtitle', e.target.value)} className="h-9" /></div>
+
+        <div><FL>Orientação</FL>
+          <div className="grid grid-cols-2 gap-2">
+            {(['horizontal', 'vertical'] as const).map(o => (
+              <button key={o} onClick={() => set('tabsOrientation', o)}
+                className="p-2 rounded-lg border text-[11px] font-medium transition capitalize"
+                style={{ borderColor: (block.tabsOrientation || 'horizontal') === o ? '#f97316' : 'rgba(0,0,0,.1)', background: (block.tabsOrientation || 'horizontal') === o ? '#fff7ed' : '#fff' }}>
+                {o === 'horizontal' ? '↔ Horizontal' : '↕ Vertical'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <FL>Abas ({tabs.length})</FL>
+            <Button size="sm" variant="outline" onClick={() => set('tabsItems', [...tabs, { label: 'Nova aba', title: '', description: '' }])}
+              className="h-7 text-[11px] gap-1">+ Adicionar</Button>
+          </div>
+          {tabs.map((tab, i) => (
+            <details key={i} className="rounded-xl border mb-2" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+              <summary className="cursor-pointer px-3 py-2.5 text-[12px] font-semibold flex items-center justify-between">
+                <span className="flex items-center gap-2">{tab.icon} {tab.label || '(sem nome)'}</span>
+                <button onClick={(e) => { e.preventDefault(); set('tabsItems', tabs.filter((_, j) => j !== i)); }}
+                  className="p-1 text-red-400 hover:text-red-600"><Trash2 size={12} /></button>
+              </summary>
+              <div className="p-3 space-y-2 border-t" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><FL>Label (texto da aba)</FL><Input value={tab.label} onChange={e => updateTab(i, { label: e.target.value })} className="h-8 text-[12px]" /></div>
+                  <div><FL>Ícone (emoji opcional)</FL><Input value={tab.icon || ''} onChange={e => updateTab(i, { icon: e.target.value })} placeholder="🏪" className="h-8 text-[12px]" /></div>
+                </div>
+                <div><FL>Título do painel</FL><Input value={tab.title || ''} onChange={e => updateTab(i, { title: e.target.value })} className="h-8 text-[12px]" /></div>
+                <div><FL>Descrição</FL><Textarea value={tab.description || ''} onChange={e => updateTab(i, { description: e.target.value })} rows={3} className="text-[12px] resize-none" /></div>
+                <div><FL hint="Um por linha">Bullets (lista de pontos)</FL>
+                  <Textarea value={(tab.bullets || []).join('\n')} onChange={e => updateTab(i, { bullets: e.target.value.split('\n').filter(Boolean) })} rows={3} className="text-[12px] resize-none" />
+                </div>
+                <div><FL>Imagem (URL)</FL><Input value={tab.imageUrl || ''} onChange={e => updateTab(i, { imageUrl: e.target.value })} placeholder="/uploads/img.jpg" className="h-8 text-[12px]" /></div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><FL>Texto do botão</FL><Input value={tab.ctaLabel || ''} onChange={e => updateTab(i, { ctaLabel: e.target.value })} placeholder="Saiba mais" className="h-8 text-[12px]" /></div>
+                  <div><FL>Link</FL><Input value={tab.ctaLink || ''} onChange={e => updateTab(i, { ctaLink: e.target.value })} placeholder="/cliente" className="h-8 text-[12px]" /></div>
+                </div>
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // COMPARISON_TABLE — editor com colunas + linhas
+  // ════════════════════════════════════════════════════════════════════════
+  if (block.type === 'comparison_table') {
+    const cols = block.comparisonColumns || [];
+    const rows = block.comparisonRows || [];
+    const updateCol = (i: number, patch: Partial<NonNullable<PageBlock['comparisonColumns']>[number]>) => {
+      const next = [...cols]; next[i] = { ...next[i], ...patch };
+      set('comparisonColumns', next);
+    };
+    const updateRow = (i: number, patch: Partial<NonNullable<PageBlock['comparisonRows']>[number]>) => {
+      const next = [...rows]; next[i] = { ...next[i], ...patch };
+      set('comparisonRows', next);
+    };
+    const updateRowValue = (rowIdx: number, colIdx: number, value: boolean | string) => {
+      const row = rows[rowIdx]; if (!row) return;
+      const values = [...row.values]; values[colIdx] = value;
+      updateRow(rowIdx, { values });
+    };
+    return (
+      <div className="space-y-3">
+        <AppearanceControls />
+        <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} className="h-9" /></div>
+        <div><FL>Subtítulo</FL><Input value={block.subtitle || ''} onChange={e => set('subtitle', e.target.value)} className="h-9" /></div>
+
+        <div className="flex items-center justify-between p-3 rounded-xl bg-[#f5f5f7]">
+          <div>
+            <p className="text-[12px] font-semibold text-[#1d1d1f]">Agrupar por categoria</p>
+            <p className="text-[11px] text-[#98989d]">Mostra headers das categorias entre linhas</p>
+          </div>
+          <Switch checked={block.comparisonShowCategories !== false} onCheckedChange={v => set('comparisonShowCategories', v)} />
+        </div>
+
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <FL>Colunas / produtos ({cols.length})</FL>
+            <Button size="sm" variant="outline"
+              onClick={() => {
+                const newCols = [...cols, { name: 'Nova coluna' }];
+                set('comparisonColumns', newCols);
+                set('comparisonRows', rows.map(r => ({ ...r, values: [...r.values, false] })));
+              }}
+              className="h-7 text-[11px] gap-1">+ Coluna</Button>
+          </div>
+          {cols.map((c, i) => (
+            <div key={i} className="rounded-xl border p-2 mb-2" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+              <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+                <Input value={c.name} onChange={e => updateCol(i, { name: e.target.value })} className="h-8 text-[12px]" />
+                <button onClick={() => {
+                  set('comparisonColumns', cols.filter((_, j) => j !== i));
+                  set('comparisonRows', rows.map(r => ({ ...r, values: r.values.filter((_, j) => j !== i) })));
+                }} className="p-1.5 text-red-400 hover:text-red-600"><Trash2 size={13} /></button>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <Input value={c.badge || ''} onChange={e => updateCol(i, { badge: e.target.value })} placeholder="Badge (ex: 'Nossa solução')" className="h-7 text-[11px]" />
+                <label className="flex items-center gap-1.5 text-[11px] cursor-pointer px-2">
+                  <input type="checkbox" checked={!!c.highlighted} onChange={e => updateCol(i, { highlighted: e.target.checked })} />
+                  <span>Destacar coluna</span>
+                </label>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <FL>Linhas / features ({rows.length})</FL>
+            <Button size="sm" variant="outline"
+              onClick={() => set('comparisonRows', [...rows, { feature: 'Nova feature', values: cols.map(() => false) }])}
+              className="h-7 text-[11px] gap-1">+ Linha</Button>
+          </div>
+          {rows.map((row, ri) => (
+            <details key={ri} className="rounded-xl border mb-2" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+              <summary className="cursor-pointer px-3 py-2 text-[12px] font-semibold flex items-center justify-between">
+                <span>{row.feature || '(sem nome)'}</span>
+                <button onClick={(e) => { e.preventDefault(); set('comparisonRows', rows.filter((_, j) => j !== ri)); }}
+                  className="p-1 text-red-400 hover:text-red-600"><Trash2 size={12} /></button>
+              </summary>
+              <div className="p-3 space-y-2 border-t" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+                <div><FL>Feature</FL><Input value={row.feature} onChange={e => updateRow(ri, { feature: e.target.value })} className="h-8 text-[12px]" /></div>
+                <div><FL hint="Agrupa linhas com mesmo valor">Categoria (opcional)</FL><Input value={row.category || ''} onChange={e => updateRow(ri, { category: e.target.value })} placeholder="Ex: Funcionalidades, Suporte, Custos" className="h-8 text-[12px]" /></div>
+                <div><FL>Valor por coluna</FL>
+                  <div className="space-y-1.5">
+                    {cols.map((col, ci) => {
+                      const val = row.values[ci];
+                      const isBool = typeof val === 'boolean';
+                      return (
+                        <div key={ci} className="flex items-center gap-2">
+                          <span className="text-[11px] font-medium text-[#6e6e73] w-32 truncate">{col.name}</span>
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => updateRowValue(ri, ci, true)}
+                              className="px-2 h-7 rounded text-[11px] font-bold"
+                              style={{ background: val === true ? '#22c55e' : '#f5f5f7', color: val === true ? '#fff' : '#6e6e73' }}>✓</button>
+                            <button onClick={() => updateRowValue(ri, ci, false)}
+                              className="px-2 h-7 rounded text-[11px] font-bold"
+                              style={{ background: val === false ? '#ef4444' : '#f5f5f7', color: val === false ? '#fff' : '#6e6e73' }}>✗</button>
+                            <Input value={isBool ? '' : (val || '')} onChange={e => updateRowValue(ri, ci, e.target.value)} placeholder="Texto custom" className="h-7 text-[11px] flex-1" />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return <p className="text-[12px] text-[#98989d]">Sem editor para este tipo.</p>;
 }
 
@@ -2835,12 +3339,43 @@ export function PageBuilder({
       </div>
 
       {/* Center: Preview Canvas */}
-      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        {/* Canvas Header / Device Switcher */}
-        <div style={{ height: 56, background: '#fff', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexShrink: 0 }}>
-          <button onClick={() => setPreviewMode('desktop')} style={{ padding: '8px', borderRadius: '8px', background: previewMode === 'desktop' ? '#f1f5f9' : 'transparent', border: 'none', cursor: 'pointer', color: previewMode === 'desktop' ? '#2563eb' : '#64748b' }}><Monitor size={18} /></button>
-          <button onClick={() => setPreviewMode('tablet')} style={{ padding: '8px', borderRadius: '8px', background: previewMode === 'tablet' ? '#f1f5f9' : 'transparent', border: 'none', cursor: 'pointer', color: previewMode === 'tablet' ? '#2563eb' : '#64748b' }}><Tablet size={18} /></button>
-          <button onClick={() => setPreviewMode('mobile')} style={{ padding: '8px', borderRadius: '8px', background: previewMode === 'mobile' ? '#f1f5f9' : 'transparent', border: 'none', cursor: 'pointer', color: previewMode === 'mobile' ? '#2563eb' : '#64748b' }}><MobileIcon size={18} /></button>
+      {/* IMPORTANTE: container externo NÃO scrolla (overflow:hidden + minHeight:0 pra
+          flex respeitar limite). Só o body interno scrolla — caso contrário o
+          scroll fica disputado entre dois containers e o user não consegue rolar. */}
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        {/* Canvas Header / Device Switcher — viewport toggle + label de largura */}
+        <div style={{ height: 56, background: '#fff', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexShrink: 0, position: 'relative' }}>
+          {([
+            { mode: 'desktop', icon: Monitor, label: 'Desktop', width: '100%', widthLabel: '1280+' },
+            { mode: 'tablet', icon: Tablet, label: 'Tablet', width: '768px', widthLabel: '768px' },
+            { mode: 'mobile', icon: MobileIcon, label: 'Mobile', width: '375px', widthLabel: '375px' },
+          ] as const).map(({ mode, icon: Icon, label, widthLabel }) => {
+            const active = previewMode === mode;
+            return (
+              <button key={mode} onClick={() => setPreviewMode(mode)} title={`${label} (${widthLabel})`}
+                style={{
+                  padding: '6px 12px', borderRadius: 8, gap: 6,
+                  background: active ? '#eff6ff' : 'transparent',
+                  border: '1px solid', borderColor: active ? '#bfdbfe' : 'transparent',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center',
+                  color: active ? '#2563eb' : '#64748b', fontSize: 12, fontWeight: 600,
+                  transition: 'all .15s',
+                }}>
+                <Icon size={15} />
+                <span>{label}</span>
+                {active && (
+                  <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: '#dbeafe', color: '#1e40af', fontFamily: 'monospace' }}>
+                    {widthLabel}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          {/* Indicador "ao vivo" — confirma que mudanças são refletidas em tempo real */}
+          <div style={{ position: 'absolute', right: 16, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#64748b' }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 0 3px rgba(34,197,94,.15)' }} />
+            <span>Preview ao vivo</span>
+          </div>
         </div>
 
         <div style={{ flex: 1, padding: '40px 20px', overflowY: 'auto', display: 'flex', justifyContent: 'center' }}>

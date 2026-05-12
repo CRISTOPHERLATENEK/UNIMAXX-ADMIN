@@ -15,6 +15,7 @@ import type { PageBlock, PageTheme } from './PageBuilder';
 import { DEFAULT_THEME } from './PageBuilder';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
@@ -669,16 +670,19 @@ export function GenericPagesManager() {
       )}
 
       {!loading && filtered.length === 0 && (
-        <div className="text-center py-16 border-2 border-dashed rounded-2xl" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
-          <Globe style={{ width: 48, height: 48, color: '#c7c7cc', margin: '0 auto 16px' }} />
-          <p className="font-medium mb-1" style={{ color: '#6e6e73' }}>
-            {search ? 'Nenhuma página encontrada' : 'Nenhuma página criada ainda'}
-          </p>
-          {!search && (
-            <Button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }} variant="outline" className="gap-2 mt-4">
-              <Plus style={{ width: 15, height: 15 }} /> Criar primeira página
-            </Button>
-          )}
+        <div className="bg-white rounded-2xl border" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
+          <AdminEmptyState
+            icon={<Globe size={28} />}
+            title={search ? 'Nenhuma página encontrada' : 'Nenhuma página criada ainda'}
+            description={search
+              ? `Sua busca por "${search}" não retornou resultados.`
+              : 'Páginas extras (Sobre, FAQ, Termos, etc) ficam aqui. Use blocos visuais para montar cada uma.'}
+            action={!search && (
+              <Button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }} variant="outline" className="gap-2">
+                <Plus style={{ width: 15, height: 15 }} /> Criar primeira página
+              </Button>
+            )}
+          />
         </div>
       )}
 

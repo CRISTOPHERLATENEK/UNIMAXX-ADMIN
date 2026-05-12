@@ -105,7 +105,7 @@ export default function GenericPageView() {
       <Header />
       {blocks.length > 0
         ? groups.map((g, gi) => {
-            if (g.kind === 'single') return <BlockRenderer key={g.block.id || `single-${gi}`} block={g.block} t={DEFAULT_T} />;
+            if (g.kind === 'single') return <BlockRenderer key={g.block.id || `single-${gi}`} block={g.block} t={DEFAULT_T} isFirstBlock={gi === 0} />;
             const isImage = g.bgType === 'image';
             return (
               <div key={`pg-${gi}`} style={{ position: 'relative' }}>
@@ -118,7 +118,7 @@ export default function GenericPageView() {
                   opacity: g.opacity,
                 }} />
                 <div style={{ position: 'relative', zIndex: 1 }}>
-                  {g.blocks.map((block: PageBlock, bi: number) => <BlockRenderer key={block.id || `block-${gi}-${bi}`} block={block} t={DEFAULT_T} />)}
+                  {g.blocks.map((block: PageBlock, bi: number) => <BlockRenderer key={block.id || `block-${gi}-${bi}`} block={block} t={DEFAULT_T} isFirstBlock={gi === 0 && bi === 0} />)}
                 </div>
               </div>
             );

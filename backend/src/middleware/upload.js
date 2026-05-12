@@ -10,6 +10,13 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 let sharp;
 try { sharp = require('sharp'); } catch { sharp = null; }
 
+// file-type verifica o magic-number do arquivo (assinatura nos primeiros bytes),
+// não confia no MIME enviado pelo cliente. Defesa contra upload de exe/script
+// renomeado pra .png. v16 da lib é CommonJS — ideal pro nosso setup.
+const fileType = require('file-type');
+
+const ALLOWED_MIMES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+
 // memoryStorage para processar com Sharp antes de gravar no disco
 const storage = multer.memoryStorage();
 
@@ -17,12 +24,29 @@ const upload = multer({
   storage,
   limits: { fileSize: MAX_UPLOAD_SIZE },
   fileFilter: (req, file, cb) => {
-    const allowed = ['image/png', 'image/jpeg', 'image/webp'];
-    if (!allowed.includes(file.mimetype))
-      return cb(new Error('Tipo não permitido. Envie PNG/JPG/WEBP.'));
+    // Primeira camada: MIME declarado pelo cliente (rápido, mas spoofable)
+    if (!ALLOWED_MIMES.includes(file.mimetype))
+      return cb(new Error('Tipo não permitido. Envie PNG/JPG/WEBP/GIF.'));
     cb(null, true);
   },
 });
+
+/**
+ * verifyMagicNumber(buffer)
+ * Verifica os primeiros bytes do arquivo para confirmar que é REALMENTE imagem.
+ * Lança erro se o magic-number não corresponder a uma imagem permitida.
+ * Use depois do multer, antes de gravar no disco.
+ */
+async function verifyMagicNumber(buffer) {
+  const detected = await fileType.fromBuffer(buffer);
+  if (!detected) {
+    throw new Error('Não foi possível identificar o tipo do arquivo. Apenas PNG/JPG/WEBP/GIF são aceitos.');
+  }
+  if (!ALLOWED_MIMES.includes(detected.mime)) {
+    throw new Error(`Tipo de arquivo "${detected.mime}" não permitido. Envie PNG/JPG/WEBP/GIF.`);
+  }
+  return detected;
+}
 
 /**
  * processImage(buffer, originalName)
@@ -36,6 +60,9 @@ const upload = multer({
  * Sem Sharp: grava o buffer bruto e retorna variants: null.
  */
 async function processImage(buffer, originalName) {
+  // Verifica magic-number ANTES de gravar — dispara erro se não for imagem real.
+  await verifyMagicNumber(buffer);
+
   const baseName = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
 
   if (!sharp) {

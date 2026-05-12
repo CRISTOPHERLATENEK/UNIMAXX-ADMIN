@@ -45,8 +45,8 @@ if (typeof document !== 'undefined' && !document.getElementById('seg-page-style'
   s.textContent = `
     .seg-card {
       position: relative;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: var(--s1);
+      border: 1px solid var(--b1);
       border-radius: 20px;
       padding: 32px 28px;
       cursor: pointer;
@@ -178,7 +178,7 @@ function Segmentos() {
       <PageBanner page="segmentos" fallback={heroFallback} dark />
 
       {/* Stats strip */}
-      <div style={{ background: '#fff', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' }}>
+      <div style={{ background: 'var(--s1)', borderTop: '1px solid var(--b1)', borderBottom: '1px solid var(--b1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-wrap gap-8 items-center justify-between">
             {[
@@ -208,13 +208,13 @@ function Segmentos() {
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Explore os segmentos
             </span>
-            <div className="h-px flex-1" style={{ background: '#e5e7eb' }} />
+            <div className="h-px flex-1" style={{ background: 'var(--b1)' }} />
           </div>
 
           {segments.length === 0 ? (
             <div className="text-center py-32">
               <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6"
-                style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}>
+                style={{ background: 'var(--s2)', border: '1px solid var(--b1)' }}>
                 <HelpCircle size={32} className="text-slate-300" />
               </div>
               <p className="text-slate-400 text-lg" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -247,7 +247,7 @@ function Segmentos() {
                     }}
                     onMouseLeave={(e) => {
                       const el = e.currentTarget as HTMLElement;
-                      el.style.background = '#ffffff';
+                      el.style.background = 'var(--s1)';
                       el.style.boxShadow = 'none';
                     }}
                   >

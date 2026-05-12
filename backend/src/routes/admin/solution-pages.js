@@ -29,7 +29,7 @@ function buildValues(b) {
 }
 
 router.get('/', (req, res) => {
-  db.all('SELECT id,slug,title,icon,color_theme,meta_title,meta_description,is_active,blocks_json,created_at,updated_at FROM solution_pages ORDER BY id DESC', [], (err, rows) => {
+  db.all('SELECT id,slug,title,icon,color_theme,meta_title,meta_description,is_active,blocks_json,created_at,updated_at FROM solution_pages WHERE deleted_at IS NULL ORDER BY id DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro ao listar páginas' });
     res.json((rows || []).map(parseRow));
   });
@@ -71,11 +71,11 @@ router.put('/:id', validateParams(numericIdParamSchema), validateBody(pageSchema
 });
 
 router.delete('/:id', validateParams(numericIdParamSchema), (req, res) => {
-  db.run('DELETE FROM solution_pages WHERE id=?', [req.validatedParams.id], async function (err) {
+  db.run('UPDATE solution_pages SET deleted_at = CURRENT_TIMESTAMP WHERE id=? AND deleted_at IS NULL', [req.validatedParams.id], async function (err) {
     if (err) return res.status(500).json({ error: 'Erro' });
     if (this.changes === 0) return res.status(404).json({ error: 'Página não encontrada' });
-    await logAudit(req, { userId: req.user?.id, action: 'delete_solution_page', entity: 'solution_pages', entityId: req.validatedParams.id });
-    res.json({ message: 'Excluído' });
+    await logAudit(req, { userId: req.user?.id, action: 'soft_delete_solution_page', entity: 'solution_pages', entityId: req.validatedParams.id });
+    res.json({ message: 'Movido para a Lixeira', soft: true });
   });
 });
 

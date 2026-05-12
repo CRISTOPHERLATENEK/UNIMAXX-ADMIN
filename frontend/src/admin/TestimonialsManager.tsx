@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import type React from 'react';
 
-import { Plus, Pencil, Trash2, Star, Eye, EyeOff, X, Save, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, Eye, EyeOff, X, Save, Upload, MessageSquareQuote } from 'lucide-react';
 import { ImageUploadField, SPECS } from '@/components/ImageUploadField';
 import { useData } from '@/context/DataContext';
 import { toast } from 'sonner';
 import type { Testimonial } from '@/types';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 const empty = (): Partial<Testimonial> => ({
   author_name: '', author_role: '', author_company: '', author_photo: '',
@@ -67,12 +68,25 @@ export function TestimonialsManager() {
         </button>
       </div>
 
+      {testimonials.length === 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100">
+          <AdminEmptyState
+            icon={<MessageSquareQuote size={28} />}
+            title="Nenhum depoimento cadastrado"
+            description="Depoimentos aparecem na home e dão prova social. Comece adicionando o primeiro."
+            action={
+              <button onClick={() => setEditing({ ...empty(), order_num: testimonials.length })}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold"
+                style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}>
+                <Plus className="w-4 h-4" /> Adicionar Depoimento
+              </button>
+            }
+          />
+        </div>
+      )}
+      {testimonials.length > 0 && (
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {testimonials.length === 0 ? (
-          <div className="col-span-3 py-16 text-center bg-white rounded-2xl border border-gray-100 text-gray-400">
-            <p className="text-sm">Nenhum depoimento cadastrado.</p>
-          </div>
-        ) : testimonials.map((t) => (
+        {testimonials.map((t) => (
           <div key={t.id} className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col gap-4">
             {/* Stars */}
             <div className="flex gap-0.5">
@@ -118,6 +132,7 @@ export function TestimonialsManager() {
           </div>
         ))}
       </div>
+      )}
 
       {/* Modal */}
       {editing && (

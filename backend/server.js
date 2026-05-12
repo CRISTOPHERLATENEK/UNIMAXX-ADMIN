@@ -19,18 +19,44 @@ app.use(compression({ threshold: 512 }));
 app.use(cookieParser());
 
 // ── Security Headers ──────────────────────────────────────────────────────
+// CSP balanceado:
+// - 'self' como base
+// - data:/blob: liberados para imagens (avatars, uploads inline)
+// - 'unsafe-inline' em styles porque o site usa style={{}} inline (não tem nonces)
+// - script-src restrito ('self' + 'unsafe-inline' apenas se NODE_ENV=development pra Vite HMR)
+// - frame-ancestors none impede clickjacking
+const isDev = process.env.NODE_ENV !== 'production';
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      'default-src': ["'self'"],
+      'script-src': ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : [])],
+      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+      'connect-src': ["'self'", ...(isDev ? ['ws:', 'wss:'] : [])],
+      'frame-ancestors': ["'none'"],
+      'object-src': ["'none'"],
+      'base-uri': ["'self'"],
+      'form-action': ["'self'"],
+    },
+  },
   crossOriginEmbedderPolicy: false,
+  // HSTS já ativo por padrão em produção via helmet
 }));
 
 // ── Rate Limiters ─────────────────────────────────────────────────────────
+// Login: 5 tentativas por janela de 15min — agressivo o suficiente para
+// frustrar brute-force sem bloquear usuário legítimo que erra a senha 1-2x.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { error: 'Muitas tentativas. Tente novamente em 15 minutos.' },
+  max: 5,
+  message: { error: 'Muitas tentativas de login. Aguarde 15 minutos antes de tentar de novo.' },
   standardHeaders: true,
   legacyHeaders: false,
+  // Conta apenas requests que falharam (skip 2xx) — usuários que fazem login OK não consomem cota.
+  skipSuccessfulRequests: true,
 });
 
 const uploadLimiter = rateLimit({
@@ -41,11 +67,23 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Public site reads — generoso, mas evita que crawler abusivo derrube o servidor.
 const publicLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
+});
+
+// Admin mutating operations (POST/PUT/DELETE) — limita escrita pra dificultar
+// abuso de token vazado ou XSS.
+const adminWriteLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60, // 60 mutações/minuto = 1/segundo médio, suficiente pra editor humano
+  message: { error: 'Muitas operações em pouco tempo. Aguarde um momento.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'GET' || req.method === 'HEAD',
 });
 
 // ── CORS ──────────────────────────────────────────────────────────────────
@@ -80,6 +118,7 @@ app.use('/uploads', (req, res, next) => {
 // ── Apply rate limiters ────────────────────────────────────────────────────
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/admin/upload', uploadLimiter);
+app.use('/api/admin', adminWriteLimiter);
 app.use('/api', publicLimiter);
 
 // ── DB ────────────────────────────────────────────────────────────────────

@@ -9,17 +9,30 @@ const { audit } = require('../../middleware/auditLog');
 // Blacklist em memória para tokens invalidados no logout
 const tokenBlacklist = new Set();
 
+// Hash dummy pra mitigar timing attack — bcrypt em string aleatória sempre.
+// Custo: ~80ms por tentativa, mas evita que atacante descubra emails válidos
+// pelo tempo de resposta (sem user retornaria muito mais rápido que com user).
+const DUMMY_HASH = bcrypt.hashSync('this-is-a-dummy-hash-to-prevent-timing-attacks', 10);
+
 router.post('/login', (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: 'E-mail e senha são obrigatórios' });
 
   db.get('SELECT * FROM users WHERE email=?', [email], (err, user) => {
     if (err) return res.status(500).json({ error: 'Erro no servidor' });
-    if (!user) return res.status(401).json({ error: 'Credenciais inválidas' });
+
+    // Mitigação de timing attack: se user não existe, ainda fazemos um bcrypt
+    // fake pra que o tempo de resposta seja indistinguível.
+    if (!user) {
+      bcrypt.compareSync(password, DUMMY_HASH);
+      audit({ userId: null, action: 'LOGIN_FAILED', entity: 'user', details: { email, reason: 'user_not_found' }, ip: req.ip });
+      return res.status(401).json({ error: 'Credenciais inválidas' });
+    }
 
     // Check if account is locked
     if (user.locked_until && new Date(user.locked_until) > new Date()) {
       const minutesLeft = Math.ceil((new Date(user.locked_until) - new Date()) / 60000);
+      audit({ userId: user.id, action: 'LOGIN_BLOCKED', entity: 'user', entityId: user.id, details: { email, lockedUntil: user.locked_until }, ip: req.ip });
       return res.status(429).json({ error: `Conta bloqueada. Tente em ${minutesLeft} minuto(s).` });
     }
 
@@ -28,9 +41,11 @@ router.post('/login', (req, res) => {
       if (attempts >= 5) {
         const lockedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
         db.run('UPDATE users SET failed_attempts=?, locked_until=? WHERE id=?', [attempts, lockedUntil, user.id]);
+        audit({ userId: user.id, action: 'ACCOUNT_LOCKED', entity: 'user', entityId: user.id, details: { email, attempts, lockedUntil }, ip: req.ip });
         return res.status(429).json({ error: 'Conta bloqueada por 15 minutos após múltiplas tentativas inválidas.' });
       }
       db.run('UPDATE users SET failed_attempts=? WHERE id=?', [attempts, user.id]);
+      audit({ userId: user.id, action: 'LOGIN_FAILED', entity: 'user', entityId: user.id, details: { email, attempts, reason: 'wrong_password' }, ip: req.ip });
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 

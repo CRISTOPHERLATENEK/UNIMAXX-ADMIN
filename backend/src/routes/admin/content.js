@@ -70,13 +70,13 @@ router.get('/all-data', async (req, res) => {
     ] = await Promise.all([
       queryAll('SELECT * FROM site_settings'),
       queryAll('SELECT * FROM site_content'),
-      queryAll('SELECT * FROM solutions ORDER BY order_num'),
-      queryAll('SELECT * FROM segments ORDER BY order_num'),
-      queryAll('SELECT * FROM stats ORDER BY order_num'),
-      queryAll('SELECT * FROM banners ORDER BY page, order_num'),
-      queryAll('SELECT * FROM client_logos ORDER BY order_num'),
-      queryAll('SELECT * FROM testimonials ORDER BY order_num'),
-      queryAll('SELECT * FROM partners ORDER BY order_num'),
+      queryAll('SELECT * FROM solutions WHERE deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT * FROM segments WHERE deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT * FROM stats WHERE deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT * FROM banners WHERE deleted_at IS NULL ORDER BY page, order_num'),
+      queryAll('SELECT * FROM client_logos WHERE deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT * FROM testimonials WHERE deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT * FROM partners WHERE deleted_at IS NULL ORDER BY order_num'),
     ]);
 
     const settings = {};

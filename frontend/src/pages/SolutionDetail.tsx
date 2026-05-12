@@ -75,7 +75,7 @@ function BlockRenderer({ block, t }: { block: PageBlock; t: typeof THEME[string]
   const subCol = (isDark || isBrand) ? 'rgba(255,255,255,.65)' : '#6e6e73';
   const bgStyle = isDark ? { background: '#0a0a0c' }
     : isBrand ? { background: `linear-gradient(135deg,${t.from} 0%,${t.to} 100%)` }
-      : { background: '#f5f5f7' };
+      : { background: 'var(--s2)' };
 
   const hasAnim = block.animatedBg && block.animatedBg !== 'none';
   const inner = renderSolutionBlock({ block, t, textCol, subCol, bgStyle });
@@ -131,17 +131,17 @@ function renderSolutionBlock({ block, t, textCol, subCol, bgStyle }: {
       // ── Variante 2: Split — texto esquerda, imagem direita ───────────────────
       if (layout === 'split') {
         return (
-          <section className="relative overflow-hidden py-28 px-4 sm:px-6 lg:px-8 bg-white">
+          <section className="relative overflow-hidden py-28 px-4 sm:px-6 lg:px-8" style={{ background: 'var(--s0)' }}>
             <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse 50% 60% at 0% 50%,${t.from}08,transparent)` }} />
             <div className="relative max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
               <div>
                 {block.badge && <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-5" style={{ background: `${t.from}10`, color: t.from }}>{block.badge}</div>}
-                {block.title && <h1 className="font-black text-[#1d1d1f] mb-4 leading-tight" style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(2rem,4.5vw,3.5rem)', letterSpacing: '-0.04em' }}>{block.title}</h1>}
+                {block.title && <h1 className="font-black mb-4 leading-tight" style={{ fontFamily: "'Outfit',sans-serif", fontSize: 'clamp(2rem,4.5vw,3.5rem)', letterSpacing: '-0.04em', color: 'var(--t1)' }}>{block.title}</h1>}
                 {block.subtitle && <p className="text-lg font-semibold mb-4" style={{ color: t.from, fontFamily: "'Outfit',sans-serif" }}>{block.subtitle}</p>}
-                {block.description && <p className="text-[#6e6e73] leading-relaxed mb-10 max-w-lg">{block.description}</p>}
+                {block.description && <p className="leading-relaxed mb-10 max-w-lg" style={{ color: 'var(--t3)' }}>{block.description}</p>}
                 <div className="flex flex-col sm:flex-row gap-3">
                   {block.ctaLabel && <Link to={block.ctaLink || '/cliente'}><button className="flex items-center gap-2.5 px-7 py-3.5 rounded-2xl font-bold text-[15px] text-white transition hover:scale-[1.02]" style={{ background: `linear-gradient(135deg,${t.from},${t.to})`, boxShadow: `0 10px 28px ${t.from}30` }}><Phone className="w-5 h-5" />{block.ctaLabel}</button></Link>}
-                  {block.secondaryLabel && <Link to={block.secondaryLink || '/solucoes'}><button className="flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-[15px] text-[#6e6e73] transition hover:text-[#1d1d1f]" style={{ background: '#f5f5f7', border: '1px solid rgba(0,0,0,.08)' }}>{block.secondaryLabel}<ArrowRight className="w-4 h-4" /></button></Link>}
+                  {block.secondaryLabel && <Link to={block.secondaryLink || '/solucoes'}><button className="flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-[15px] transition" style={{ background: 'var(--s2)', border: '1px solid var(--b1)', color: 'var(--t2)' }}>{block.secondaryLabel}<ArrowRight className="w-4 h-4" /></button></Link>}
                 </div>
               </div>
               <div className="hidden lg:block">
@@ -364,14 +364,14 @@ function renderSolutionBlock({ block, t, textCol, subCol, bgStyle }: {
     case 'steps':
       return (
         <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="bg-white rounded-3xl p-10 shadow-sm" style={{ border: '1px solid rgba(0,0,0,.06)' }}>
+          <div className="bg-white rounded-3xl p-10 shadow-sm" style={{ border: '1px solid var(--b1)' }}>
             {block.title && <div className="text-center mb-10"><h2 className="text-[clamp(1.6rem,3vw,2.5rem)] font-bold text-[#1d1d1f]" style={{ fontFamily: "'Outfit',sans-serif" }}>{block.title}</h2></div>}
             <div className="max-w-2xl mx-auto space-y-5">
               {(block.steps || []).map((step, i) => (
                 <div key={i} className="flex gap-5 items-start">
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 font-bold text-lg"
                     style={{ background: `linear-gradient(135deg,${t.from},${t.to})`, color: '#fff', fontFamily: "'Outfit',sans-serif", boxShadow: `0 8px 24px ${t.glow}` }}>{i + 1}</div>
-                  <div className="flex-1 pt-2 pb-5 border-b last:border-0" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+                  <div className="flex-1 pt-2 pb-5 border-b last:border-0" style={{ borderColor: 'var(--b1)' }}>
                     <h3 className="font-bold text-[#1d1d1f] text-base mb-1" style={{ fontFamily: "'Outfit',sans-serif" }}>{step.title}</h3>
                     <p className="text-[#6e6e73] text-sm leading-relaxed">{step.description}</p>
                   </div>
@@ -384,7 +384,7 @@ function renderSolutionBlock({ block, t, textCol, subCol, bgStyle }: {
 
     case 'stats':
       return (
-        <div className="bg-white border-b" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+        <div className="bg-white border-b" style={{ borderColor: 'var(--b1)' }}>
           <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6">
             {(block.stats || []).map((s, i) => (
               <div key={i} className="text-center">
@@ -457,7 +457,7 @@ function renderSolutionBlock({ block, t, textCol, subCol, bgStyle }: {
     case 'text':
       return (
         <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="bg-white rounded-3xl p-10 shadow-sm" style={{ border: '1px solid rgba(0,0,0,.06)' }}>
+          <div className="bg-white rounded-3xl p-10 shadow-sm" style={{ border: '1px solid var(--b1)' }}>
             {block.title && <h2 className="text-[clamp(1.4rem,2.5vw,2rem)] font-bold text-[#1d1d1f] mb-4" style={{ fontFamily: "'Outfit',sans-serif" }}>{block.title}</h2>}
             {block.description && <p className="text-[#6e6e73] leading-relaxed text-[15px] whitespace-pre-wrap">{block.description}</p>}
           </div>
@@ -468,8 +468,8 @@ function renderSolutionBlock({ block, t, textCol, subCol, bgStyle }: {
       if (!block.html) return null;
       return (
         <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="bg-white rounded-3xl p-10 shadow-sm prose prose-base max-w-none"
-            style={{ border: '1px solid rgba(0,0,0,.06)' }}
+          <div className="bg-white rounded-3xl p-10 shadow-sm prose prose-base dark:prose-invert max-w-none"
+            style={{ border: '1px solid var(--b1)' }}
             dangerouslySetInnerHTML={{ __html: block.html }} />
         </section>
       );
@@ -488,11 +488,11 @@ function renderSolutionBlock({ block, t, textCol, subCol, bgStyle }: {
       if (!(block.items || []).length) return null;
       return (
         <section className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="bg-white rounded-3xl p-10 shadow-sm" style={{ border: '1px solid rgba(0,0,0,.06)' }}>
+          <div className="bg-white rounded-3xl p-10 shadow-sm" style={{ border: '1px solid var(--b1)' }}>
             {block.title && <div className="text-center mb-8"><h2 className="text-[clamp(1.4rem,2.5vw,2.25rem)] font-bold text-[#1d1d1f]" style={{ fontFamily: "'Outfit',sans-serif" }}>{block.title}</h2></div>}
             <div className="flex flex-wrap gap-3 justify-center">
               {(block.items || []).map((item, i) => (
-                <span key={i} className="px-5 py-2.5 rounded-full text-[13px] font-semibold" style={{ background: '#f5f5f7', color: '#1d1d1f', border: '1px solid rgba(0,0,0,.07)' }}>{item}</span>
+                <span key={i} className="px-5 py-2.5 rounded-full text-[13px] font-semibold" style={{ background: 'var(--s2)', color: 'var(--t1)', border: '1px solid var(--b1)' }}>{item}</span>
               ))}
             </div>
           </div>
@@ -602,7 +602,7 @@ function FaqBlock({ block, t }: { block: PageBlock; t: typeof THEME[string] }) {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="bg-white rounded-3xl p-10 shadow-sm" style={{ border: '1px solid rgba(0,0,0,.06)' }}>
+      <div className="bg-white rounded-3xl p-10 shadow-sm" style={{ border: '1px solid var(--b1)' }}>
         {block.title && (
           <div className="text-center mb-10">
             <h2 className="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-[#1d1d1f]" style={{ fontFamily: "'Outfit',sans-serif" }}>{block.title}</h2>
@@ -611,9 +611,9 @@ function FaqBlock({ block, t }: { block: PageBlock; t: typeof THEME[string] }) {
         <div className="max-w-2xl mx-auto space-y-3">
           {(block.faq || []).map((faq, i) => (
             <div key={i} className="rounded-2xl overflow-hidden border transition-all"
-              style={{ borderColor: faqOpen === i ? `${t.from}35` : 'rgba(0,0,0,.07)' }}>
+              style={{ borderColor: faqOpen === i ? `${t.from}35` : 'var(--b1)' }}>
               <button className="w-full flex items-center justify-between px-6 py-5 text-left gap-4"
-                style={{ background: faqOpen === i ? `${t.from}06` : '#fff' }}
+                style={{ background: faqOpen === i ? `${t.from}0a` : 'var(--s1)' }}
                 onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
                 <span className="font-semibold text-[#1d1d1f] text-[15px]">{faq.question}</span>
                 <ChevronDown className="w-5 h-5 flex-shrink-0 transition-transform" style={{ color: t.from, transform: faqOpen === i ? 'rotate(180deg)' : 'none' }} />
@@ -648,7 +648,7 @@ export default function SolutionPageDetail() {
   }, [page]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--s0)' }}>
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 rounded-full border-2 border-gray-200 animate-spin" style={{ borderTopColor: '#f97316' }} />
         <p className="text-gray-400 text-sm">Carregando...</p>
@@ -658,7 +658,7 @@ export default function SolutionPageDetail() {
 
   if (error || !page) return (
     <><Header />
-      <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--s0)' }}>
         <div className="text-center max-w-md">
           <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-400" />
@@ -684,10 +684,10 @@ export default function SolutionPageDetail() {
     : [];
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]" style={{ fontFamily: "'DM Sans',sans-serif" }}>
+    <div className="min-h-screen" style={{ fontFamily: "'DM Sans',sans-serif", background: 'var(--s0)' }}>
       <Header />
       {blocks.length > 0
-        ? blocks.map((block) => <BlockRenderer key={block.id} block={block} t={t} />)
+        ? blocks.map((block, i) => <BlockRenderer key={block.id} block={block} t={t} isFirstBlock={i === 0} />)
         : (
           <div className="min-h-[60vh] flex items-center justify-center px-4">
             <div className="text-center max-w-md">

@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useBlockTypo } from '@/hooks/useBlockTypo';
+import { SafeImg } from '@/components/SafeImg';
 
 const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:3001/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
@@ -165,9 +166,11 @@ function HighlightBlock({ item, index }: { item: HighlightItem; index: number })
     >
       {image ? (
         <>
-          <img
+          <SafeImg
             src={image}
             alt={item.title || 'Destaque'}
+            placeholderMode="gradient"
+            placeholderColor={accent}
             style={{
               position: 'absolute',
               inset: 0,

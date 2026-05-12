@@ -13,6 +13,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { fetchSolutionPageBySlug } from '@/services/solutionPagesService';
 import type { SolutionPage } from '@/types';
 import { resolveImg } from '@/components/ImageUploadField';
+import { SafeImg } from '@/components/SafeImg';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Building2, Monitor, ShoppingCart, CreditCard, Truck, BarChart3,
@@ -48,10 +49,12 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
       <div className="sol-modal-sheet">
         {/* Hero */}
         <div style={{ position: 'relative', height: 200, flexShrink: 0 }}>
-          {photo
-            ? <img src={photo} alt={sol.title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg,${GRADIENTS[0][0]},${GRADIENTS[0][1]})` }} />
-          }
+          <SafeImg
+            src={photo}
+            alt={sol.title}
+            fallback={<div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg,${GRADIENTS[0][0]},${GRADIENTS[0][1]})` }} />}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.75) 0%,rgba(0,0,0,.1) 60%)' }} />
           <button onClick={onClose} className="sol-modal-close">
             <X style={{ width: 16, height: 16, color: '#fff' }} />
@@ -77,7 +80,7 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
               {((page as any)?.subtitle || (page as any)?.description || sol.description) && (
                 <div>
-                  {(page as any)?.subtitle && <p style={{ fontWeight: 700, color: '#1d1d1f', fontSize: 15, marginBottom: 6, fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>{(page as any).subtitle}</p>}
+                  {(page as any)?.subtitle && <p style={{ fontWeight: 700, color: 'var(--t1)', fontSize: 15, marginBottom: 6, fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>{(page as any).subtitle}</p>}
                   <p style={{ color: sol.card_body_color || '#6e6e73', fontSize: 14, lineHeight: 1.6, fontFamily: sol.card_font_body ? `'${sol.card_font_body}',sans-serif` : undefined }}>{(page as any)?.description || sol.description}</p>
                 </div>
               )}
@@ -86,23 +89,23 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
                   {(page as any).stats_json.slice(0, 4).map((s: any, i: number) => (
                     <div key={i} style={{ borderRadius: 16, padding: '14px 12px', textAlign: 'center', background: `${themeColor}08`, border: `1px solid ${themeColor}18` }}>
                       <p style={{ fontWeight: 700, fontSize: 22, marginBottom: 2, color: themeColor, fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>{s.value}</p>
-                      <p style={{ fontSize: 12, color: '#6e6e73' }}>{s.label}</p>
+                      <p style={{ fontSize: 12, color: 'var(--t3)' }}>{s.label}</p>
                     </div>
                   ))}
                 </div>
               )}
               {((page as any)?.features || sol.features)?.length > 0 && (
                 <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#98989d', marginBottom: 10 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--t4)', marginBottom: 10 }}>
                     {(page as any)?.features_title || 'Funcionalidades'}
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 8 }}>
                     {((page as any)?.features || sol.features).map((f: string, i: number) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: 12, borderRadius: 12, background: '#f5f5f7' }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: 12, borderRadius: 12, background: 'var(--s2)' }}>
                         <div style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1, background: `${themeColor}15` }}>
                           <Check style={{ width: 11, height: 11, color: themeColor }} />
                         </div>
-                        <span style={{ fontSize: 13, color: 'rgba(29,29,31,.8)', lineHeight: 1.4 }}>{f}</span>
+                        <span style={{ fontSize: 13, color: 'var(--t2)', lineHeight: 1.4 }}>{f}</span>
                       </div>
                     ))}
                   </div>
@@ -110,14 +113,14 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
               )}
               {((page as any)?.benefits?.length ?? 0) > 0 && (
                 <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#98989d', marginBottom: 10 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--t4)', marginBottom: 10 }}>
                     {(page as any)?.benefits_title || 'Resultados'}
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {(page as any)?.benefits?.map((b: any, i: number) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: `${themeColor}07`, border: `1px solid ${themeColor}15` }}>
                         <Star style={{ width: 14, height: 14, flexShrink: 0, color: themeColor, fill: themeColor }} />
-                        <span style={{ fontSize: 13, fontWeight: 500, color: '#1d1d1f' }}>{b}</span>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--t1)' }}>{b}</span>
                       </div>
                     ))}
                   </div>
@@ -125,10 +128,10 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
               )}
               {((page as any)?.integrations?.length ?? 0) > 0 && (
                 <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#98989d', marginBottom: 10 }}>Integrações</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--t4)', marginBottom: 10 }}>Integrações</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {(page as any)?.integrations?.map((int: any, i: number) => (
-                      <span key={i} style={{ padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 500, background: '#f5f5f7', color: '#1d1d1f' }}>{int}</span>
+                      <span key={i} style={{ padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 500, background: 'var(--s2)', color: 'var(--t1)' }}>{int}</span>
                     ))}
                   </div>
                 </div>
@@ -138,7 +141,7 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
         </div>
 
         {/* CTA */}
-        <div style={{ flexShrink: 0, padding: 16, display: 'flex', gap: 10, borderTop: '1px solid rgba(0,0,0,.06)' }}>
+        <div style={{ flexShrink: 0, padding: 16, display: 'flex', gap: 10, borderTop: '1px solid var(--b1)' }}>
           <Link to="/cliente" style={{ flex: 1 }} onClick={onClose}>
             <button style={{ width: '100%', padding: '12px 0', borderRadius: 16, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: themeColor, color: '#fff', border: 'none', cursor: 'pointer', boxShadow: `0 8px 20px ${themeColor}35` }}>
               <Phone style={{ width: 16, height: 16 }} />
@@ -146,7 +149,7 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
             </button>
           </Link>
           <button onClick={onViewPage}
-            style={{ flex: 1, padding: '12px 0', borderRadius: 16, fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#f5f5f7', color: '#1d1d1f', border: 'none', cursor: 'pointer' }}>
+            style={{ flex: 1, padding: '12px 0', borderRadius: 16, fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'var(--s2)', color: 'var(--t1)', border: 'none', cursor: 'pointer' }}>
             <ExternalLink style={{ width: 16, height: 16 }} /> Ver página completa
           </button>
         </div>
@@ -173,10 +176,12 @@ function SolCard({ sol, index, pc, onClick }: {
   return (
     <div className="sol-card" onClick={onClick}>
       <div className="sol-card-inner">
-        {photo
-          ? <img src={photo} alt={sol.title} className="sol-card-bg-img" />
-          : <div className="sol-card-bg-grad" style={{ background: `linear-gradient(165deg,${sol.card_accent_color ? cardPc + 'cc' : c1} 0%,${sol.card_accent_color ? cardPc + '88' : c2} 100%)` }} />
-        }
+        <SafeImg
+          src={photo}
+          alt={sol.title}
+          fallback={<div className="sol-card-bg-grad" style={{ background: `linear-gradient(165deg,${sol.card_accent_color ? cardPc + 'cc' : c1} 0%,${sol.card_accent_color ? cardPc + '88' : c2} 100%)` }} />}
+          className="sol-card-bg-img"
+        />
         <div className="sol-card-overlay" />
 
         {/* ícone — some no hover */}

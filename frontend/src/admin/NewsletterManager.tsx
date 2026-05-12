@@ -6,6 +6,7 @@ import {
   UserCheck, UserX, Users, TrendingUp, CheckCircle, X,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -180,15 +181,13 @@ export function NewsletterManager() {
               <RefreshCw size={20} className="animate-spin text-[#98989d]" />
             </div>
           ) : subscribers.length === 0 ? (
-            <div className="flex flex-col items-center py-16 text-center px-6">
-              <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center mb-4">
-                <Mail size={22} className="text-orange-400" />
-              </div>
-              <p className="font-semibold text-[#1d1d1f] mb-1">Nenhum inscrito</p>
-              <p className="text-sm text-[#98989d]">
-                {search ? 'Nenhum resultado para esta busca' : 'Os inscritos do rodapé aparecerão aqui'}
-              </p>
-            </div>
+            <AdminEmptyState
+              icon={<Mail size={24} />}
+              title={search ? 'Nenhum resultado' : 'Nenhum inscrito ainda'}
+              description={search
+                ? `Sua busca por "${search}" não retornou resultados.`
+                : 'Quando alguém se inscrever na newsletter pelo rodapé do site, vai aparecer aqui.'}
+            />
           ) : (
             <>
               <div className="divide-y" style={{ borderColor: 'rgba(0,0,0,.05)' }}>

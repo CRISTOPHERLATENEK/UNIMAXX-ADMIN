@@ -306,10 +306,19 @@ export function Header() {
   // ── Mobile toggle ──
   const mobileToggle = (iconColor: string) => (
     <div className="flex lg:hidden items-center gap-1">
-      <button onClick={toggleTheme} className="p-2 rounded-lg transition-colors" style={{ color: iconColor }}>
+      <button
+        onClick={toggleTheme}
+        aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+        className="p-2 rounded-lg transition-colors"
+        style={{ color: iconColor }}>
         {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
       </button>
-      <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 rounded-lg transition-colors" style={{ color: iconColor }}>
+      <button
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+        aria-expanded={isMenuOpen}
+        className="p-2 rounded-lg transition-colors"
+        style={{ color: iconColor }}>
         {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
     </div>
@@ -354,7 +363,7 @@ export function Header() {
                 />
               </div>
 
-              <button onClick={toggleTheme} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors">
+              <button onClick={toggleTheme} aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors">
                 {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
 
@@ -419,7 +428,10 @@ export function Header() {
             </nav>
 
             <div className="hidden lg:flex items-center gap-2">
-              <button onClick={toggleTheme} className="p-2 rounded-lg text-white/40 hover:text-white transition-colors">
+              <button
+                onClick={toggleTheme}
+                aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+                className="p-2 rounded-lg text-white/40 hover:text-white transition-colors">
                 {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
 
@@ -476,7 +488,10 @@ export function Header() {
             </div>
 
             <div className="hidden lg:flex items-center gap-3">
-              <button onClick={toggleTheme} className="p-2 rounded-lg transition-colors"
+              <button
+                onClick={toggleTheme}
+                aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+                className="p-2 rounded-lg transition-colors"
                 style={{ color: theme === "dark" ? "rgba(255,255,255,.5)" : "rgba(29,29,31,.5)" }}>
                 {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>

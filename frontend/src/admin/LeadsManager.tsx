@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Mail, Phone, Tag, MessageSquare, Trash2, RefreshCw, Eye, EyeOff, Download, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -134,10 +135,13 @@ export function LeadsManager() {
               <RefreshCw className="w-6 h-6 animate-spin text-gray-300" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-16 px-4">
-              <Mail className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-              <p className="text-sm text-gray-400">{search ? 'Nenhum resultado para a busca' : 'Nenhum lead encontrado'}</p>
-            </div>
+            <AdminEmptyState
+              icon={<Mail size={24} />}
+              title={search ? 'Nenhum resultado' : 'Nenhum lead ainda'}
+              description={search
+                ? 'Tente outro termo na busca, ou limpe o filtro pra ver todos os leads.'
+                : 'Quando alguém preencher um formulário no site, vai aparecer aqui.'}
+            />
           ) : (
             filtered.map(lead => (
               <div key={lead.id}

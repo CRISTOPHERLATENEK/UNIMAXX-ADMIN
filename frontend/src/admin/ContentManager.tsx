@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { ImageUploadField } from '@/components/ImageUploadField';
 import type { ImgSpec } from '@/components/ImageUploadField';
 import { useToast } from '@/hooks/use-toast';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
@@ -377,7 +378,11 @@ export function ContentManager() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-16 text-[#98989d]">Nenhum resultado encontrado</div>
+            <AdminEmptyState
+              icon={<Search size={24} />}
+              title="Nenhum resultado encontrado"
+              description="Tente outro termo na busca, ou navegue pelas seções na barra lateral."
+            />
           )}
         </div>
       </div>

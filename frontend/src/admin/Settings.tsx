@@ -5,7 +5,7 @@ import {
   Instagram, Linkedin, Youtube, Facebook,
   Building2, Search, Plug, Zap, FileText,
   Mail, MessageSquare, Hash, Star, Shield,
-  ChevronDown, Settings as SettingsIcon, Image, Layout, Sparkles, Type,
+  ChevronDown, ChevronRight, Settings as SettingsIcon, Image, Layout, Sparkles, Type,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
@@ -21,21 +21,37 @@ import { HOME_SECTION_CONFIGS } from '@/admin/homeSectionConfigs';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-const TABS = [
-  { id: 'aparencia',   label: 'Aparência',      icon: Palette },
-  { id: 'tipografia',  label: 'Tipografia',      icon: Type },
-  { id: 'empresa',     label: 'Empresa',         icon: Building2 },
-  { id: 'contato',     label: 'Contato',         icon: Phone },
-  { id: 'rodape',      label: 'Rodapé',          icon: Layout },
-  { id: 'redes',       label: 'Redes Sociais',   icon: Share2 },
-  { id: 'seo',         label: 'SEO Global',      icon: Search },
-  { id: 'integracoes', label: 'Integrações',      icon: Plug },
-  { id: 'scripts',     label: 'Scripts & Head',  icon: FileText },
-  { id: 'notificacoes',label: 'Notificações',    icon: Sparkles },
-  { id: 'manutencao',  label: 'Manutenção',      icon: SettingsIcon },
-  { id: 'perfil',      label: 'Perfil',          icon: User },
-  { id: 'seguranca',   label: 'Segurança',       icon: Lock },
+// Progressive disclosure: tabs essenciais aparecem direto;
+// avançadas ficam atrás de um colapsável.
+const TAB_GROUPS = [
+  {
+    label: 'Essencial',
+    items: [
+      { id: 'aparencia', label: 'Aparência',  icon: Palette },
+      { id: 'empresa',   label: 'Empresa',    icon: Building2 },
+      { id: 'contato',   label: 'Contato',    icon: Phone },
+      { id: 'perfil',    label: 'Sua conta',  icon: User },
+    ],
+  },
+  {
+    label: 'Avançado',
+    collapsible: true,
+    items: [
+      { id: 'tipografia',   label: 'Tipografia',     icon: Type },
+      { id: 'rodape',       label: 'Rodapé',         icon: Layout },
+      { id: 'redes',        label: 'Redes Sociais',  icon: Share2 },
+      { id: 'seo',          label: 'SEO Global',     icon: Search },
+      { id: 'integracoes',  label: 'Integrações',    icon: Plug },
+      { id: 'scripts',      label: 'Scripts & Head', icon: FileText },
+      { id: 'notificacoes', label: 'Notificações',   icon: Sparkles },
+      { id: 'manutencao',   label: 'Manutenção',     icon: SettingsIcon },
+      { id: 'seguranca',    label: 'Segurança',      icon: Lock },
+    ],
+  },
 ];
+
+// Flat array (mantém compatibilidade com código existente)
+const TABS = TAB_GROUPS.flatMap(g => g.items);
 
 function Section({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
   return (
@@ -763,9 +779,8 @@ function TabAparencia({ settings, setSetting }: { settings: Record<string, strin
         </div>
       </div>
 
-      {/* ── Paleta avançada ── */}
-      <Section title="Paleta de Cores Avançada" desc="Editor HSL com sliders, tons automáticos e verificador de contraste WCAG">
-
+      {/* ── Cores essenciais — sempre visíveis ── */}
+      <Section title="Cores da Marca" desc="Cor primária define a identidade. Secundária é usada em gradientes e hover.">
         <div className="grid sm:grid-cols-2 gap-5">
           <AdvancedColorPicker
             label="Cor Primária"
@@ -783,27 +798,38 @@ function TabAparencia({ settings, setSetting }: { settings: Record<string, strin
             showContrast
             contrastWith="#ffffff"
           />
-          <AdvancedColorPicker
-            label="Cor de Acento"
-            hint="Bordas iluminadas, badges e detalhes finos"
-            value={ac}
-            onChange={v => setSetting('accent_color', v)}
-          />
-          <AdvancedColorPicker
-            label="Cor de Fundo"
-            hint="Background geral das seções claras"
-            value={settings.bg_color || '#ffffff'}
-            onChange={v => setSetting('bg_color', v)}
-          />
-          <AdvancedColorPicker
-            label="Cor do Texto"
-            hint="Texto principal em modo claro"
-            value={settings.text_color || '#111114'}
-            onChange={v => setSetting('text_color', v)}
-            showContrast
-            contrastWith={settings.bg_color || '#ffffff'}
-          />
         </div>
+
+        {/* Avançado colapsável — cores que raramente precisam ser tocadas */}
+        <details className="rounded-xl bg-[#fafafa] border" style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+          <summary className="cursor-pointer select-none px-4 py-3 text-xs font-semibold text-[#6e6e73] flex items-center gap-2 hover:text-[#1d1d1f]">
+            <ChevronRight className="w-3.5 h-3.5 transition-transform" style={{ transform: 'rotate(0deg)' }} />
+            Mostrar cores avançadas (Acento, Fundo, Texto)
+            <span className="ml-auto text-[10px] text-[#98989d] font-normal">Opcional</span>
+          </summary>
+          <div className="px-4 pb-4 pt-1 grid sm:grid-cols-3 gap-5">
+            <AdvancedColorPicker
+              label="Cor de Acento"
+              hint="Bordas, badges, detalhes finos"
+              value={ac}
+              onChange={v => setSetting('accent_color', v)}
+            />
+            <AdvancedColorPicker
+              label="Cor de Fundo"
+              hint="Background geral em modo claro"
+              value={settings.bg_color || '#ffffff'}
+              onChange={v => setSetting('bg_color', v)}
+            />
+            <AdvancedColorPicker
+              label="Cor do Texto"
+              hint="Texto principal em modo claro"
+              value={settings.text_color || '#111114'}
+              onChange={v => setSetting('text_color', v)}
+              showContrast
+              contrastWith={settings.bg_color || '#ffffff'}
+            />
+          </div>
+        </details>
 
         {/* Contraste rápido */}
         <div className="rounded-xl p-4 space-y-2" style={{ background: '#f9f9fb', border: '1px solid rgba(0,0,0,.06)' }}>
@@ -2137,20 +2163,28 @@ export function Settings() {
       </div>
 
       <div className="flex">
-        {/* Sidebar */}
+        {/* Sidebar — agrupada em Essencial / Avançado para reduzir carga cognitiva */}
         <div className="w-52 flex-shrink-0 border-r bg-white sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto p-3"
           style={{ borderColor: 'rgba(0,0,0,.07)' }}>
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5 text-left ${activeTab === tab.id ? 'bg-orange-50' : 'hover:bg-gray-50'}`}
-                style={{ color: activeTab === tab.id ? pc : '#6e6e73' }}>
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {tab.label}
-              </button>
-            );
-          })}
+          {TAB_GROUPS.map((group, groupIdx) => (
+            <div key={group.label} className={groupIdx > 0 ? 'mt-4 pt-3 border-t' : ''}
+              style={{ borderColor: 'rgba(0,0,0,.06)' }}>
+              <p className="text-[10px] font-bold text-[#98989d] uppercase tracking-widest px-3 mb-1.5">
+                {group.label}
+              </p>
+              {group.items.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-0.5 text-left ${activeTab === tab.id ? 'bg-orange-50' : 'hover:bg-gray-50'}`}
+                    style={{ color: activeTab === tab.id ? pc : '#6e6e73' }}>
+                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         {/* Content */}

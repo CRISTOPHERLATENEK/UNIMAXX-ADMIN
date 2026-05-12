@@ -114,7 +114,18 @@ function runMigrations() {
       use_style INTEGER DEFAULT 1,
       bg_color TEXT DEFAULT '',
       page TEXT DEFAULT 'home',
-      banner_style TEXT DEFAULT ''
+      banner_style TEXT DEFAULT '',
+      starts_at DATETIME,
+      ends_at DATETIME,
+      image_opacity REAL DEFAULT 0.5,
+      text_align TEXT DEFAULT 'left',
+      text_position TEXT DEFAULT 'left',
+      banner_height TEXT DEFAULT 'md',
+      overlay_intensity REAL DEFAULT 0.85,
+      cta2_text TEXT DEFAULT '',
+      cta2_link TEXT DEFAULT '',
+      badge_icon TEXT DEFAULT '',
+      accent_color2 TEXT DEFAULT ''
     )`);
 
     // ── Solution Pages (lean: apenas metadados + blocks_json) ─────────────
@@ -164,21 +175,6 @@ function runMigrations() {
       'ALTER TABLE solution_pages ADD COLUMN secondary_cta_label TEXT DEFAULT \'\'',
       'ALTER TABLE solution_pages ADD COLUMN secondary_cta_link TEXT DEFAULT \'\'',
       'ALTER TABLE solution_pages ADD COLUMN page_template TEXT DEFAULT \'default\'',
-      'ALTER TABLE banners ADD COLUMN starts_at DATETIME',
-  'ALTER TABLE banners ADD COLUMN ends_at DATETIME',
-  // ↓↓ NOVOS CAMPOS ↓↓
-  'ALTER TABLE banners ADD COLUMN image_opacity REAL DEFAULT 0.5',
-  'ALTER TABLE banners ADD COLUMN text_align TEXT DEFAULT "left"',
-  'ALTER TABLE banners ADD COLUMN text_position TEXT DEFAULT "left"',
-  'ALTER TABLE banners ADD COLUMN banner_height TEXT DEFAULT "md"',
-  'ALTER TABLE banners ADD COLUMN overlay_intensity REAL DEFAULT 0.85',
-  'ALTER TABLE banners ADD COLUMN cta2_text TEXT DEFAULT ""',
-  'ALTER TABLE banners ADD COLUMN cta2_link TEXT DEFAULT ""',
-  'ALTER TABLE banners ADD COLUMN badge_icon TEXT DEFAULT ""',
-  'ALTER TABLE banners ADD COLUMN accent_color2 TEXT DEFAULT ""',
-
-
-      
     ].forEach(sql => db.run(sql, [], () => {}));
 
     // ── Páginas Genéricas (CMS via Page Builder) ──────────────────────────
@@ -408,10 +404,36 @@ function addSecurityColumns() {
     'ALTER TABLE users ADD COLUMN role TEXT DEFAULT \'admin\'',
   ].forEach(sql => db.run(sql, [], () => {}));
 
-  // Banner scheduling
+  // Banner scheduling — migrado para o bloco de novos campos acima
+
+  // Novos campos de controle avançado de banner (para bancos existentes)
   [
     'ALTER TABLE banners ADD COLUMN starts_at DATETIME',
     'ALTER TABLE banners ADD COLUMN ends_at DATETIME',
+    'ALTER TABLE banners ADD COLUMN image_opacity REAL DEFAULT 0.5',
+    'ALTER TABLE banners ADD COLUMN text_align TEXT DEFAULT \'left\'',
+    'ALTER TABLE banners ADD COLUMN text_position TEXT DEFAULT \'left\'',
+    'ALTER TABLE banners ADD COLUMN banner_height TEXT DEFAULT \'md\'',
+    'ALTER TABLE banners ADD COLUMN overlay_intensity REAL DEFAULT 0.85',
+    'ALTER TABLE banners ADD COLUMN cta2_text TEXT DEFAULT \'\'',
+    'ALTER TABLE banners ADD COLUMN cta2_link TEXT DEFAULT \'\'',
+    'ALTER TABLE banners ADD COLUMN badge_icon TEXT DEFAULT \'\'',
+    'ALTER TABLE banners ADD COLUMN accent_color2 TEXT DEFAULT \'\'',
+    'ALTER TABLE banners ADD COLUMN image_mobile TEXT DEFAULT \'\'',
+  ].forEach(sql => db.run(sql, [], () => {}));
+
+  // Soft-delete columns (Lixeira) — adiciona deleted_at em tabelas editáveis pelo admin.
+  // Tabelas com dados via JSON (site_content) ficam fora — não há linha pra "soft-deletar".
+  [
+    'ALTER TABLE banners ADD COLUMN deleted_at DATETIME',
+    'ALTER TABLE testimonials ADD COLUMN deleted_at DATETIME',
+    'ALTER TABLE partners ADD COLUMN deleted_at DATETIME',
+    'ALTER TABLE stats ADD COLUMN deleted_at DATETIME',
+    'ALTER TABLE segments ADD COLUMN deleted_at DATETIME',
+    'ALTER TABLE solutions ADD COLUMN deleted_at DATETIME',
+    'ALTER TABLE solution_pages ADD COLUMN deleted_at DATETIME',
+    'ALTER TABLE client_logos ADD COLUMN deleted_at DATETIME',
+    'ALTER TABLE generic_pages ADD COLUMN deleted_at DATETIME',
   ].forEach(sql => db.run(sql, [], () => {}));
 
   // Audit log table

@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { HomeSectionModal } from '@/admin/HomeSectionModal';
 import { HOME_SECTION_CONFIGS } from '@/admin/homeSectionConfigs';
+import { AdminEmptyState } from '@/components/admin/primitives';
 
 const ICONS = [
   { value: 'Trophy', label: 'Troféu', Icon: Trophy },
@@ -367,14 +368,16 @@ export function DifferentialsManager() {
         </div>
 
         {form.items.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px 0', color: '#98989d' }}>
-            <Layers size={40} color="#e5e5ea" style={{ marginBottom: 14 }} />
-            <p style={{ fontWeight: 600, color: '#1d1d1f', margin: '0 0 6px' }}>Nenhum card ainda</p>
-            <p style={{ fontSize: 13, margin: '0 0 18px' }}>Crie o primeiro diferencial da empresa</p>
-            <button onClick={addItem} style={{ padding: '9px 22px', borderRadius: 10, border: 'none', background: '#f97316', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <Plus size={15} /> Criar primeiro card
-            </button>
-          </div>
+          <AdminEmptyState
+            icon={<Layers size={28} />}
+            title="Nenhum card ainda"
+            description="Diferenciais aparecem na home como pilares do que sua empresa entrega."
+            action={
+              <button onClick={addItem} style={{ padding: '9px 22px', borderRadius: 10, border: 'none', background: '#f97316', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Plus size={15} /> Criar primeiro card
+              </button>
+            }
+          />
         )}
       </div>
     </div>

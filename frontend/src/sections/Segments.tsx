@@ -8,6 +8,7 @@ import {
 import { useData } from '@/context/DataContext';
 import { useBlockTypo } from '@/hooks/useBlockTypo';
 import { Link } from 'react-router-dom';
+import { SafeImg } from '@/components/SafeImg';
 
 // Inject CSS once at module level — avoids inline <style> in JSX (React reconciliation issue)
 if (typeof document !== 'undefined' && !document.getElementById('segment-hover-style')) {
@@ -110,10 +111,10 @@ export function Segments() {
                   }
                 }}
               >
-                {/* Background image overlay */}
+                {/* Background image overlay (com fallback gracioso se 404) */}
                 {imgSrc && (
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-350" style={{ zIndex: 0 }}>
-                    <img src={imgSrc} alt="" className="w-full h-full object-cover" />
+                    <SafeImg src={imgSrc} alt="" placeholderMode="gradient" className="w-full h-full object-cover" />
                     <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,.6)' }} />
                   </div>
                 )}

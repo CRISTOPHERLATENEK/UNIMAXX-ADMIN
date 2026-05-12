@@ -14,7 +14,7 @@ export const THEME: Record<string, typeof DEFAULT_T> = {
   green: { from: '#16a34a', to: '#166534', text: '#4ade80', glow: 'rgba(22,163,74,.35)' },
   purple: { from: '#9333ea', to: '#6b21a8', text: '#c084fc', glow: 'rgba(147,51,234,.35)' },
   black: { from: '#1f2937', to: '#030712', text: '#9ca3af', glow: 'rgba(31,41,55,.5)' },
-  white: { from: '#f8fafc', to: '#e2e8f0', text: '#475569', glow: 'rgba(248,250,252,.5)' },
+  white: { from: 'var(--s1)', to: '#e2e8f0', text: '#475569', glow: 'rgba(248,250,252,.5)' },
 };
 
 
@@ -28,15 +28,15 @@ function getBlockStyles(block: PageBlock, t: typeof DEFAULT_T) {
   return {
     section: {
       padding: sectionPad(block),
-      background: block.bgColor || (block.colorTheme === 'dark' ? '#0f172a' : block.colorTheme === 'brand' ? t.from : '#ffffff'),
+      background: block.bgColor || (block.colorTheme === 'dark' ? '#0f172a' : block.colorTheme === 'brand' ? t.from : 'var(--s0)'),
     },
     title: {
-      color: block.titleColor || (block.colorTheme === 'dark' || block.colorTheme === 'brand' ? '#ffffff' : '#111827'),
+      color: block.titleColor || (block.colorTheme === 'dark' || block.colorTheme === 'brand' ? '#ffffff' : 'var(--t1)'),
       fontSize: block.titleSize || 'clamp(1.5rem, 3vw, 2.5rem)',
       fontFamily: "var(--font-heading,'Outfit'), sans-serif",
     },
     subtitle: {
-      color: block.subtitleColor || (block.colorTheme === 'dark' || block.colorTheme === 'brand' ? 'rgba(255,255,255,0.7)' : '#4b5563'),
+      color: block.subtitleColor || (block.colorTheme === 'dark' || block.colorTheme === 'brand' ? 'rgba(255,255,255,0.7)' : 'var(--t3)'),
       fontSize: block.subtitleSize || '1.125rem',
     },
     cta: {
@@ -88,12 +88,15 @@ function DarkCard({ pc, children }: { pc: string; children: React.ReactNode }) {
 }
 
 // ── Section heading ───────────────────────────────────────────────────────────
-function SectionHead({ label, title, subtitle, t, dark = false, center = true }: {
+function SectionHead({ label, title, subtitle, t, dark = false, center = true, as = 'h2' }: {
   label?: string; title?: string; subtitle?: string; t: typeof DEFAULT_T; dark?: boolean; center?: boolean;
+  /** Tag semântica do título. Use 'h1' apenas no PRIMEIRO bloco da página (SEO/A11Y). */
+  as?: 'h1' | 'h2' | 'h3';
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const v = useInView(ref);
   if (!label && !title && !subtitle) return null;
+  const Heading = as as 'h1';
   return (
     <div ref={ref} style={{
       textAlign: center ? 'center' : 'left', marginBottom: 48,
@@ -108,15 +111,340 @@ function SectionHead({ label, title, subtitle, t, dark = false, center = true }:
         </div>
       )}
       {title && (
-        <h2 style={{
+        <Heading style={{
           fontFamily: "var(--font-heading,'Outfit'), sans-serif",
           fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)',
           fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.025em',
           color: dark ? '#fff' : '#0f172a', marginBottom: subtitle ? 16 : 0,
-        }}>{title}</h2>
+        }}>{title}</Heading>
       )}
-      {subtitle && <p style={{ fontSize: '1.05rem', color: dark ? 'rgba(255,255,255,.6)' : '#64748b', maxWidth: center ? 560 : 'none', margin: center ? '0 auto' : 0, lineHeight: 1.7 }}>{subtitle}</p>}
+      {subtitle && <p style={{ fontSize: '1.05rem', color: dark ? 'rgba(255,255,255,.6)' : 'var(--t3)', maxWidth: center ? 560 : 'none', margin: center ? '0 auto' : 0, lineHeight: 1.7 }}>{subtitle}</p>}
     </div>
+  );
+}
+
+// ── PRICING ───────────────────────────────────────────────────────────────────
+function PricingBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAULT_T; headingAs: 'h1' | 'h2' }) {
+  const plans = block.pricingPlans || [];
+  const showToggle = block.pricingShowToggle !== false && plans.some(p => p.priceAnnual);
+  const [annual, setAnnual] = useState(false);
+  const isDark = block.colorTheme === 'dark';
+
+  return (
+    <section style={getBlockStyles(block, t).section} className="px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} />
+
+        {showToggle && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 40 }}>
+            <div style={{ display: 'inline-flex', padding: 4, background: isDark ? 'rgba(255,255,255,.05)' : 'var(--s2)', borderRadius: 999, border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}` }}>
+              {(['monthly', 'annual'] as const).map(period => {
+                const active = (period === 'annual') === annual;
+                const label = period === 'monthly' ? 'Mensal' : 'Anual';
+                return (
+                  <button key={period} onClick={() => setAnnual(period === 'annual')}
+                    style={{
+                      padding: '8px 20px', borderRadius: 999, fontSize: 13, fontWeight: 600,
+                      background: active ? (isDark ? '#fff' : t.from) : 'transparent',
+                      color: active ? (isDark ? '#1d1d1f' : '#fff') : (isDark ? 'rgba(255,255,255,.6)' : 'var(--t3)'),
+                      border: 'none', cursor: 'pointer', transition: 'all .2s',
+                      display: 'flex', alignItems: 'center', gap: 8,
+                    }}>
+                    {label}
+                    {period === 'annual' && block.pricingAnnualDiscountLabel && (
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 999, background: active ? 'rgba(255,255,255,.25)' : '#22c55e22', color: active ? '#fff' : '#15803d', fontWeight: 700 }}>
+                        {block.pricingAnnualDiscountLabel}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${plans.length >= 3 ? 260 : 320}px, 1fr))`,
+          gap: 20, alignItems: 'stretch',
+        }}>
+          {plans.map((plan, i) => {
+            const price = annual && plan.priceAnnual ? plan.priceAnnual : plan.priceMonthly;
+            const color = plan.color || t.from;
+            return (
+              <div key={i} style={{
+                background: isDark ? 'rgba(255,255,255,.03)' : 'var(--s1)',
+                border: `${plan.highlighted ? 2 : 1}px solid ${plan.highlighted ? color : (isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)')}`,
+                borderRadius: 20, padding: '32px 28px',
+                display: 'flex', flexDirection: 'column',
+                transform: plan.highlighted ? 'scale(1.02)' : 'none',
+                boxShadow: plan.highlighted ? `0 24px 60px ${color}25` : 'none',
+                position: 'relative', transition: 'transform .2s, box-shadow .2s',
+              }}>
+                {plan.badge && (
+                  <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 999, background: color, color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase' }}>
+                    {plan.badge}
+                  </div>
+                )}
+                <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 22, fontWeight: 800, color: isDark ? '#fff' : 'var(--t1)', margin: '0 0 6px' }}>{plan.name}</h3>
+                {plan.description && <p style={{ fontSize: 13, color: isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)', margin: '0 0 20px' }}>{plan.description}</p>}
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 24 }}>
+                  <span style={{ fontSize: 16, color: isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)' }}>{plan.priceCurrency || 'R$'}</span>
+                  <span style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 44, fontWeight: 900, color: isDark ? '#fff' : 'var(--t1)', lineHeight: 1 }}>{price}</span>
+                  <span style={{ fontSize: 13, color: isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)' }}>{plan.priceSuffix || '/mês'}</span>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+                  {plan.features.map((f, fi) => (
+                    <li key={fi} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: isDark ? 'rgba(255,255,255,.8)' : 'var(--t2)', lineHeight: 1.5 }}>
+                      <Check size={16} style={{ color, flexShrink: 0, marginTop: 2 }} strokeWidth={2.5} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                {plan.ctaLabel && (
+                  <Link to={plan.ctaLink || '/cliente'}>
+                    <button style={{
+                      width: '100%', padding: '13px 20px', borderRadius: 12, fontSize: 14, fontWeight: 700,
+                      background: plan.highlighted ? color : 'transparent',
+                      color: plan.highlighted ? '#fff' : (isDark ? '#fff' : color),
+                      border: plan.highlighted ? 'none' : `1.5px solid ${color}`,
+                      cursor: 'pointer', transition: 'all .2s',
+                    }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; }}>
+                      {plan.ctaLabel}
+                    </button>
+                  </Link>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {block.pricingFootnote && (
+          <p style={{ fontSize: 13, color: isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)', textAlign: 'center', marginTop: 32 }}>{block.pricingFootnote}</p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ── DEMO_FORM ─────────────────────────────────────────────────────────────────
+function DemoFormBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAULT_T; headingAs: 'h1' | 'h2' }) {
+  const fields = block.formFields || [];
+  const [state, setState] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isDark = block.colorTheme === 'dark';
+  const apiUrl = block.formApiEndpoint || '/api/leads';
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state),
+      });
+      if (!res.ok) throw new Error('Falha ao enviar');
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err?.message || 'Não foi possível enviar. Tente novamente.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const layout = block.formLayout || 'inline';
+  const benefits = block.formBenefits || [];
+
+  const formContent = (
+    <>
+      {success ? (
+        <div style={{ textAlign: 'center', padding: '32px 16px' }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#22c55e22', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Check size={28} style={{ color: '#22c55e' }} strokeWidth={3} />
+          </div>
+          <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 22, fontWeight: 800, color: isDark ? '#fff' : 'var(--t1)', margin: '0 0 8px' }}>{block.formSuccessTitle || 'Recebemos seu contato!'}</h3>
+          <p style={{ fontSize: 14, color: isDark ? 'rgba(255,255,255,.6)' : 'var(--t3)' }}>{block.formSuccessMessage || 'Em breve entraremos em contato.'}</p>
+        </div>
+      ) : (
+        <form onSubmit={submit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          {fields.map(f => (
+            <div key={f.name} style={{ gridColumn: f.fullWidth ? '1 / -1' : undefined }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: isDark ? 'rgba(255,255,255,.7)' : 'var(--t2)', marginBottom: 6 }}>
+                {f.label}{f.required && <span style={{ color: '#ef4444', marginLeft: 3 }}>*</span>}
+              </label>
+              {f.type === 'textarea' ? (
+                <textarea required={f.required} placeholder={f.placeholder}
+                  value={state[f.name] || ''}
+                  onChange={e => setState(s => ({ ...s, [f.name]: e.target.value }))}
+                  rows={3}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'var(--b1)'}`, background: isDark ? 'rgba(255,255,255,.04)' : 'var(--s0)', color: isDark ? '#fff' : 'var(--t1)', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+              ) : f.type === 'select' ? (
+                <select required={f.required} value={state[f.name] || ''}
+                  onChange={e => setState(s => ({ ...s, [f.name]: e.target.value }))}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'var(--b1)'}`, background: isDark ? 'rgba(255,255,255,.04)' : 'var(--s0)', color: isDark ? '#fff' : 'var(--t1)', fontSize: 14, cursor: 'pointer' }}>
+                  <option value="">{f.placeholder || 'Selecione…'}</option>
+                  {(f.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              ) : (
+                <input type={f.type} required={f.required} placeholder={f.placeholder}
+                  value={state[f.name] || ''}
+                  onChange={e => setState(s => ({ ...s, [f.name]: e.target.value }))}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'var(--b1)'}`, background: isDark ? 'rgba(255,255,255,.04)' : 'var(--s0)', color: isDark ? '#fff' : 'var(--t1)', fontSize: 14 }} />
+              )}
+            </div>
+          ))}
+          {error && <div style={{ gridColumn: '1 / -1', padding: '10px 14px', borderRadius: 10, background: '#fee2e2', color: '#b91c1c', fontSize: 13 }}>{error}</div>}
+          <button type="submit" disabled={submitting}
+            style={{ gridColumn: '1 / -1', padding: '14px 24px', borderRadius: 12, background: t.from, color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.7 : 1, transition: 'all .2s', boxShadow: `0 8px 24px ${t.glow}` }}>
+            {submitting ? 'Enviando…' : (block.formSubmitLabel || 'Enviar')}
+          </button>
+        </form>
+      )}
+    </>
+  );
+
+  return (
+    <section style={getBlockStyles(block, t).section} className="px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        {layout === 'inline' && (
+          <>
+            <SectionHead title={block.formTitle || block.title} subtitle={block.formDescription || block.subtitle} t={t} dark={isDark} as={headingAs} />
+            <div style={{ maxWidth: 560, margin: '0 auto', padding: 32, background: isDark ? 'rgba(255,255,255,.03)' : 'var(--s1)', border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, borderRadius: 20 }}>
+              {formContent}
+            </div>
+          </>
+        )}
+        {layout === 'split' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(260px, 1fr) minmax(320px, 1.2fr)', gap: 48, alignItems: 'center' }} className="form-split">
+            <div>
+              <Heading as={headingAs} style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', fontWeight: 900, color: isDark ? '#fff' : 'var(--t1)', lineHeight: 1.1, letterSpacing: '-0.025em', margin: '0 0 14px' }}>
+                {block.formTitle || block.title || 'Fale com a gente'}
+              </Heading>
+              {(block.formDescription || block.subtitle) && (
+                <p style={{ fontSize: 16, color: isDark ? 'rgba(255,255,255,.6)' : 'var(--t3)', lineHeight: 1.6, margin: '0 0 24px' }}>
+                  {block.formDescription || block.subtitle}
+                </p>
+              )}
+              {benefits.length > 0 && (
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {benefits.map((b, i) => (
+                    <li key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', fontSize: 14, color: isDark ? 'rgba(255,255,255,.75)' : 'var(--t2)' }}>
+                      <Check size={18} style={{ color: t.from, flexShrink: 0, marginTop: 2 }} strokeWidth={2.5} />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div style={{ padding: 32, background: isDark ? 'rgba(255,255,255,.03)' : 'var(--s1)', border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, borderRadius: 20 }}>
+              {formContent}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// Helper para render de heading dinâmico (h1/h2/h3)
+function Heading({ as: Tag = 'h2', children, style }: { as?: 'h1' | 'h2' | 'h3'; children: React.ReactNode; style?: React.CSSProperties }) {
+  return React.createElement(Tag, { style }, children);
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function TabsBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAULT_T; headingAs: 'h1' | 'h2' }) {
+  const tabs = block.tabsItems || [];
+  const [active, setActive] = useState(0);
+  const isDark = block.colorTheme === 'dark';
+  const orientation = block.tabsOrientation || 'horizontal';
+  const current = tabs[active];
+
+  if (!current) return null;
+
+  return (
+    <section style={getBlockStyles(block, t).section} className="px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} />
+
+        <div style={{ display: 'flex', flexDirection: orientation === 'vertical' ? 'row' : 'column', gap: orientation === 'vertical' ? 32 : 24 }} className="tabs-block">
+          {/* Tab buttons */}
+          <div style={{
+            display: 'flex',
+            flexDirection: orientation === 'vertical' ? 'column' : 'row',
+            gap: 4,
+            flexShrink: 0,
+            minWidth: orientation === 'vertical' ? 220 : undefined,
+            background: isDark ? 'rgba(255,255,255,.04)' : 'var(--s2)',
+            padding: 6,
+            borderRadius: orientation === 'vertical' ? 14 : 999,
+            overflowX: orientation === 'horizontal' ? 'auto' : undefined,
+            alignSelf: orientation === 'horizontal' ? 'center' : 'flex-start',
+          }}>
+            {tabs.map((tab, i) => {
+              const isActive = i === active;
+              return (
+                <button key={i} onClick={() => setActive(i)} role="tab" aria-selected={isActive}
+                  style={{
+                    padding: orientation === 'vertical' ? '12px 16px' : '10px 18px',
+                    borderRadius: orientation === 'vertical' ? 10 : 999,
+                    background: isActive ? (isDark ? '#fff' : t.from) : 'transparent',
+                    color: isActive ? (isDark ? '#1d1d1f' : '#fff') : (isDark ? 'rgba(255,255,255,.7)' : 'var(--t2)'),
+                    border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap',
+                    textAlign: orientation === 'vertical' ? 'left' : 'center',
+                    justifyContent: orientation === 'vertical' ? 'flex-start' : 'center',
+                    transition: 'all .2s',
+                  }}>
+                  {tab.icon && <span style={{ fontSize: 16 }}>{tab.icon}</span>}
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab panel */}
+          <div role="tabpanel" style={{
+            flex: 1,
+            padding: orientation === 'vertical' ? 0 : '8px 0',
+            display: 'grid',
+            gridTemplateColumns: current.imageUrl ? '1fr 1fr' : '1fr',
+            gap: 32, alignItems: 'center',
+          }} className="tabs-panel">
+            <div>
+              {current.title && <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(1.4rem, 2.5vw, 2rem)', fontWeight: 800, color: isDark ? '#fff' : 'var(--t1)', margin: '0 0 12px', letterSpacing: '-0.02em' }}>{current.title}</h3>}
+              {current.description && <p style={{ fontSize: 15, color: isDark ? 'rgba(255,255,255,.7)' : 'var(--t2)', lineHeight: 1.7, margin: '0 0 20px' }}>{current.description}</p>}
+              {current.bullets && current.bullets.length > 0 && (
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {current.bullets.map((b, i) => (
+                    <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: isDark ? 'rgba(255,255,255,.75)' : 'var(--t2)' }}>
+                      <Check size={16} style={{ color: t.from, flexShrink: 0, marginTop: 2 }} strokeWidth={2.5} />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {current.ctaLabel && (
+                <Link to={current.ctaLink || '#'}>
+                  <button style={{ padding: '11px 22px', borderRadius: 12, background: t.from, color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: `0 6px 20px ${t.glow}` }}>
+                    {current.ctaLabel} <ArrowRight size={15} />
+                  </button>
+                </Link>
+              )}
+            </div>
+            {current.imageUrl && (
+              <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,.15)' }}>
+                <img src={resolveImg(current.imageUrl) ?? current.imageUrl} alt={current.title || ''} style={{ width: '100%', height: 'auto', display: 'block' }} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -137,8 +465,8 @@ function FaqBlock({ block, t }: { block: PageBlock; t: typeof DEFAULT_T }) {
             return (
               <div key={i} style={{
                 borderRadius: 16,
-                border: `1.5px solid ${isOpen ? t.from + '50' : isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.07)'}`,
-                background: isOpen ? (isDark ? 'rgba(255,255,255,.04)' : `${t.from}06`) : (isDark ? 'rgba(255,255,255,.02)' : '#fff'),
+                border: `1.5px solid ${isOpen ? t.from + '50' : isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`,
+                background: isOpen ? (isDark ? 'rgba(255,255,255,.04)' : `${t.from}0a`) : (isDark ? 'rgba(255,255,255,.02)' : 'var(--s1)'),
                 transition: 'border-color .2s, background .2s',
                 overflow: 'hidden',
               }}>
@@ -146,22 +474,22 @@ function FaqBlock({ block, t }: { block: PageBlock; t: typeof DEFAULT_T }) {
                   onClick={() => setOpen(isOpen ? null : i)}
                   style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', gap: 16, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                 >
-                  <span style={{ fontFamily: "var(--font-heading,'Outfit'), sans-serif", fontWeight: 700, fontSize: 15, color: isDark ? '#fff' : '#1e293b', lineHeight: 1.4 }}>{faq.question}</span>
+                  <span style={{ fontFamily: "var(--font-heading,'Outfit'), sans-serif", fontWeight: 700, fontSize: 15, color: isDark ? '#fff' : 'var(--t1)', lineHeight: 1.4 }}>{faq.question}</span>
                   <div style={{
                     width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: isOpen ? t.from : (isDark ? 'rgba(255,255,255,.08)' : '#f1f5f9'),
+                    background: isOpen ? t.from : (isDark ? 'rgba(255,255,255,.08)' : 'var(--s2)'),
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'background .2s, transform .3s',
                     transform: isOpen ? 'rotate(180deg)' : 'none',
                   }}>
-                    <ChevronDown style={{ width: 16, height: 16, color: isOpen ? '#fff' : (isDark ? 'rgba(255,255,255,.5)' : '#64748b') }} />
+                    <ChevronDown style={{ width: 16, height: 16, color: isOpen ? '#fff' : (isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)') }} />
                   </div>
                 </button>
                 <div style={{
                   maxHeight: isOpen ? 400 : 0, overflow: 'hidden',
                   transition: 'max-height .35s cubic-bezier(.4,0,.2,1)',
                 }}>
-                  <p style={{ padding: '0 24px 20px', fontSize: 14.5, color: isDark ? 'rgba(255,255,255,.6)' : '#64748b', lineHeight: 1.75 }}>{faq.answer}</p>
+                  <p style={{ padding: '0 24px 20px', fontSize: 14.5, color: isDark ? 'rgba(255,255,255,.6)' : 'var(--t3)', lineHeight: 1.75 }}>{faq.answer}</p>
                 </div>
               </div>
             );
@@ -243,8 +571,8 @@ function BenefitsBlock({ block, t }: { block: any; t: any }) {
                     <div ref={el => { itemsRef.current[i] = el; }} style={{
                       width: w, display: 'flex', alignItems: 'center', gap: 14,
                       padding: `${pV}px ${pH}px`, borderRadius: 14,
-                      background: block.colorTheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#fff',
-                      border: `1px solid ${block.colorTheme === 'dark' ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)'}`,
+                      background: block.colorTheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'var(--s1)',
+                      border: `1px solid ${block.colorTheme === 'dark' ? 'rgba(255,255,255,.06)' : 'var(--b1)'}`,
                       boxShadow: '0 2px 12px rgba(0,0,0,.05)',
                       opacity: 0, transform: 'translateY(20px)',
                       transition: `opacity .45s ease ${i * 0.07}s, transform .45s ease ${i * 0.07}s`,
@@ -257,10 +585,10 @@ function BenefitsBlock({ block, t }: { block: any; t: any }) {
                         fontSize: Math.round(iconSz * 0.44), lineHeight: 1,
                       }}>{isObj ? item.icon : '⚡'}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontWeight: isObj && item.bold ? 700 : 600, color: block.colorTheme === 'dark' ? '#fff' : '#1e293b', fontSize: fs, marginBottom: (isObj && item.desc) ? 3 : 0, fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>
+                        <p style={{ fontWeight: isObj && item.bold ? 700 : 600, color: block.colorTheme === 'dark' ? '#fff' : 'var(--t1)', fontSize: fs, marginBottom: (isObj && item.desc) ? 3 : 0, fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>
                           {isObj ? item.label : item}
                         </p>
-                        {isObj && item.desc && <p style={{ color: block.colorTheme === 'dark' ? 'rgba(255,255,255,0.45)' : '#94a3b8', fontSize: ds, lineHeight: 1.55 }}>{item.desc}</p>}
+                        {isObj && item.desc && <p style={{ color: block.colorTheme === 'dark' ? 'rgba(255,255,255,0.45)' : 'var(--t4)', fontSize: ds, lineHeight: 1.55 }}>{item.desc}</p>}
                       </div>
                       <div style={{ width: 3, height: 28, borderRadius: 99, background: `linear-gradient(180deg,${accent},${accent}60)`, flexShrink: 0 }} />
                     </div>
@@ -352,7 +680,15 @@ function useJsOffsetBg(ref: React.RefObject<HTMLDivElement | null>, active: bool
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: typeof DEFAULT_T }) {
+export function BlockRenderer({ block, t = DEFAULT_T, isFirstBlock = false }: {
+  block: PageBlock;
+  t?: typeof DEFAULT_T;
+  /** Quando true, o título principal usa <h1> (SEO/A11Y — só o primeiro bloco da página).
+   *  Implementação: passa via prop pra renderBlockInner que repassa pro SectionHead. */
+  isFirstBlock?: boolean;
+}) {
+  // Resolve a tag do título principal: h1 só pra primeiro bloco da página
+  const headingAs: 'h1' | 'h2' = isFirstBlock ? 'h1' : 'h2';
   const [videoOpen, setVideoOpen] = useState(false);
   const jsOffsetRef = useRef<HTMLDivElement>(null);
   const mode = block.continuousBgMode || 'none';
@@ -365,9 +701,9 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
 
   const isDark = block.colorTheme === 'dark';
   const isBrand = block.colorTheme === 'brand';
-  const textCol = (isDark || isBrand) ? 'white' : '#1d1d1f';
+  const textCol = (isDark || isBrand) ? 'white' : 'var(--t1)';
   const subCol = (isDark || isBrand) ? 'rgba(255,255,255,.6)' : '#6e6e73';
-  const inner = renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen });
+  const inner = renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, headingAs });
 
   if (mode === 'fixed' || mode === 'js_offset') {
     const bgCSS = buildContinuousBgCSS(block);
@@ -406,9 +742,10 @@ export function BlockRenderer({ block, t = DEFAULT_T }: { block: PageBlock; t?: 
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }: {
+function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, headingAs = 'h2' }: {
   block: PageBlock; t: typeof DEFAULT_T; textCol: string; subCol: string;
   videoOpen: boolean; setVideoOpen: (v: boolean) => void;
+  headingAs?: 'h1' | 'h2' | 'h3';
 }): React.ReactNode {
   switch (block.type) {
 
@@ -519,7 +856,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
           <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
             <div style={{ borderRadius: rr, overflow: 'hidden' }}>
               <div style={{ display: 'flex', position: 'relative' }}>
-                <div style={{ flex: 1, background: '#f4f4f6', padding: '48px 40px 24px' }} />
+                <div style={{ flex: 1, background: 'var(--s1)', padding: '48px 40px 24px' }} />
                 <div style={{ flex: 1, background: '#0f1017', padding: '48px 40px 24px' }} />
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 40, pointerEvents: 'none' }}>
                   <div style={{ textAlign: 'center', maxWidth: 640, padding: '0 20px' }}>
@@ -530,15 +867,15 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                 </div>
               </div>
               <div style={{ display: 'flex' }}>
-                <div style={{ flex: 1, background: '#f4f4f6', padding: '16px 40px 48px', display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
+                <div style={{ flex: 1, background: 'var(--s1)', padding: '16px 40px 48px', display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
                   {leftItems.map((item, i) => {
                     const lbl = typeof item === 'string' ? item : item.label;
                     const ico = typeof item === 'string' ? '' : item.icon;
                     const dsc = typeof item === 'string' ? '' : (item.desc || '');
                     return (
-                      <div key={i} style={{ background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 16, padding: '20px', display: 'flex', gap: 14, alignItems: 'flex-start', transition: 'border-color .2s, transform .2s' }}
+                      <div key={i} style={{ background: 'var(--s1)', border: '1px solid var(--b1)', borderRadius: 16, padding: '20px', display: 'flex', gap: 14, alignItems: 'flex-start', transition: 'border-color .2s, transform .2s' }}
                         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; (e.currentTarget as HTMLElement).style.transform = 'translateX(4px)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.transform = ''; }}>
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--b1)'; (e.currentTarget as HTMLElement).style.transform = ''; }}>
                         {ico && <div style={{ width: 40, height: 40, borderRadius: 12, background: `${ac}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{ico}</div>}
                         <div>
                           <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 14, color: '#1a1a1a', lineHeight: 1.3 }}>{lbl}</p>
@@ -581,9 +918,9 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                 const lbl = typeof item === 'string' ? item : item.label;
                 const dsc = typeof item === 'string' ? '' : (item.desc || '');
                 return (
-                  <div key={i} style={{ display: 'flex', gap: 14, padding: '18px', background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 14, alignItems: 'flex-start', transition: 'border-color .2s, box-shadow .2s' }}
+                  <div key={i} style={{ display: 'flex', gap: 14, padding: '18px', background: 'var(--s1)', border: '1px solid var(--b1)', borderRadius: 14, alignItems: 'flex-start', transition: 'border-color .2s, box-shadow .2s' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 24px ${ac}12`; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--b1)'; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
                     <div style={{ width: 34, height: 34, borderRadius: 10, background: `linear-gradient(135deg,${ac},${ac}bb)`, color: '#fff', fontWeight: 800, fontSize: 13, fontFamily: "var(--font-heading,'Outfit'),sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {String(i + 1).padStart(2, '0')}
                     </div>
@@ -607,9 +944,9 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
               {allItems.map((item, i) => {
                 const lbl = typeof item === 'string' ? item : item.label;
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 50, transition: 'all .2s' }}
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', background: 'var(--s1)', border: '1px solid var(--b1)', borderRadius: 50, transition: 'all .2s' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; (e.currentTarget as HTMLElement).style.background = `${ac}06`; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.background = '#fff'; }}>
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--b1)'; (e.currentTarget as HTMLElement).style.background = '#fff'; }}>
                     <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg,${ac},${ac}bb)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Check style={{ width: 11, height: 11, color: '#fff', strokeWidth: 3 }} />
                     </div>
@@ -632,9 +969,9 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
               const ico = typeof item === 'string' ? '' : item.icon;
               const dsc = typeof item === 'string' ? '' : (item.desc || '');
               return (
-                <div key={i} style={{ padding: '28px 22px', background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 20, cursor: 'default', transition: 'all .25s', boxShadow: '0 2px 8px rgba(0,0,0,.04)' }}
+                <div key={i} style={{ padding: '28px 22px', background: 'var(--s1)', border: '1px solid var(--b1)', borderRadius: 20, cursor: 'default', transition: 'all .25s', boxShadow: '0 2px 8px rgba(0,0,0,.04)' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-6px)'; (e.currentTarget as HTMLElement).style.borderColor = `${ac}40`; (e.currentTarget as HTMLElement).style.boxShadow = `0 20px 48px ${ac}18`; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,.04)'; }}>
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.borderColor = 'var(--b1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,.04)'; }}>
                   {ico && <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg,${ac}20,${ac}10)`, border: `1px solid ${ac}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 16 }}>{ico}</div>}
                   <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 15, color: '#1a1a1a', lineHeight: 1.35, marginBottom: dsc ? 8 : 0 }}>{lbl}</p>
                   {dsc && <p style={{ fontSize: 13, color: '#888', lineHeight: 1.6 }}>{dsc}</p>}
@@ -661,14 +998,14 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
       const contain = block.imageContain !== false;
       return (
         <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="image-text-block" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', borderRadius: rr, overflow: 'hidden', maxHeight: maxH, border: '1px solid rgba(0,0,0,.07)', boxShadow: '0 16px 48px rgba(0,0,0,.08)' }}>
+          <div className="image-text-block" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', borderRadius: rr, overflow: 'hidden', maxHeight: maxH, border: '1px solid var(--b1)', boxShadow: '0 16px 48px rgba(0,0,0,.08)' }}>
             {!imgRight && (
               <div style={{ background: hasBg ? bgColor : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', order: 0 }}>
                 {imgSrc ? <img src={imgSrc} alt={block.imageAlt || ''} style={{ width: '100%', height: '100%', maxHeight: maxH, objectFit: contain ? 'contain' : 'cover', display: 'block', transition: 'transform .4s' }} onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')} onMouseLeave={e => (e.currentTarget.style.transform = '')} />
-                  : <div style={{ width: '100%', height: maxH, background: hasBg ? bgColor : '#f9f9fb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80 }}>🖼️</span></div>}
+                  : <div style={{ width: '100%', height: maxH, background: hasBg ? bgColor : 'var(--s2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 80 }}>🖼️</span></div>}
               </div>
             )}
-            <div className="image-text-content" style={{ padding: '52px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#fff', order: imgRight ? 0 : 1 }}>
+            <div className="image-text-content" style={{ padding: '52px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--s1)', order: imgRight ? 0 : 1 }}>
               {block.badge && (
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 50, border: `1.5px solid ${t.from}40`, color: t.from, fontSize: 12, fontWeight: 700, marginBottom: 20, alignSelf: 'flex-start', background: `${t.from}08` }}>
                   {block.badge} <ArrowRight style={{ width: 12, height: 12 }} />
@@ -713,7 +1050,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
       const v = useInView(ref);
       return (
         <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={block.colorTheme === 'dark'} />
+          <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={block.colorTheme === 'dark'} as={headingAs} />
           <div ref={ref} className="max-w-2xl mx-auto" style={{ position: 'relative' }}>
             {/* connector line */}
             <div style={{ position: 'absolute', left: 27, top: 56, bottom: 28, width: 2, background: `linear-gradient(180deg,${t.from}40,transparent)`, borderRadius: 2 }} />
@@ -734,15 +1071,15 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
                 </div>
                 <div style={{
                   flex: 1, padding: '14px 20px', borderRadius: 16,
-                  background: block.colorTheme === 'dark' ? 'rgba(255,255,255,.04)' : '#fff',
-                  border: `1px solid ${block.colorTheme === 'dark' ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)'}`,
+                  background: block.colorTheme === 'dark' ? 'rgba(255,255,255,.04)' : 'var(--s1)',
+                  border: `1px solid ${block.colorTheme === 'dark' ? 'rgba(255,255,255,.07)' : 'var(--b1)'}`,
                   boxShadow: '0 2px 12px rgba(0,0,0,.05)',
                   transition: 'border-color .2s',
                 }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${t.from}40`; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = block.colorTheme === 'dark' ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)'; }}>
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = block.colorTheme === 'dark' ? 'rgba(255,255,255,.07)' : 'var(--b1)'; }}>
                   <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 800, fontSize: 16, color: block.colorTheme === 'dark' ? '#fff' : '#0f172a', marginBottom: step.description ? 6 : 0 }}>{step.title}</h3>
-                  {step.description && <p style={{ fontSize: 14, color: block.colorTheme === 'dark' ? 'rgba(255,255,255,.55)' : '#64748b', lineHeight: 1.65 }}>{step.description}</p>}
+                  {step.description && <p style={{ fontSize: 14, color: block.colorTheme === 'dark' ? 'rgba(255,255,255,.55)' : 'var(--t3)', lineHeight: 1.65 }}>{step.description}</p>}
                 </div>
               </div>
             ))}
@@ -757,18 +1094,18 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
       const ref = useRef<HTMLDivElement>(null);
       const v = useInView(ref);
       return (
-        <section style={{ background: block.bgColor || (block.colorTheme === 'dark' ? '#0f172a' : '#fff'), borderTop: '1px solid rgba(0,0,0,.06)', borderBottom: '1px solid rgba(0,0,0,.06)' }}>
+        <section style={{ background: block.bgColor || (block.colorTheme === 'dark' ? '#0f172a' : 'var(--s0)'), borderTop: '1px solid var(--b1)', borderBottom: '1px solid var(--b1)' }}>
           <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ padding: '56px 0' }}>
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(stats.length, 4)}, 1fr)`, gap: 0 }}>
               {stats.map((s, i) => (
                 <div key={i} style={{
                   textAlign: 'center', padding: '24px 32px',
-                  borderRight: i < stats.length - 1 ? `1px solid ${block.colorTheme === 'dark' ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.07)'}` : 'none',
+                  borderRight: i < stats.length - 1 ? `1px solid ${block.colorTheme === 'dark' ? 'rgba(255,255,255,.08)' : 'var(--b1)'}` : 'none',
                   opacity: v ? 1 : 0, transform: v ? 'translateY(0)' : 'translateY(20px)',
                   transition: `opacity .55s ease ${i * 0.1}s, transform .55s ease ${i * 0.1}s`,
                 }}>
                   <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: 'clamp(2rem,4vw,3rem)', lineHeight: 1, marginBottom: 8, background: `linear-gradient(135deg,${t.from},${t.to})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{s.value}</p>
-                  <p style={{ fontSize: 14, color: block.colorTheme === 'dark' ? 'rgba(255,255,255,.5)' : '#64748b', fontWeight: 500, letterSpacing: '.01em' }}>{s.label}</p>
+                  <p style={{ fontSize: 14, color: block.colorTheme === 'dark' ? 'rgba(255,255,255,.5)' : 'var(--t3)', fontWeight: 500, letterSpacing: '.01em' }}>{s.label}</p>
                 </div>
               ))}
             </div>
@@ -848,15 +1185,15 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
       // Split layout: texto esquerda + botões direita
       if (splitLayout) {
         return (
-          <section style={{ padding: sectionPad(block), background: bgOverride || (isDarkCta ? '#0f172a' : '#f8fafc') }} className="px-4 sm:px-6 lg:px-8">
+          <section style={{ padding: sectionPad(block), background: bgOverride || (isDarkCta ? '#0f172a' : 'var(--s1)') }} className="px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
-              <div style={{ borderRadius: 24, border: `1px solid ${isDarkCta ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)'}`, background: bgOverride || (isDarkCta ? 'rgba(255,255,255,.04)' : '#fff'), padding: 'clamp(28px,4vw,48px) clamp(24px,5vw,56px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
+              <div style={{ borderRadius: 24, border: `1px solid ${isDarkCta ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, background: bgOverride || (isDarkCta ? 'rgba(255,255,255,.04)' : 'var(--s1)'), padding: 'clamp(28px,4vw,48px) clamp(24px,5vw,56px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 260 }}>
                   {block.badge && (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', background: `${t.from}18`, color: t.from, marginBottom: 12 }}>{block.badge}</span>
                   )}
                   {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 800, fontSize: 'clamp(1.3rem,2.5vw,1.9rem)', color: isDarkCta ? '#fff' : '#0f172a', lineHeight: 1.2, letterSpacing: '-0.02em', marginBottom: block.description ? 10 : 0 }}>{block.title}</h2>}
-                  {block.description && <p style={{ fontSize: '0.95rem', color: isDarkCta ? 'rgba(255,255,255,.6)' : '#64748b', lineHeight: 1.6, maxWidth: 480 }}>{block.description}</p>}
+                  {block.description && <p style={{ fontSize: '0.95rem', color: isDarkCta ? 'rgba(255,255,255,.6)' : 'var(--t3)', lineHeight: 1.6, maxWidth: 480 }}>{block.description}</p>}
                 </div>
                 <div style={{ display: 'flex', gap: 12, flexShrink: 0, flexWrap: 'wrap', alignItems: 'center' }}>
                   {block.ctaLabel && (
@@ -890,7 +1227,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
       const cardBg = block.ctaBgColor || `linear-gradient(135deg,${t.from} 0%,${t.to} 100%)`;
       return (
         <section style={{ padding: sectionPad(block), background: sectionBg }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div style={{ borderRadius: 28, overflow: 'hidden', position: 'relative', background: cardBg, padding: 'clamp(48px,7vw,80px) clamp(32px,6vw,80px)', textAlign: 'center', boxShadow: `0 32px 80px ${t.glow}` }}>
+          <div style={{ borderRadius: 28, overflow: 'hidden', position: 'relative', background: cardBg, padding: 'clamp(48px,7vw,80px) clamp(32px,6vw,80px)', textAlign: 'center', boxShadow: `0 16px 40px rgba(0,0,0,.35)` }}>
             {/* dot pattern */}
             <div style={{ position: 'absolute', inset: 0, opacity: .07, backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
             {/* glow orbs */}
@@ -937,7 +1274,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
     case 'text': {
       const isDark = block.colorTheme === 'dark';
       return (
-        <section style={{ padding: sectionPad(block), background: block.bgColor || (isDark ? '#0f172a' : '#fff') }} className="px-4 sm:px-6 lg:px-8">
+        <section style={{ padding: sectionPad(block), background: block.bgColor || (isDark ? '#0f172a' : 'var(--s0)') }} className="px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <div style={{ borderLeft: `4px solid ${t.from}`, paddingLeft: 24 }}>
               {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: 'clamp(1.4rem,2.5vw,2rem)', color: isDark ? '#fff' : '#0f172a', marginBottom: 12, letterSpacing: '-0.02em' }}>{block.title}</h2>}
@@ -991,19 +1328,19 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
       const useMarquee = hasLogos && logoItems.length >= 6;
       const doubled = [...logoItems, ...logoItems];
       return (
-        <section style={{ padding: sectionPad(block), background: isDark ? '#0a0a10' : '#fafafa', overflow: 'hidden' }}>
+        <section style={{ padding: sectionPad(block), background: isDark ? '#0a0a10' : 'var(--s1)', overflow: 'hidden' }}>
           <style>{`@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}`}</style>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {block.title && <SectionHead title={block.title} t={t} dark={isDark} />}
+            {block.title && <SectionHead title={block.title} t={t} dark={isDark} as={headingAs} />}
             {hasLogos ? (
               useMarquee ? (
                 <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 80, background: `linear-gradient(90deg,${isDark ? '#0a0a10' : '#fafafa'},transparent)`, zIndex: 2, pointerEvents: 'none' }} />
-                  <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 80, background: `linear-gradient(-90deg,${isDark ? '#0a0a10' : '#fafafa'},transparent)`, zIndex: 2, pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 80, background: `linear-gradient(90deg,${isDark ? '#0a0a10' : 'var(--s1)'},transparent)`, zIndex: 2, pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 80, background: `linear-gradient(-90deg,${isDark ? '#0a0a10' : 'var(--s1)'},transparent)`, zIndex: 2, pointerEvents: 'none' }} />
                   <div style={{ display: 'flex', gap: 16, animation: 'marquee 28s linear infinite', width: 'max-content' }}>
                     {doubled.map((logo, i) => (
-                      <div key={i} title={logo.name} style={{ height: 60, padding: '0 24px', background: isDark ? 'rgba(255,255,255,.06)' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)'}`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, minWidth: 120 }}>
-                        {logo.imageUrl ? <img src={resolveImg(logo.imageUrl) ?? logo.imageUrl} alt={logo.name} style={{ height: 32, maxWidth: 100, objectFit: 'contain' }} /> : <span style={{ fontSize: 13, fontWeight: 700, color: isDark ? '#fff' : '#1d1d1f' }}>{logo.name}</span>}
+                      <div key={i} title={logo.name} style={{ height: 60, padding: '0 24px', background: isDark ? 'rgba(255,255,255,.06)' : 'var(--s1)', border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, minWidth: 120 }}>
+                        {logo.imageUrl ? <img src={resolveImg(logo.imageUrl) ?? logo.imageUrl} alt={logo.name} style={{ height: 32, maxWidth: 100, objectFit: 'contain' }} /> : <span style={{ fontSize: 13, fontWeight: 700, color: isDark ? '#fff' : 'var(--t1)' }}>{logo.name}</span>}
                       </div>
                     ))}
                   </div>
@@ -1011,10 +1348,10 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
               ) : (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, justifyContent: 'center', alignItems: 'center' }}>
                   {logoItems.map((logo, i) => (
-                    <div key={i} title={logo.name} style={{ height: 60, padding: '0 24px', background: isDark ? 'rgba(255,255,255,.06)' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)'}`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,.05)', transition: 'all .2s', minWidth: 110 }}
+                    <div key={i} title={logo.name} style={{ height: 60, padding: '0 24px', background: isDark ? 'rgba(255,255,255,.06)' : 'var(--s1)', border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,.05)', transition: 'all .2s', minWidth: 110 }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 20px rgba(0,0,0,.1)'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = isDark ? 'none' : '0 2px 8px rgba(0,0,0,.05)'; }}>
-                      {logo.imageUrl ? <img src={resolveImg(logo.imageUrl) ?? logo.imageUrl} alt={logo.name} style={{ height: 32, maxWidth: 100, objectFit: 'contain' }} /> : <span style={{ fontSize: 13, fontWeight: 700, color: isDark ? '#fff' : '#1d1d1f' }}>{logo.name}</span>}
+                      {logo.imageUrl ? <img src={resolveImg(logo.imageUrl) ?? logo.imageUrl} alt={logo.name} style={{ height: 32, maxWidth: 100, objectFit: 'contain' }} /> : <span style={{ fontSize: 13, fontWeight: 700, color: isDark ? '#fff' : 'var(--t1)' }}>{logo.name}</span>}
                     </div>
                   ))}
                 </div>
@@ -1022,7 +1359,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
             ) : (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
                 {textItems.map((item, i) => (
-                  <span key={i} style={{ padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 600, background: isDark ? 'rgba(255,255,255,.08)' : '#f1f5f9', color: isDark ? '#fff' : '#1d1d1f', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.07)'}` }}>{item}</span>
+                  <span key={i} style={{ padding: '10px 20px', borderRadius: 50, fontSize: 13, fontWeight: 600, background: isDark ? 'rgba(255,255,255,.08)' : 'var(--s2)', color: isDark ? '#fff' : 'var(--t1)', border: `1px solid ${isDark ? 'rgba(255,255,255,.1)' : 'var(--b1)'}` }}>{item}</span>
                 ))}
               </div>
             )}
@@ -1053,7 +1390,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ height: 1, background: 'rgba(0,0,0,.12)' }} />
-            <div style={{ height: 1, background: 'rgba(0,0,0,.06)' }} />
+            <div style={{ height: 1, background: 'var(--b1)' }} />
           </div>
         </div>
       );
@@ -1101,7 +1438,146 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen }
           </div>
         );
       }
-      return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"><hr style={{ borderColor: 'rgba(0,0,0,.08)' }} /></div>;
+      return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"><hr style={{ borderColor: 'var(--b1)' }} /></div>;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PRICING — tabela de planos com toggle Mensal/Anual
+    // ════════════════════════════════════════════════════════════════════════
+    case 'pricing': {
+      const plans = block.pricingPlans || [];
+      if (plans.length === 0) return null;
+      return <PricingBlock block={block} t={t} headingAs={headingAs} />;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // DEMO_FORM — formulário inline de captura de lead
+    // ════════════════════════════════════════════════════════════════════════
+    case 'demo_form': {
+      return <DemoFormBlock block={block} t={t} headingAs={headingAs} />;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // TEAM — cards de membros da equipe
+    // ════════════════════════════════════════════════════════════════════════
+    case 'team': {
+      const members = block.teamMembers || [];
+      if (members.length === 0) return null;
+      const isDark = block.colorTheme === 'dark';
+      const cols = block.teamColumns || 3;
+      const layout = block.teamLayout || 'grid';
+      return (
+        <section style={getBlockStyles(block, t).section} className="px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} />
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: layout === 'list' ? '1fr' : `repeat(auto-fit, minmax(${cols === 4 ? 220 : cols === 3 ? 260 : 320}px, 1fr))`,
+              gap: 20,
+            }}>
+              {members.map((m, i) => (
+                <div key={i} style={{
+                  background: isDark ? 'rgba(255,255,255,.04)' : 'var(--s1)',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`,
+                  borderRadius: 16, padding: '24px 20px', textAlign: 'center',
+                  transition: 'transform .2s, box-shadow .2s',
+                }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(0,0,0,.08)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}>
+                  <div style={{ width: 92, height: 92, borderRadius: '50%', margin: '0 auto 16px', overflow: 'hidden', background: `linear-gradient(135deg, ${t.from}, ${t.to})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 32, fontFamily: "var(--font-heading,'Outfit'),sans-serif" }}>
+                    {m.photo ? <img src={resolveImg(m.photo) ?? m.photo} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : m.name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase()}
+                  </div>
+                  <h3 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 17, fontWeight: 700, color: isDark ? '#fff' : 'var(--t1)', margin: '0 0 4px' }}>{m.name}</h3>
+                  <p style={{ fontSize: 13, color: t.from, fontWeight: 600, margin: '0 0 12px' }}>{m.role}</p>
+                  {m.bio && <p style={{ fontSize: 13, color: isDark ? 'rgba(255,255,255,.6)' : 'var(--t3)', lineHeight: 1.55, margin: '0 0 16px' }}>{m.bio}</p>}
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+                    {m.linkedin && <a href={m.linkedin} target="_blank" rel="noreferrer" aria-label={`LinkedIn de ${m.name}`} style={{ color: isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>}
+                    {m.twitter && <a href={m.twitter} target="_blank" rel="noreferrer" aria-label={`X/Twitter de ${m.name}`} style={{ color: isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>}
+                    {m.email && <a href={`mailto:${m.email}`} aria-label={`Email de ${m.name}`} style={{ color: isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // TABS — conteúdo tabulado horizontal ou vertical
+    // ════════════════════════════════════════════════════════════════════════
+    case 'tabs': {
+      const tabs = block.tabsItems || [];
+      if (tabs.length === 0) return null;
+      return <TabsBlock block={block} t={t} headingAs={headingAs} />;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // COMPARISON_TABLE — matriz features × colunas
+    // ════════════════════════════════════════════════════════════════════════
+    case 'comparison_table': {
+      const cols = block.comparisonColumns || [];
+      const rows = block.comparisonRows || [];
+      if (cols.length === 0 || rows.length === 0) return null;
+      const isDark = block.colorTheme === 'dark';
+      const showCats = block.comparisonShowCategories !== false;
+
+      // Agrupa por categoria se ativado
+      const groups = showCats
+        ? rows.reduce<Record<string, typeof rows>>((acc, r) => {
+            const cat = r.category || '';
+            (acc[cat] ||= []).push(r);
+            return acc;
+          }, {})
+        : { '': rows };
+
+      const renderValue = (v: boolean | string) => {
+        if (v === true) return <span style={{ color: '#22c55e', fontSize: 18, fontWeight: 700 }}>✓</span>;
+        if (v === false) return <span style={{ color: isDark ? 'rgba(255,255,255,.25)' : '#d1d5db', fontSize: 16 }}>✗</span>;
+        return <span style={{ fontSize: 13, color: isDark ? 'rgba(255,255,255,.7)' : 'var(--t2)' }}>{v}</span>;
+      };
+
+      return (
+        <section style={getBlockStyles(block, t).section} className="px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto">
+            <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} />
+            <div style={{ overflowX: 'auto', borderRadius: 16, border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, background: isDark ? 'rgba(255,255,255,.02)' : 'var(--s1)' }}>
+              <table style={{ width: '100%', minWidth: 600, borderCollapse: 'collapse', fontSize: 14 }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '18px 20px', fontWeight: 600, fontSize: 12, color: isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)', textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}` }}>Recurso</th>
+                    {cols.map((col, ci) => (
+                      <th key={ci} style={{ textAlign: 'center', padding: '18px 16px', fontWeight: 700, fontSize: 14, color: col.highlighted ? t.from : (isDark ? '#fff' : 'var(--t1)'), borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, background: col.highlighted ? `${t.from}10` : undefined, position: 'relative' }}>
+                        {col.badge && <span style={{ display: 'block', fontSize: 9, fontWeight: 800, color: t.from, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 4 }}>{col.badge}</span>}
+                        {col.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(groups).map(([category, catRows]) => (
+                    <React.Fragment key={category}>
+                      {showCats && category && (
+                        <tr><td colSpan={cols.length + 1} style={{ padding: '14px 20px 6px', fontWeight: 700, fontSize: 11, color: isDark ? 'rgba(255,255,255,.4)' : 'var(--t4)', textTransform: 'uppercase', letterSpacing: '.1em' }}>{category}</td></tr>
+                      )}
+                      {catRows.map((row, ri) => (
+                        <tr key={ri} style={{ borderTop: `1px solid ${isDark ? 'rgba(255,255,255,.05)' : 'var(--b1)'}` }}>
+                          <td style={{ padding: '14px 20px', color: isDark ? 'rgba(255,255,255,.85)' : 'var(--t1)', fontWeight: 500 }}>{row.feature}</td>
+                          {cols.map((col, ci) => (
+                            <td key={ci} style={{ padding: '14px 16px', textAlign: 'center', background: col.highlighted ? `${t.from}06` : undefined }}>
+                              {renderValue(row.values[ci])}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      );
+    }
 
     default:
       return null;
