@@ -2374,8 +2374,51 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
         </div>
         <div><FL hint="Exibido abaixo dos botões (ex: '3.200 empresas confiam')">Prova social</FL><Input value={block.socialProof || ''} onChange={e => set('socialProof', e.target.value)} placeholder="Mais de 3.200 empresas confiam" className="h-9" /></div>
 
-        <SectionDivider label="Cores" />
-        <ColorField label="Fundo da seção" value={block.bgColor || 'transparent'} onChange={v => set('bgColor', v)} />
+        <SectionDivider label="Fundo externo" />
+        {/* Toggle: com fundo / sem fundo */}
+        {curLayout === 'pill' && (() => {
+          const noOuterBg = block.bgColor === 'transparent' || block.bgColor === 'none';
+          return (
+            <div>
+              <FL hint="Controla o fundo colorido fora do card pílula">Fundo da seção</FL>
+              <div className="grid grid-cols-2 gap-1.5 mb-2">
+                {[{ v: false, label: '🎨 Com fundo' }, { v: true, label: '🚫 Sem fundo' }].map(o => (
+                  <button key={String(o.v)} onClick={() => set('bgColor', o.v ? 'transparent' : (block.ctaBgColor || '#f97316'))}
+                    className="h-9 rounded-xl text-[11px] font-semibold border-2 transition"
+                    style={{ borderColor: noOuterBg === o.v ? '#f97316' : 'rgba(0,0,0,.08)', background: noOuterBg === o.v ? '#fff7ed' : '#f5f5f7', color: noOuterBg === o.v ? '#f97316' : '#6e6e73' }}>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+              {!noOuterBg && (
+                <>
+                  <FL hint="Cor sólida ou use o campo de destaque para gradiente automático">Cor do fundo</FL>
+                  <div className="flex gap-2 items-center mb-2">
+                    <input type="color" value={block.bgColor && block.bgColor !== 'transparent' ? block.bgColor : '#f97316'}
+                      onChange={e => set('bgColor', e.target.value)}
+                      className="w-10 h-10 rounded-xl border-2 cursor-pointer flex-shrink-0" style={{ borderColor: 'rgba(0,0,0,.1)', padding: 2 }} />
+                    <Input value={block.bgColor && block.bgColor !== 'transparent' ? block.bgColor : '#f97316'}
+                      onChange={e => set('bgColor', e.target.value)}
+                      placeholder="#f97316" className="h-9 font-mono text-[13px]" />
+                  </div>
+                  {/* Presets rápidos */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {['#f97316','#2563eb','#9333ea','#16a34a','#0f172a','#1e293b','#dc2626','#0ea5e9'].map(c => (
+                      <button key={c} onClick={() => set('bgColor', c)}
+                        className="w-7 h-7 rounded-lg border-2 transition"
+                        style={{ background: c, borderColor: block.bgColor === c ? '#1d1d1f' : 'transparent' }} />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })()}
+        {curLayout !== 'pill' && (
+          <ColorField label="Fundo da seção" value={block.bgColor || 'transparent'} onChange={v => set('bgColor', v)} />
+        )}
+
+        <SectionDivider label="Cores do card" />
         <ColorField label="Cor de destaque / gradiente" value={block.ctaBgColor || '#f97316'} onChange={v => set('ctaBgColor', v)} />
         <ColorField label="Título" value={block.titleColor || '#ffffff'} onChange={v => set('titleColor', v)} />
         <ColorField label="Descrição" value={block.subtitleColor || 'rgba(255,255,255,0.8)'} onChange={v => set('subtitleColor', v)} />
