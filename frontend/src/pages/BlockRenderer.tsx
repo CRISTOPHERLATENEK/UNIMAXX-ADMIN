@@ -1375,7 +1375,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
             {!noOuterBg && <div style={{ position: 'absolute', right: '-4%', top: '50%', transform: 'translateY(-50%)', width: 280, height: 280, borderRadius: '50%', background: 'rgba(255,255,255,.08)', pointerEvents: 'none' }} />}
             {!noOuterBg && <div style={{ position: 'absolute', left: '-2%', bottom: '-40%', width: 220, height: 220, borderRadius: '50%', background: 'rgba(0,0,0,.08)', pointerEvents: 'none' }} />}
             <div style={{ maxWidth: containerMaxW(block), margin: '0 auto', position: 'relative' }}>
-              <div style={{ background: 'rgba(15,17,30,.82)', backdropFilter: 'blur(20px)', borderRadius: 999, border: '1px solid rgba(255,255,255,.1)', padding: 'clamp(18px,2.5vw,28px) clamp(24px,3vw,40px)', display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap', boxShadow: '0 24px 60px rgba(0,0,0,.35)' }}>
+              <div style={{ background: block.ctaCardBg || 'rgba(15,17,30,.82)', backdropFilter: 'blur(20px)', borderRadius: 999, border: '1px solid rgba(255,255,255,.1)', padding: 'clamp(18px,2.5vw,28px) clamp(24px,3vw,40px)', display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap', boxShadow: '0 24px 60px rgba(0,0,0,.35)' }}>
                 {/* Title col */}
                 <div style={{ flex: '0 0 auto', paddingRight: 28, borderRight: '1px solid rgba(255,255,255,.1)', marginRight: 28 }}>
                   {block.badge && <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '.1em', color: ac, textTransform: 'uppercase', marginBottom: 6 }}>{block.badge}</p>}

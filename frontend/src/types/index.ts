@@ -274,6 +274,7 @@ export interface PageBlock {
   ctaUrl?: string;
   ctaBtnBg?: string;
   ctaBtnText?: string;
+  ctaCardBg?: string;
   socialProof?: string;
   // ── Tipografia por bloco ──────────────────────────────────────────────────
   titleAlign?: 'left' | 'center' | 'right';
