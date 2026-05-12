@@ -38,7 +38,7 @@ function Modal({ sol, page, loading, primaryColor, onClose, onViewPage }: {
   primaryColor: string; onClose: () => void; onViewPage: () => void;
 }) {
   const Icon = ICON_MAP[sol.icon] || Building2;
-  const photo = resolveImg(sol.image);
+  const photo = resolveImg(sol.image) ?? undefined;
   const themeColor = page ? (COLOR_MAP[page.color_theme] || primaryColor) : primaryColor;
 
   const modal = (
@@ -165,7 +165,7 @@ function SolCard({ sol, index, pc, onClick }: {
   sol: any; index: number; pc: string; onClick: () => void;
 }) {
   const Icon = ICON_MAP[sol.icon] || Building2;
-  const photo = resolveImg(sol.image);
+  const photo = resolveImg(sol.image) ?? undefined;
   const [c1, c2] = GRADIENTS[index % GRADIENTS.length];
   // per-card overrides
   const cardPc     = sol.card_accent_color  || pc;

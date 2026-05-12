@@ -173,7 +173,7 @@ function SectionHead({ label, title, subtitle, t, dark = false, center = true, a
 }
 
 // ── PRICING ───────────────────────────────────────────────────────────────────
-function PricingBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAULT_T; headingAs: 'h1' | 'h2' }) {
+function PricingBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAULT_T; headingAs: 'h1' | 'h2' | 'h3' }) {
   const plans = block.pricingPlans || [];
   const showToggle = block.pricingShowToggle !== false && plans.some(p => p.priceAnnual);
   const [annual, setAnnual] = useState(false);
@@ -278,7 +278,7 @@ function PricingBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEF
 }
 
 // ── DEMO_FORM ─────────────────────────────────────────────────────────────────
-function DemoFormBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAULT_T; headingAs: 'h1' | 'h2' }) {
+function DemoFormBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAULT_T; headingAs: 'h1' | 'h2' | 'h3' }) {
   const fields = block.formFields || [];
   const [state, setState] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -406,7 +406,7 @@ function Heading({ as: Tag = 'h2', children, style }: { as?: 'h1' | 'h2' | 'h3';
 }
 
 // ── TABS ──────────────────────────────────────────────────────────────────────
-function TabsBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAULT_T; headingAs: 'h1' | 'h2' }) {
+function TabsBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAULT_T; headingAs: 'h1' | 'h2' | 'h3' }) {
   const tabs = block.tabsItems || [];
   const [active, setActive] = useState(0);
   const isDark = block.colorTheme === 'dark';

@@ -17,7 +17,7 @@ import {
   Play, CreditCard, MousePointer2, Smartphone, Settings,
   Code, Palette, Box, Copy, Trash2, MoveUp, MoveDown,
   ChevronRight, MoreHorizontal, Monitor, Tablet, Smartphone as MobileIcon,
-  Undo2, Redo2, Bookmark, BookOpen
+  Undo2, Redo2, Bookmark, BookOpen, Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

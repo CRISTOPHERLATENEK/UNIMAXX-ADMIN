@@ -67,7 +67,7 @@ function DarkCard({ pc, children }: { pc: string; children: React.ReactNode }) {
 
 // ── Block Renderer ─────────────────────────────────────────────────────────
 
-function BlockRenderer({ block, t }: { block: PageBlock; t: typeof THEME[string] }) {
+function BlockRenderer({ block, t, isFirstBlock = false }: { block: PageBlock; t: typeof THEME[string]; isFirstBlock?: boolean }) {
   if (!block.visible) return null;
   const isDark = block.colorTheme === 'dark';
   const isBrand = block.colorTheme === 'brand';
