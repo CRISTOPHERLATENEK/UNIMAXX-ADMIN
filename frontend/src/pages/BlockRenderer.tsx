@@ -1360,32 +1360,30 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
 
     // ── CTA ───────────────────────────────────────────────────────────────────
     case 'cta': {
-      const bgOverride = block.bgColor;
-      const isDarkCta = block.colorTheme === 'dark';
-      const splitLayout = block.ctaLayout === 'split';
+      const ctaStyle = block.ctaLayout || 'centered';
+      const ac = block.ctaBgColor || t.from;
+      const titleFs = block.titleSize || TITLE_SIZE_MAP[block.titleSizePreset || 'xl'];
+      const subFs = block.subtitleSize || SUBTITLE_SIZE_MAP[block.subtitleSizePreset || 'md'];
 
-      // Split layout: texto esquerda + botões direita
-      if (splitLayout) {
+      // ── 1. CENTERED — gradient card com dot pattern ────────────────────────
+      if (ctaStyle === 'centered') {
+        const cardBg = `linear-gradient(135deg,${ac} 0%,${t.to || ac} 100%)`;
         return (
-          <section style={{ padding: sectionPad(block), background: bgOverride || (isDarkCta ? '#0f172a' : 'var(--s1)') }} className="px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-              <div style={{ borderRadius: 24, border: `1px solid ${isDarkCta ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, background: bgOverride || (isDarkCta ? 'rgba(255,255,255,.04)' : 'var(--s1)'), padding: 'clamp(28px,4vw,48px) clamp(24px,5vw,56px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: 260 }}>
-                  {block.badge && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', background: `${t.from}18`, color: t.from, marginBottom: 12 }}>{block.badge}</span>
-                  )}
-                  {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 800, fontSize: 'clamp(1.3rem,2.5vw,1.9rem)', color: isDarkCta ? '#fff' : '#0f172a', lineHeight: 1.2, letterSpacing: '-0.02em', marginBottom: block.description ? 10 : 0 }}>{block.title}</h2>}
-                  {block.description && <p style={{ fontSize: '0.95rem', color: isDarkCta ? 'rgba(255,255,255,.6)' : 'var(--t3)', lineHeight: 1.6, maxWidth: 480 }}>{block.description}</p>}
-                </div>
-                <div style={{ display: 'flex', gap: 12, flexShrink: 0, flexWrap: 'wrap', alignItems: 'center' }}>
-                  {block.ctaLabel && renderCtaButton(
-                    { ...block, ctaBgColor: block.ctaBtnBg || t.from, ctaTextColor: block.ctaBtnText || '#fff' },
-                    t, block.ctaLabel, block.ctaLink || '/cliente'
-                  )}
-                  {block.secondaryLabel && renderCtaButton(
-                    { ...block, ctaStyle: 'outlined', ctaTextColor: isDarkCta ? 'rgba(255,255,255,.8)' : '#475569' },
-                    t, block.secondaryLabel, block.secondaryLink || '/'
-                  )}
+          <section style={{ padding: sectionPad(block), background: block.bgColor || 'transparent' }} className="px-4 sm:px-6 lg:px-8">
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+              <div style={{ borderRadius: cardRadius(block) || 28, overflow: 'hidden', position: 'relative', background: cardBg, padding: 'clamp(48px,7vw,80px) clamp(32px,6vw,80px)', textAlign: 'center', boxShadow: `0 24px 60px ${t.glow}` }}>
+                <div style={{ position: 'absolute', inset: 0, opacity: .06, backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '24px 24px', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: '-25%', right: '-8%', width: 340, height: 340, borderRadius: '50%', background: 'rgba(255,255,255,.1)', filter: 'blur(70px)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '-30%', left: '-5%', width: 300, height: 300, borderRadius: '50%', background: 'rgba(0,0,0,.15)', filter: 'blur(70px)', pointerEvents: 'none' }} />
+                <div style={{ position: 'relative' }}>
+                  {block.badge && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', background: 'rgba(255,255,255,.2)', color: '#fff', backdropFilter: 'blur(8px)', marginBottom: 20, border: '1px solid rgba(255,255,255,.3)' }}>{block.badge}</span>}
+                  {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: titleFs, color: block.titleColor || '#fff', lineHeight: 1.1, letterSpacing: '-0.025em', marginBottom: 14 }}>{block.title}</h2>}
+                  {block.description && <p style={{ fontSize: subFs, color: block.subtitleColor || 'rgba(255,255,255,.82)', maxWidth: 520, margin: '0 auto 36px', lineHeight: 1.7 }}>{block.description}</p>}
+                  <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {block.ctaLabel && renderCtaButton({ ...block, ctaBgColor: block.ctaBtnBg || '#fff', ctaTextColor: block.ctaBtnText || ac, ctaStyle: 'filled' }, t, block.ctaLabel, block.ctaLink || '/cliente')}
+                    {block.secondaryLabel && renderCtaButton({ ...block, ctaStyle: 'ghost', ctaBgColor: 'rgba(255,255,255,.15)', ctaTextColor: '#fff' }, t, block.secondaryLabel, block.secondaryLink || '/')}
+                  </div>
+                  {block.socialProof && <p style={{ marginTop: 28, fontSize: 12, color: 'rgba(255,255,255,.5)', fontWeight: 500 }}>{block.socialProof}</p>}
                 </div>
               </div>
             </div>
@@ -1393,43 +1391,80 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
         );
       }
 
-      // Layout centralizado (padrão)
-      // bgColor = fundo da seção (fora do card), ctaBgColor = fundo do card CTA
-      const sectionBg = block.bgColor || 'transparent';
-      const cardBg = block.ctaBgColor || `linear-gradient(135deg,${t.from} 0%,${t.to} 100%)`;
-      return (
-        <section style={{ padding: sectionPad(block), background: sectionBg }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div style={{ borderRadius: 28, overflow: 'hidden', position: 'relative', background: cardBg, padding: 'clamp(48px,7vw,80px) clamp(32px,6vw,80px)', textAlign: 'center', boxShadow: `0 16px 40px rgba(0,0,0,.35)` }}>
-            {/* dot pattern */}
-            <div style={{ position: 'absolute', inset: 0, opacity: .07, backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none' }} />
-            {/* glow orbs */}
-            <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 320, height: 320, borderRadius: '50%', background: 'rgba(255,255,255,.08)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: '-30%', left: '-5%', width: 280, height: 280, borderRadius: '50%', background: 'rgba(0,0,0,.12)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-            <div style={{ position: 'relative' }}>
-              {/* Badge/eyebrow */}
-              {block.badge && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', background: 'rgba(255,255,255,.18)', color: '#fff', backdropFilter: 'blur(8px)', marginBottom: 18, border: '1px solid rgba(255,255,255,.25)' }}>{block.badge}</span>
-              )}
-              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: block.titleSize || TITLE_SIZE_MAP[block.titleSizePreset || 'xl'], color: block.titleColor || '#fff', lineHeight: 1.1, letterSpacing: '-0.025em', marginBottom: 16 }}>{block.title}</h2>}
-              {block.description && <p style={{ fontSize: block.subtitleSize || SUBTITLE_SIZE_MAP[block.subtitleSizePreset || 'md'], color: block.subtitleColor || 'rgba(255,255,255,.8)', marginBottom: 36, maxWidth: 520, margin: '0 auto 36px', lineHeight: 1.7 }}>{block.description}</p>}
-              <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-                {block.ctaLabel && renderCtaButton(
-                  { ...block, ctaBgColor: block.ctaBtnBg || '#fff', ctaTextColor: block.ctaBtnText || t.from },
-                  t, block.ctaLabel, block.ctaLink || '/cliente'
-                )}
-                {block.secondaryLabel && renderCtaButton(
-                  { ...block, ctaStyle: 'outlined', ctaBgColor: 'rgba(255,255,255,.15)', ctaTextColor: '#fff' },
-                  t, block.secondaryLabel, block.secondaryLink || '/'
-                )}
+      // ── 2. SPLIT — texto esquerda, botões direita ─────────────────────────
+      if (ctaStyle === 'split') {
+        const isDark = block.colorTheme === 'dark';
+        return (
+          <section style={{ padding: sectionPad(block), background: block.bgColor || (isDark ? '#0a0c10' : 'var(--s0)') }} className="px-4 sm:px-6 lg:px-8">
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+              <div style={{ borderRadius: cardRadius(block) || 20, border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, background: isDark ? 'rgba(255,255,255,.03)' : 'var(--s1)', padding: 'clamp(28px,4vw,48px) clamp(24px,5vw,56px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap', boxShadow: isDark ? 'none' : '0 4px 24px rgba(0,0,0,.06)' }}>
+                <div style={{ flex: 1, minWidth: 260 }}>
+                  {block.badge && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', background: `${ac}18`, color: ac, marginBottom: 12 }}>{block.badge}</span>}
+                  {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 800, fontSize: titleFs, color: block.titleColor || (isDark ? '#fff' : '#0f172a'), lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: block.description ? 10 : 0 }}>{block.title}</h2>}
+                  {block.description && <p style={{ fontSize: subFs, color: block.subtitleColor || (isDark ? 'rgba(255,255,255,.55)' : 'var(--t3)'), lineHeight: 1.65, maxWidth: 500 }}>{block.description}</p>}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0, alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    {block.ctaLabel && renderCtaButton({ ...block, ctaBgColor: block.ctaBtnBg || ac, ctaTextColor: block.ctaBtnText || '#fff' }, t, block.ctaLabel, block.ctaLink || '/cliente')}
+                    {block.secondaryLabel && renderCtaButton({ ...block, ctaStyle: 'outlined', ctaTextColor: isDark ? 'rgba(255,255,255,.75)' : '#475569' }, t, block.secondaryLabel, block.secondaryLink || '/')}
+                  </div>
+                  {block.socialProof && <p style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,.35)' : 'var(--t3)', fontWeight: 500, textAlign: 'right' }}>{block.socialProof}</p>}
+                </div>
               </div>
-              {/* Social proof */}
-              {block.socialProof && (
-                <p style={{ marginTop: 28, fontSize: 12, color: 'rgba(255,255,255,.55)', fontWeight: 500 }}>{block.socialProof}</p>
-              )}
             </div>
-          </div>
-        </section>
-      );
+          </section>
+        );
+      }
+
+      // ── 3. GLOW — escuro com orbe de luz vibrante, efeito cinematic ────────
+      if (ctaStyle === 'glow') {
+        return (
+          <section style={{ padding: sectionPad(block), background: block.bgColor || '#06070c', position: 'relative', overflow: 'hidden' }} className="px-4 sm:px-6 lg:px-8">
+            {/* Radial glow orb */}
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 700, height: 500, borderRadius: '50%', background: `radial-gradient(ellipse,${ac}35 0%,transparent 70%)`, filter: 'blur(40px)', pointerEvents: 'none' }} />
+            {/* Noise grid overlay */}
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(0deg,transparent,transparent 39px,${ac}08 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,${ac}06 40px)`, pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', maxWidth: containerMaxW(block), margin: '0 auto', textAlign: 'center' }}>
+              {block.badge && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', borderRadius: 999, border: `1px solid ${ac}50`, background: `${ac}12`, backdropFilter: 'blur(12px)', marginBottom: 24 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: ac, boxShadow: `0 0 8px ${ac}` }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: ac }}>{block.badge}</span>
+                </div>
+              )}
+              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: titleFs, color: block.titleColor || '#fff', lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: 20, textShadow: `0 0 80px ${ac}50` }}>{block.title}</h2>}
+              {block.description && <p style={{ fontSize: subFs, color: block.subtitleColor || 'rgba(255,255,255,.6)', maxWidth: 540, margin: '0 auto 40px', lineHeight: 1.75 }}>{block.description}</p>}
+              <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {block.ctaLabel && renderCtaButton({ ...block, ctaBgColor: block.ctaBtnBg || ac, ctaTextColor: block.ctaBtnText || '#fff', ctaStyle: 'gradient' }, t, block.ctaLabel, block.ctaLink || '/cliente')}
+                {block.secondaryLabel && renderCtaButton({ ...block, ctaStyle: 'outlined', ctaBgColor: 'transparent', ctaTextColor: 'rgba(255,255,255,.7)' }, t, block.secondaryLabel, block.secondaryLink || '/')}
+              </div>
+              {block.socialProof && <p style={{ marginTop: 32, fontSize: 12, color: 'rgba(255,255,255,.35)', fontWeight: 500, letterSpacing: '.02em' }}>{block.socialProof}</p>}
+            </div>
+          </section>
+        );
+      }
+
+      // ── 4. MINIMAL — clean, borda esquerda, sem decoração ─────────────────
+      {
+        const isDark = block.colorTheme === 'dark';
+        return (
+          <section style={{ padding: sectionPad(block), background: block.bgColor || (isDark ? '#0f172a' : 'var(--s0)') }} className="px-4 sm:px-6 lg:px-8">
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto', borderLeft: `4px solid ${ac}`, paddingLeft: 'clamp(24px,4vw,48px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 240 }}>
+                {block.badge && <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.12em', color: ac, textTransform: 'uppercase', marginBottom: 10 }}>{block.badge}</p>}
+                {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 800, fontSize: titleFs, color: block.titleColor || (isDark ? '#fff' : '#0f172a'), lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: block.description ? 8 : 0 }}>{block.title}</h2>}
+                {block.description && <p style={{ fontSize: subFs, color: block.subtitleColor || (isDark ? 'rgba(255,255,255,.5)' : 'var(--t3)'), lineHeight: 1.65, maxWidth: 560 }}>{block.description}</p>}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  {block.ctaLabel && renderCtaButton({ ...block, ctaBgColor: block.ctaBtnBg || ac, ctaTextColor: block.ctaBtnText || '#fff' }, t, block.ctaLabel, block.ctaLink || '/cliente')}
+                  {block.secondaryLabel && renderCtaButton({ ...block, ctaStyle: 'ghost', ctaTextColor: isDark ? 'rgba(255,255,255,.7)' : '#475569' }, t, block.secondaryLabel, block.secondaryLink || '/')}
+                </div>
+                {block.socialProof && <p style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,.3)' : 'var(--t3)', fontWeight: 500 }}>{block.socialProof}</p>}
+              </div>
+            </div>
+          </section>
+        );
+      }
     }
 
     // ── TEXT ──────────────────────────────────────────────────────────────────

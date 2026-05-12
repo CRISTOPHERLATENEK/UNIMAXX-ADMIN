@@ -2067,7 +2067,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
       { v: 'checklist', label: 'Checklist', desc: 'Check com pílula arredondada', preview: '✓' },
       { v: 'minimal_pills', label: 'Pílulas Mínimas', desc: 'Tags arredondadas, minimalista', preview: '○' },
       { v: 'cards_hover', label: 'Cards Hover', desc: 'Cards com animação no hover', preview: '▣' },
-      { v: 'half_split', label: 'Half Split', desc: 'Metade claro / metade escuro com itens em cada lado', preview: '⬒' },
+
     ];
     const currentLayout = block.featuresLayout || 'split_dark';
     const accent = block.featuresAccent || '#f97316';
@@ -2329,52 +2329,63 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
     </div>
   );
 
-  if (block.type === 'cta') return (
-    <div className="space-y-3">
-      <AppearanceControls />
+  if (block.type === 'cta') {
+    const ctaLayouts = [
+      { v: 'centered', emoji: '⬛', label: 'Gradiente', desc: 'Card colorido, centralizado, com dots' },
+      { v: 'split',    emoji: '◫',  label: 'Dividido',  desc: 'Texto à esq., botões à dir.' },
+      { v: 'glow',     emoji: '✦',  label: 'Glow',      desc: 'Fundo escuro + orbe de luz vibrante' },
+      { v: 'minimal',  emoji: '—',  label: 'Mínimo',    desc: 'Borda lateral, sem decoração' },
+    ];
+    const curLayout = block.ctaLayout || 'centered';
+    return (
+      <div className="space-y-3">
+        <AppearanceControls />
 
-      {/* Layout */}
-      <div>
-        <FL hint="Centralizado: título + botões no centro. Dividido: texto à esquerda, botões à direita">Layout</FL>
+        <SectionDivider label="Estilo" />
         <div className="grid grid-cols-2 gap-1.5">
-          {[{ v: 'centered', label: '⬛ Centralizado' }, { v: 'split', label: '⬜ Dividido' }].map(o => (
-            <button key={o.v} onClick={() => set('ctaLayout', o.v)}
-              className="h-9 rounded-xl text-[11px] font-semibold border-2 transition"
-              style={{
-                borderColor: (block.ctaLayout || 'centered') === o.v ? '#f97316' : 'rgba(0,0,0,.08)',
-                background: (block.ctaLayout || 'centered') === o.v ? '#fff7ed' : '#f5f5f7',
-                color: (block.ctaLayout || 'centered') === o.v ? '#f97316' : '#6e6e73',
-              }}>
-              {o.label}
-            </button>
-          ))}
+          {ctaLayouts.map(o => {
+            const sel = curLayout === o.v;
+            return (
+              <button key={o.v} onClick={() => set('ctaLayout', o.v)}
+                className="text-left px-3 py-2.5 rounded-xl border-2 transition"
+                style={{ borderColor: sel ? '#f97316' : 'rgba(0,0,0,.08)', background: sel ? '#fff7ed' : '#fafafa' }}>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span style={{ color: sel ? '#f97316' : '#aaa', fontSize: 14 }}>{o.emoji}</span>
+                  <p className="text-[12px] font-bold" style={{ color: sel ? '#f97316' : '#1d1d1f' }}>{o.label}</p>
+                  {sel && <span className="text-[10px] font-bold ml-auto" style={{ color: '#f97316' }}>✓</span>}
+                </div>
+                <p className="text-[10px] leading-snug" style={{ color: '#98989d' }}>{o.desc}</p>
+              </button>
+            );
+          })}
         </div>
-      </div>
 
-      <div><FL hint="Pílula pequena exibida acima do título (opcional)">Badge</FL><Input value={block.badge || ''} onChange={e => set('badge', e.target.value)} placeholder="✨ Novidade" className="h-9" /></div>
-      <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Pronto para transformar seu negócio?" className="h-9" /></div>
-      <div><FL>Descrição</FL><Textarea value={block.description || ''} onChange={e => set('description', e.target.value)} rows={2} placeholder="Fale com nossos especialistas…" className="resize-none text-[13px]" /></div>
-      <div className="grid grid-cols-2 gap-2">
-        <div><FL>Botão principal</FL><Input value={block.ctaLabel || ''} onChange={e => set('ctaLabel', e.target.value)} placeholder="Falar com Especialista" className="h-9" /></div>
-        <div><FL>Link</FL><Input value={block.ctaLink || ''} onChange={e => set('ctaLink', e.target.value)} placeholder="/cliente" className="h-9" /></div>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div><FL>Botão secundário</FL><Input value={block.secondaryLabel || ''} onChange={e => set('secondaryLabel', e.target.value)} placeholder="Ver soluções" className="h-9" /></div>
-        <div><FL>Link secundário</FL><Input value={block.secondaryLink || ''} onChange={e => set('secondaryLink', e.target.value)} placeholder="/solucoes" className="h-9" /></div>
-      </div>
-      <div><FL hint="Texto de prova social exibido abaixo dos botões (opcional)">Prova social</FL><Input value={block.socialProof || ''} onChange={e => set('socialProof', e.target.value)} placeholder="Mais de 3.200 empresas confiam" className="h-9" /></div>
+        <SectionDivider label="Conteúdo" />
+        <div><FL hint="Pílula/badge exibida acima do título">Badge / eyebrow</FL><Input value={block.badge || ''} onChange={e => set('badge', e.target.value)} placeholder="✨ Novidade" className="h-9" /></div>
+        <div><FL>Título</FL><Input value={block.title || ''} onChange={e => set('title', e.target.value)} placeholder="Pronto para transformar?" className="h-9" /></div>
+        <div><FL>Descrição</FL><Textarea value={block.description || ''} onChange={e => set('description', e.target.value)} rows={2} placeholder="Fale com nossos especialistas…" className="resize-none text-[13px]" /></div>
+        <div className="grid grid-cols-2 gap-2">
+          <div><FL>Botão principal</FL><Input value={block.ctaLabel || ''} onChange={e => set('ctaLabel', e.target.value)} placeholder="Falar com Especialista" className="h-9" /></div>
+          <div><FL>Link</FL><Input value={block.ctaLink || ''} onChange={e => set('ctaLink', e.target.value)} placeholder="/cliente" className="h-9" /></div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div><FL>Botão secundário</FL><Input value={block.secondaryLabel || ''} onChange={e => set('secondaryLabel', e.target.value)} placeholder="Ver soluções" className="h-9" /></div>
+          <div><FL>Link secundário</FL><Input value={block.secondaryLink || ''} onChange={e => set('secondaryLink', e.target.value)} placeholder="/solucoes" className="h-9" /></div>
+        </div>
+        <div><FL hint="Exibido abaixo dos botões (ex: '3.200 empresas confiam')">Prova social</FL><Input value={block.socialProof || ''} onChange={e => set('socialProof', e.target.value)} placeholder="Mais de 3.200 empresas confiam" className="h-9" /></div>
 
-      <SectionDivider label="Cores" />
-      <ColorField label="Fundo da seção (fora do card)" value={block.bgColor || 'transparent'} onChange={v => set('bgColor', v)} />
-      <ColorField label="Fundo do card CTA" value={block.ctaBgColor || '#f97316'} onChange={v => set('ctaBgColor', v)} />
-      <ColorField label="Título" value={block.titleColor || '#ffffff'} onChange={v => set('titleColor', v)} />
-      <ColorField label="Descrição" value={block.subtitleColor || 'rgba(255,255,255,0.8)'} onChange={v => set('subtitleColor', v)} />
-      <ColorField label="Botão principal (fundo)" value={block.ctaBtnBg || '#ffffff'} onChange={v => set('ctaBtnBg', v)} />
-      <ColorField label="Botão principal (texto)" value={block.ctaBtnText || '#f97316'} onChange={v => set('ctaBtnText', v)} />
+        <SectionDivider label="Cores" />
+        <ColorField label="Fundo da seção" value={block.bgColor || 'transparent'} onChange={v => set('bgColor', v)} />
+        <ColorField label="Cor de destaque / gradiente" value={block.ctaBgColor || '#f97316'} onChange={v => set('ctaBgColor', v)} />
+        <ColorField label="Título" value={block.titleColor || '#ffffff'} onChange={v => set('titleColor', v)} />
+        <ColorField label="Descrição" value={block.subtitleColor || 'rgba(255,255,255,0.8)'} onChange={v => set('subtitleColor', v)} />
+        <ColorField label="Botão — fundo" value={block.ctaBtnBg || '#ffffff'} onChange={v => set('ctaBtnBg', v)} />
+        <ColorField label="Botão — texto" value={block.ctaBtnText || '#f97316'} onChange={v => set('ctaBtnText', v)} />
 
-      <SpacingRadiusControls block={block} onChange={onChange} />
-    </div>
-  );
+        <SpacingRadiusControls block={block} onChange={onChange} />
+      </div>
+    );
+  }
 
   if (block.type === 'text') return (
     <div className="space-y-3">
