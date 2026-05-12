@@ -3378,13 +3378,14 @@ export function PageBuilder({
           </div>
         </div>
 
-        <div style={{ flex: 1, padding: '40px 20px', overflowY: 'auto', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ flex: 1, padding: '40px 20px', overflowY: 'auto', overflowX: 'hidden' }}>
           <div style={{
             width: previewMode === 'desktop' ? '100%' : previewMode === 'tablet' ? '768px' : '375px',
             maxWidth: '100%',
+            margin: '0 auto',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             background: '#fff',
-            minHeight: '100%',
+            minHeight: 400,
             borderRadius: previewMode === 'desktop' ? '0' : '24px',
             boxShadow: '0 20px 50px rgba(0,0,0,0.1)',
             overflow: 'hidden',
