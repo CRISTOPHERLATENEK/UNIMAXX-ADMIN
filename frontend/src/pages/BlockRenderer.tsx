@@ -1012,6 +1012,131 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
         );
       }
 
+      // ── dark_numbered ─────────────────────────────────────────────────────────
+      if (layout === 'dark_numbered') {
+        return (
+          <section style={{ padding: sectionPad(block), background: block.bgColor || '#080a0f' }} className="px-4 sm:px-6 lg:px-8">
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+              <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} dark block={block} />
+              <div style={{ display: 'grid', gridTemplateColumns: block.gridColumns ? `repeat(${block.gridColumns},1fr)` : 'repeat(auto-fill,minmax(260px,1fr))', gap: 1, border: '1px solid rgba(255,255,255,.06)', borderRadius: rr, overflow: 'hidden' }}>
+                {allItems.map((item, i) => {
+                  const lbl = typeof item === 'string' ? item : item.label;
+                  const ico = typeof item === 'string' ? '' : item.icon;
+                  const dsc = typeof item === 'string' ? '' : (item.desc || '');
+                  return (
+                    <div key={i} style={{ padding: '36px 28px', background: 'rgba(255,255,255,.015)', borderRight: '1px solid rgba(255,255,255,.06)', borderBottom: '1px solid rgba(255,255,255,.06)', transition: 'background .2s', cursor: 'default' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,.04)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,.015)'; }}>
+                      <div style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(3rem,5vw,4.5rem)', fontWeight: 900, lineHeight: 1, background: `linear-gradient(135deg,${ac}80,${ac}20)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 20, letterSpacing: '-0.04em' }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </div>
+                      {ico && <div style={{ fontSize: 20, marginBottom: 10, opacity: .7 }}>{ico}</div>}
+                      <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 16, color: '#fff', lineHeight: 1.35, marginBottom: dsc ? 8 : 0 }}>{lbl}</p>
+                      {dsc && <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,.42)', lineHeight: 1.65 }}>{dsc}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      // ── bento ─────────────────────────────────────────────────────────────────
+      if (layout === 'bento') {
+        return (
+          <section style={{ padding: sectionPad(block), background: block.bgColor || '#080a0f' }} className="px-4 sm:px-6 lg:px-8">
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+              <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} dark block={block} />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                {allItems.map((item, i) => {
+                  const lbl = typeof item === 'string' ? item : item.label;
+                  const ico = typeof item === 'string' ? '' : item.icon;
+                  const dsc = typeof item === 'string' ? '' : (item.desc || '');
+                  const isFeatured = i === 0;
+                  return (
+                    <div key={i} style={{
+                      gridColumn: isFeatured ? 'span 2' : 'span 1',
+                      padding: isFeatured ? '48px 40px' : '32px 28px',
+                      background: isFeatured ? `linear-gradient(135deg,${ac}20,${ac}06)` : 'rgba(255,255,255,.025)',
+                      border: `1px solid ${isFeatured ? ac + '40' : 'rgba(255,255,255,.07)'}`,
+                      borderRadius: rr, position: 'relative', overflow: 'hidden',
+                      transition: 'border-color .2s, transform .25s', cursor: 'default',
+                    }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}60`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = isFeatured ? `${ac}40` : 'rgba(255,255,255,.07)'; (e.currentTarget as HTMLElement).style.transform = ''; }}>
+                      {isFeatured && <div style={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: `${ac}18`, filter: 'blur(50px)', pointerEvents: 'none' }} />}
+                      <div style={{ position: 'relative' }}>
+                        {ico && (
+                          <div style={{ fontSize: isFeatured ? 28 : 22, marginBottom: 14, width: isFeatured ? 56 : 44, height: isFeatured ? 56 : 44, borderRadius: 14, background: `${ac}18`, border: `1px solid ${ac}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{ico}</div>
+                        )}
+                        <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 800, fontSize: isFeatured ? 'clamp(1.3rem,2.2vw,1.75rem)' : 15, color: '#fff', lineHeight: 1.25, marginBottom: dsc ? 10 : 0 }}>{lbl}</p>
+                        {dsc && <p style={{ fontSize: isFeatured ? 14.5 : 13, color: 'rgba(255,255,255,.48)', lineHeight: 1.65, marginTop: 8 }}>{dsc}</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      // ── minimal_pills ─────────────────────────────────────────────────────────
+      if (layout === 'minimal_pills') {
+        return (
+          <section style={{ padding: sectionPad(block), background: block.bgColor || 'var(--s0)' }} className="px-4 sm:px-6 lg:px-8">
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+              <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} block={block} />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: block.titleAlign === 'left' ? 'flex-start' : 'center' }}>
+                {allItems.map((item, i) => {
+                  const lbl = typeof item === 'string' ? item : item.label;
+                  const ico = typeof item === 'string' ? '' : item.icon;
+                  return (
+                    <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 999, border: '1.5px solid var(--b1)', background: 'var(--s1)', fontSize: 14, fontWeight: 600, color: 'var(--t1)', transition: 'all .2s', cursor: 'default', boxShadow: '0 2px 8px rgba(0,0,0,.04)' }}
+                      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = `${ac}60`; el.style.color = ac; el.style.background = `${ac}08`; }}
+                      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--b1)'; el.style.color = 'var(--t1)'; el.style.background = 'var(--s1)'; }}>
+                      {ico && <span style={{ fontSize: 16 }}>{ico}</span>}
+                      <span>{lbl}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      // ── grid ─────────────────────────────────────────────────────────────────
+      if (layout === 'grid') {
+        const isDark = block.colorTheme === 'dark';
+        return (
+          <section style={{ padding: sectionPad(block), background: block.bgColor || (isDark ? '#0f172a' : 'var(--s0)') }} className="px-4 sm:px-6 lg:px-8">
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+              <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} dark={isDark} block={block} />
+              <div style={{ display: 'grid', gridTemplateColumns: block.gridColumns ? `repeat(${block.gridColumns},1fr)` : 'repeat(auto-fill,minmax(180px,1fr))', gap: 24 }}>
+                {allItems.map((item, i) => {
+                  const lbl = typeof item === 'string' ? item : item.label;
+                  const ico = typeof item === 'string' ? '' : item.icon;
+                  const dsc = typeof item === 'string' ? '' : (item.desc || '');
+                  return (
+                    <div key={i} style={{ textAlign: 'center', padding: '28px 16px', borderRadius: rr, background: isDark ? 'rgba(255,255,255,.04)' : 'var(--s1)', border: `1px solid ${isDark ? 'rgba(255,255,255,.07)' : 'var(--b1)'}`, transition: 'border-color .2s, transform .25s', cursor: 'default' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ac}50`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = isDark ? 'rgba(255,255,255,.07)' : 'var(--b1)'; (e.currentTarget as HTMLElement).style.transform = ''; }}>
+                      {ico && (
+                        <div style={{ fontSize: 28, width: 56, height: 56, borderRadius: 16, background: `${ac}14`, border: `1px solid ${ac}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>{ico}</div>
+                      )}
+                      <p style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 700, fontSize: 15, color: isDark ? '#fff' : 'var(--t1)', marginBottom: dsc ? 8 : 0, lineHeight: 1.3 }}>{lbl}</p>
+                      {dsc && <p style={{ fontSize: 13, color: isDark ? 'rgba(255,255,255,.45)' : 'var(--t3)', lineHeight: 1.6 }}>{dsc}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
       // default: cards_hover
       return (
         <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8">
