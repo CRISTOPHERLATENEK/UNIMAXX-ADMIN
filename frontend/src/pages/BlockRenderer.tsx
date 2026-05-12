@@ -24,6 +24,18 @@ const RADIUS: Record<string, number> = { none: 0, small: 8, medium: 16, large: 2
 function sectionPad(block: PageBlock) { return SPACING[block.blockSpacing || 'normal']; }
 function cardRadius(block: PageBlock) { return RADIUS[block.blockRadius || 'large']; }
 
+const TITLE_SIZE_MAP: Record<string, string> = {
+  sm: 'clamp(1.1rem,2vw,1.5rem)', md: 'clamp(1.4rem,2.5vw,2rem)',
+  lg: 'clamp(1.75rem,3.5vw,2.75rem)', xl: 'clamp(2rem,4vw,3.5rem)', '2xl': 'clamp(2.5rem,5vw,4.5rem)',
+};
+const SUBTITLE_SIZE_MAP: Record<string, string> = { sm: '0.9rem', md: '1.05rem', lg: '1.25rem' };
+const CONTAINER_WIDTH_MAP: Record<string, string> = {
+  narrow: '640px', normal: '1100px', wide: '1400px', full: '100%',
+};
+function containerMaxW(block: PageBlock) {
+  return CONTAINER_WIDTH_MAP[block.containerWidth || 'normal'];
+}
+
 function getBlockStyles(block: PageBlock, t: typeof DEFAULT_T) {
   return {
     section: {
@@ -32,18 +44,51 @@ function getBlockStyles(block: PageBlock, t: typeof DEFAULT_T) {
     },
     title: {
       color: block.titleColor || (block.colorTheme === 'dark' || block.colorTheme === 'brand' ? '#ffffff' : 'var(--t1)'),
-      fontSize: block.titleSize || 'clamp(1.5rem, 3vw, 2.5rem)',
+      fontSize: block.titleSize || TITLE_SIZE_MAP[block.titleSizePreset || 'lg'],
       fontFamily: "var(--font-heading,'Outfit'), sans-serif",
+      textAlign: (block.titleAlign || 'center') as React.CSSProperties['textAlign'],
     },
     subtitle: {
       color: block.subtitleColor || (block.colorTheme === 'dark' || block.colorTheme === 'brand' ? 'rgba(255,255,255,0.7)' : 'var(--t3)'),
-      fontSize: block.subtitleSize || '1.125rem',
+      fontSize: block.subtitleSize || SUBTITLE_SIZE_MAP[block.subtitleSizePreset || 'md'],
     },
     cta: {
       background: block.ctaBgColor || (block.colorTheme === 'brand' ? '#ffffff' : t.from),
       color: block.ctaTextColor || (block.colorTheme === 'brand' ? t.from : '#ffffff'),
     }
   };
+}
+
+// ── CTA button renderer (respeita ctaStyle + ctaRadius) ──────────────────────
+function renderCtaButton(
+  block: PageBlock, t: typeof DEFAULT_T,
+  label: string, href: string,
+  opts?: { accent?: string; className?: string }
+) {
+  const style = block.ctaStyle || 'filled';
+  const rad = block.ctaRadius || 'rounded';
+  const radius = rad === 'pill' ? 999 : rad === 'rounded' ? 12 : 6;
+  const accent = opts?.accent || block.ctaBgColor || t.from;
+  const accentText = block.ctaTextColor || '#fff';
+
+  const base: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+    padding: '13px 28px', borderRadius: radius,
+    fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none',
+    transition: 'all .2s', border: '2px solid transparent',
+  };
+
+  let extra: React.CSSProperties = {};
+  if (style === 'filled')   extra = { background: accent, color: accentText, boxShadow: `0 8px 24px ${t.glow}` };
+  if (style === 'outlined') extra = { background: 'transparent', color: accent, border: `2px solid ${accent}` };
+  if (style === 'ghost')    extra = { background: `${accent}15`, color: accent, border: '2px solid transparent' };
+  if (style === 'gradient') extra = { background: `linear-gradient(90deg,${accent},${t.to || accent})`, color: '#fff', boxShadow: `0 8px 24px ${t.glow}` };
+
+  return (
+    <a href={href} style={{ ...base, ...extra }}>
+      {label} <ArrowRight size={16} />
+    </a>
+  );
 }
 
 // ── Shared animations CSS ─────────────────────────────────────────────────────
@@ -88,24 +133,28 @@ function DarkCard({ pc, children }: { pc: string; children: React.ReactNode }) {
 }
 
 // ── Section heading ───────────────────────────────────────────────────────────
-function SectionHead({ label, title, subtitle, t, dark = false, center = true, as = 'h2' }: {
+function SectionHead({ label, title, subtitle, t, dark = false, center = true, as = 'h2', block }: {
   label?: string; title?: string; subtitle?: string; t: typeof DEFAULT_T; dark?: boolean; center?: boolean;
-  /** Tag semântica do título. Use 'h1' apenas no PRIMEIRO bloco da página (SEO/A11Y). */
   as?: 'h1' | 'h2' | 'h3';
+  block?: PageBlock;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const v = useInView(ref);
   if (!label && !title && !subtitle) return null;
   const Heading = as as 'h1';
+  const align: React.CSSProperties['textAlign'] = block?.titleAlign || (center ? 'center' : 'left');
+  const titleFontSize = block?.titleSize || TITLE_SIZE_MAP[block?.titleSizePreset || 'lg'];
+  const subtitleFontSize = block?.subtitleSize || SUBTITLE_SIZE_MAP[block?.subtitleSizePreset || 'md'];
+  const isCenter = align === 'center';
   return (
     <div ref={ref} style={{
-      textAlign: center ? 'center' : 'left', marginBottom: 48,
+      textAlign: align, marginBottom: 48,
       opacity: v ? 1 : 0, transform: v ? 'translateY(0)' : 'translateY(24px)',
       transition: 'opacity .6s ease, transform .6s ease',
     }}>
       {label && (
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <div style={{ width: 24, height: 2, background: t.from, borderRadius: 2 }} />
+          {isCenter && <div style={{ width: 24, height: 2, background: t.from, borderRadius: 2 }} />}
           <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.14em', color: t.from, textTransform: 'uppercase' }}>{label}</span>
           <div style={{ width: 24, height: 2, background: t.from, borderRadius: 2 }} />
         </div>
@@ -113,12 +162,12 @@ function SectionHead({ label, title, subtitle, t, dark = false, center = true, a
       {title && (
         <Heading style={{
           fontFamily: "var(--font-heading,'Outfit'), sans-serif",
-          fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)',
+          fontSize: titleFontSize,
           fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.025em',
-          color: dark ? '#fff' : '#0f172a', marginBottom: subtitle ? 16 : 0,
+          color: block?.titleColor || (dark ? '#fff' : '#0f172a'), marginBottom: subtitle ? 16 : 0,
         }}>{title}</Heading>
       )}
-      {subtitle && <p style={{ fontSize: '1.05rem', color: dark ? 'rgba(255,255,255,.6)' : 'var(--t3)', maxWidth: center ? 560 : 'none', margin: center ? '0 auto' : 0, lineHeight: 1.7 }}>{subtitle}</p>}
+      {subtitle && <p style={{ fontSize: subtitleFontSize, color: block?.subtitleColor || (dark ? 'rgba(255,255,255,.6)' : 'var(--t3)'), maxWidth: isCenter ? 560 : 'none', margin: isCenter ? '0 auto' : 0, lineHeight: 1.7 }}>{subtitle}</p>}
     </div>
   );
 }
@@ -133,7 +182,7 @@ function PricingBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEF
   return (
     <section style={getBlockStyles(block, t).section} className="px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} />
+        <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} block={block} />
 
         {showToggle && (
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 40 }}>
@@ -313,7 +362,7 @@ function DemoFormBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DE
       <div className="max-w-5xl mx-auto">
         {layout === 'inline' && (
           <>
-            <SectionHead title={block.formTitle || block.title} subtitle={block.formDescription || block.subtitle} t={t} dark={isDark} as={headingAs} />
+            <SectionHead title={block.formTitle || block.title} subtitle={block.formDescription || block.subtitle} t={t} dark={isDark} as={headingAs} block={block} />
             <div style={{ maxWidth: 560, margin: '0 auto', padding: 32, background: isDark ? 'rgba(255,255,255,.03)' : 'var(--s1)', border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, borderRadius: 20 }}>
               {formContent}
             </div>
@@ -369,7 +418,7 @@ function TabsBlock({ block, t, headingAs }: { block: PageBlock; t: typeof DEFAUL
   return (
     <section style={getBlockStyles(block, t).section} className="px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} />
+        <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} block={block} />
 
         <div style={{ display: 'flex', flexDirection: orientation === 'vertical' ? 'row' : 'column', gap: orientation === 'vertical' ? 32 : 24 }} className="tabs-block">
           {/* Tab buttons */}
@@ -458,7 +507,7 @@ function FaqBlock({ block, t }: { block: PageBlock; t: typeof DEFAULT_T }) {
     <section style={styles.section} className="px-4 sm:px-6 lg:px-8">
       <style>{ANIM_CSS}</style>
       <div className="max-w-3xl mx-auto">
-        <SectionHead title={block.title} t={t} dark={isDark} />
+        <SectionHead title={block.title} t={t} dark={isDark} block={block} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {(block.faq || []).map((faq, i) => {
             const isOpen = open === i;
@@ -553,7 +602,7 @@ function BenefitsBlock({ block, t }: { block: any; t: any }) {
       <div className="max-w-7xl mx-auto">
         <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(40px,6vw,96px)', flexWrap: hasSide ? undefined : 'wrap' }}>
           <div style={{ flex: 1, minWidth: 280 }}>
-            <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={block.colorTheme === 'dark'} center={false} />
+            <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={block.colorTheme === 'dark'} center={false} block={block} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {allItems.map((item: any, i: number) => {
                 const isObj = typeof item !== 'string';
@@ -824,9 +873,9 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
 
       if (layout === 'dark_cards') {
         return (
-          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <div style={{ background: '#0f1015', borderRadius: rr, padding: '56px 48px', boxShadow: '0 24px 60px rgba(0,0,0,.2)' }}>
-              <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} dark />
+          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8" >
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto', background: '#0f1015', borderRadius: rr, padding: '56px 48px', boxShadow: '0 24px 60px rgba(0,0,0,.2)' }}>
+              <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} dark block={block} />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12 }}>
                 {allItems.map((item, i) => {
                   const lbl = typeof item === 'string' ? item : item.label;
@@ -911,9 +960,10 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
 
       if (layout === 'highlight_list') {
         return (
-          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 10 }}>
+          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8">
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+            <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} block={block} />
+            <div style={{ display: 'grid', gridTemplateColumns: block.gridColumns ? `repeat(${block.gridColumns},1fr)` : 'repeat(auto-fill,minmax(300px,1fr))', gap: 10 }}>
               {allItems.map((item, i) => {
                 const lbl = typeof item === 'string' ? item : item.label;
                 const dsc = typeof item === 'string' ? '' : (item.desc || '');
@@ -932,15 +982,17 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
                 );
               })}
             </div>
+            </div>
           </section>
         );
       }
 
       if (layout === 'checklist') {
         return (
-          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 8, maxWidth: 860, margin: '0 auto' }}>
+          <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8">
+            <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+            <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} block={block} />
+            <div style={{ display: 'grid', gridTemplateColumns: block.gridColumns ? `repeat(${block.gridColumns},1fr)` : 'repeat(auto-fill,minmax(260px,1fr))', gap: 8, maxWidth: block.gridColumns ? 'none' : 860, margin: '0 auto' }}>
               {allItems.map((item, i) => {
                 const lbl = typeof item === 'string' ? item : item.label;
                 return (
@@ -955,15 +1007,17 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
                 );
               })}
             </div>
+            </div>
           </section>
         );
       }
 
       // default: cards_hover
       return (
-        <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 16 }}>
+        <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8">
+          <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+          <SectionHead label={label} title={mainTitle} subtitle={mainSub} t={{ ...t, from: ac }} block={block} />
+          <div style={{ display: 'grid', gridTemplateColumns: block.gridColumns ? `repeat(${block.gridColumns},1fr)` : 'repeat(auto-fill,minmax(220px,1fr))', gap: 16 }}>
             {allItems.map((item, i) => {
               const lbl = typeof item === 'string' ? item : item.label;
               const ico = typeof item === 'string' ? '' : item.icon;
@@ -978,6 +1032,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
                 </div>
               );
             })}
+          </div>
           </div>
         </section>
       );
@@ -1011,8 +1066,8 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
                   {block.badge} <ArrowRight style={{ width: 12, height: 12 }} />
                 </div>
               )}
-              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: 'clamp(1.8rem,3vw,2.75rem)', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#0f172a', marginBottom: 16 }}>{block.title}</h2>}
-              {block.description && <p style={{ fontSize: '0.95rem', lineHeight: 1.7, color: '#475569', marginBottom: (block.items && block.items.length > 0) ? 24 : 0 }}>{block.description}</p>}
+              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontSize: block.titleSize || TITLE_SIZE_MAP[block.titleSizePreset || 'xl'], fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em', color: block.titleColor || '#0f172a', marginBottom: 16, textAlign: (block.titleAlign || 'left') as React.CSSProperties['textAlign'] }}>{block.title}</h2>}
+              {block.description && <p style={{ fontSize: block.subtitleSize || SUBTITLE_SIZE_MAP[block.subtitleSizePreset || 'md'], lineHeight: 1.7, color: block.subtitleColor || '#475569', marginBottom: (block.items && block.items.length > 0) ? 24 : 0 }}>{block.description}</p>}
               {block.items && block.items.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
                   {block.items.map((item, i) => (
@@ -1027,8 +1082,8 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
               )}
               {(block.ctaLabel || block.secondaryLabel) && (
                 <div style={{ display: 'flex', gap: 12, marginTop: 28, flexWrap: 'wrap' }}>
-                  {block.ctaLabel && <Link to={block.ctaLink || '/cliente'}><button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 26px', borderRadius: 12, background: `linear-gradient(135deg,${t.from},${t.to})`, color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', boxShadow: `0 8px 24px ${t.glow}` }}>{block.ctaLabel} <ArrowRight style={{ width: 16, height: 16 }} /></button></Link>}
-                  {block.secondaryLabel && <Link to={block.secondaryLink || '/'}><button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 26px', borderRadius: 12, background: 'transparent', color: t.from, fontWeight: 700, fontSize: 14, border: `1.5px solid ${t.from}40`, cursor: 'pointer' }}>{block.secondaryLabel} <ArrowRight style={{ width: 16, height: 16 }} /></button></Link>}
+                  {block.ctaLabel && renderCtaButton(block, t, block.ctaLabel, block.ctaLink || '/cliente')}
+                  {block.secondaryLabel && renderCtaButton({ ...block, ctaStyle: block.ctaStyle === 'filled' ? 'outlined' : (block.ctaStyle || 'outlined') }, t, block.secondaryLabel, block.secondaryLink || '/')}
                 </div>
               )}
             </div>
@@ -1049,9 +1104,10 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
       const ref = useRef<HTMLDivElement>(null);
       const v = useInView(ref);
       return (
-        <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={block.colorTheme === 'dark'} as={headingAs} />
-          <div ref={ref} className="max-w-2xl mx-auto" style={{ position: 'relative' }}>
+        <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8">
+          <div style={{ maxWidth: containerMaxW(block), margin: '0 auto' }}>
+          <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={block.colorTheme === 'dark'} as={headingAs} block={block} />
+          <div ref={ref} style={{ maxWidth: 680, margin: '0 auto', position: 'relative' }}>
             {/* connector line */}
             <div style={{ position: 'absolute', left: 27, top: 56, bottom: 28, width: 2, background: `linear-gradient(180deg,${t.from}40,transparent)`, borderRadius: 2 }} />
             {steps.map((step, i) => (
@@ -1084,6 +1140,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
               </div>
             ))}
           </div>
+          </div>
         </section>
       );
     }
@@ -1095,8 +1152,8 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
       const v = useInView(ref);
       return (
         <section style={{ background: block.bgColor || (block.colorTheme === 'dark' ? '#0f172a' : 'var(--s0)'), borderTop: '1px solid var(--b1)', borderBottom: '1px solid var(--b1)' }}>
-          <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ padding: '56px 0' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(stats.length, 4)}, 1fr)`, gap: 0 }}>
+          <div ref={ref} style={{ maxWidth: containerMaxW(block), margin: '0 auto', padding: '56px 24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${block.gridColumns || Math.min(stats.length, 4)}, 1fr)`, gap: 0 }}>
               {stats.map((s, i) => (
                 <div key={i} style={{
                   textAlign: 'center', padding: '24px 32px',
@@ -1156,7 +1213,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
       return (
         <section style={{ padding: sectionPad(block) }} className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <DarkCard pc={t.from}>
-            {block.title && <SectionHead title={block.title} t={t} dark />}
+            {block.title && <SectionHead title={block.title} t={t} dark block={block} />}
             <div style={{ position: 'relative', maxWidth: 720, margin: '0 auto', borderRadius: 16, overflow: 'hidden', cursor: 'pointer', boxShadow: '0 32px 64px rgba(0,0,0,.6)' }}
               onClick={() => setVideoOpen(true)}>
               <img src={thumb} alt={block.title || 'Vídeo'} style={{ width: '100%', display: 'block', aspectRatio: '16/9', objectFit: 'cover' }} />
@@ -1196,23 +1253,13 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
                   {block.description && <p style={{ fontSize: '0.95rem', color: isDarkCta ? 'rgba(255,255,255,.6)' : 'var(--t3)', lineHeight: 1.6, maxWidth: 480 }}>{block.description}</p>}
                 </div>
                 <div style={{ display: 'flex', gap: 12, flexShrink: 0, flexWrap: 'wrap', alignItems: 'center' }}>
-                  {block.ctaLabel && (
-                    <Link to={block.ctaLink || '/cliente'}>
-                      <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 26px', borderRadius: 12, background: block.ctaBtnBg || `linear-gradient(135deg,${t.from},${t.to})`, color: block.ctaBtnText || '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', boxShadow: `0 8px 24px ${t.glow}`, transition: 'transform .2s, box-shadow .2s' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; }}>
-                        {block.ctaLabel} <ArrowRight style={{ width: 15, height: 15 }} />
-                      </button>
-                    </Link>
+                  {block.ctaLabel && renderCtaButton(
+                    { ...block, ctaBgColor: block.ctaBtnBg || t.from, ctaTextColor: block.ctaBtnText || '#fff' },
+                    t, block.ctaLabel, block.ctaLink || '/cliente'
                   )}
-                  {block.secondaryLabel && (
-                    <Link to={block.secondaryLink || '/'}>
-                      <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 22px', borderRadius: 12, background: 'transparent', color: isDarkCta ? 'rgba(255,255,255,.8)' : '#475569', fontWeight: 600, fontSize: 14, border: `1.5px solid ${isDarkCta ? 'rgba(255,255,255,.2)' : 'rgba(0,0,0,.12)'}`, cursor: 'pointer', transition: 'background .2s, color .2s' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = isDarkCta ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.04)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
-                        {block.secondaryLabel}
-                      </button>
-                    </Link>
+                  {block.secondaryLabel && renderCtaButton(
+                    { ...block, ctaStyle: 'outlined', ctaTextColor: isDarkCta ? 'rgba(255,255,255,.8)' : '#475569' },
+                    t, block.secondaryLabel, block.secondaryLink || '/'
                   )}
                 </div>
               </div>
@@ -1238,26 +1285,16 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
               {block.badge && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', background: 'rgba(255,255,255,.18)', color: '#fff', backdropFilter: 'blur(8px)', marginBottom: 18, border: '1px solid rgba(255,255,255,.25)' }}>{block.badge}</span>
               )}
-              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: 'clamp(1.75rem,4vw,3rem)', color: block.titleColor || '#fff', lineHeight: 1.1, letterSpacing: '-0.025em', marginBottom: 16 }}>{block.title}</h2>}
-              {block.description && <p style={{ fontSize: '1.05rem', color: block.subtitleColor || 'rgba(255,255,255,.8)', marginBottom: 36, maxWidth: 520, margin: '0 auto 36px', lineHeight: 1.7 }}>{block.description}</p>}
+              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: block.titleSize || TITLE_SIZE_MAP[block.titleSizePreset || 'xl'], color: block.titleColor || '#fff', lineHeight: 1.1, letterSpacing: '-0.025em', marginBottom: 16 }}>{block.title}</h2>}
+              {block.description && <p style={{ fontSize: block.subtitleSize || SUBTITLE_SIZE_MAP[block.subtitleSizePreset || 'md'], color: block.subtitleColor || 'rgba(255,255,255,.8)', marginBottom: 36, maxWidth: 520, margin: '0 auto 36px', lineHeight: 1.7 }}>{block.description}</p>}
               <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-                {block.ctaLabel && (
-                  <Link to={block.ctaLink || '/cliente'}>
-                    <button style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '16px 32px', borderRadius: 14, background: block.ctaBtnBg || '#fff', color: block.ctaBtnText || t.from, fontWeight: 800, fontSize: 15, border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(0,0,0,.2)', transition: 'transform .2s, box-shadow .2s' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 16px 40px rgba(0,0,0,.25)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,.2)'; }}>
-                      {block.ctaLabel} <ArrowRight style={{ width: 16, height: 16 }} />
-                    </button>
-                  </Link>
+                {block.ctaLabel && renderCtaButton(
+                  { ...block, ctaBgColor: block.ctaBtnBg || '#fff', ctaTextColor: block.ctaBtnText || t.from },
+                  t, block.ctaLabel, block.ctaLink || '/cliente'
                 )}
-                {block.secondaryLabel && (
-                  <Link to={block.secondaryLink || '/'}>
-                    <button style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '16px 32px', borderRadius: 14, background: 'rgba(255,255,255,.15)', color: '#fff', fontWeight: 700, fontSize: 15, border: '1.5px solid rgba(255,255,255,.35)', cursor: 'pointer', backdropFilter: 'blur(8px)', transition: 'background .2s' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,.22)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,.15)'; }}>
-                      {block.secondaryLabel} <ArrowRight style={{ width: 16, height: 16 }} />
-                    </button>
-                  </Link>
+                {block.secondaryLabel && renderCtaButton(
+                  { ...block, ctaStyle: 'outlined', ctaBgColor: 'rgba(255,255,255,.15)', ctaTextColor: '#fff' },
+                  t, block.secondaryLabel, block.secondaryLink || '/'
                 )}
               </div>
               {/* Social proof */}
@@ -1277,8 +1314,8 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
         <section style={{ padding: sectionPad(block), background: block.bgColor || (isDark ? '#0f172a' : 'var(--s0)') }} className="px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <div style={{ borderLeft: `4px solid ${t.from}`, paddingLeft: 24 }}>
-              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: 'clamp(1.4rem,2.5vw,2rem)', color: isDark ? '#fff' : '#0f172a', marginBottom: 12, letterSpacing: '-0.02em' }}>{block.title}</h2>}
-              {block.description && <p style={{ color: isDark ? 'rgba(255,255,255,.65)' : '#475569', lineHeight: 1.8, fontSize: '1rem', whiteSpace: 'pre-wrap' }}>{block.description}</p>}
+              {block.title && <h2 style={{ fontFamily: "var(--font-heading,'Outfit'),sans-serif", fontWeight: 900, fontSize: block.titleSize || TITLE_SIZE_MAP[block.titleSizePreset || 'md'], color: block.titleColor || (isDark ? '#fff' : '#0f172a'), marginBottom: 12, letterSpacing: '-0.02em', textAlign: (block.titleAlign || 'left') as React.CSSProperties['textAlign'] }}>{block.title}</h2>}
+              {block.description && <p style={{ color: block.subtitleColor || (isDark ? 'rgba(255,255,255,.65)' : '#475569'), lineHeight: 1.8, fontSize: block.subtitleSize || SUBTITLE_SIZE_MAP[block.subtitleSizePreset || 'md'], whiteSpace: 'pre-wrap' }}>{block.description}</p>}
             </div>
           </div>
         </section>
@@ -1331,7 +1368,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
         <section style={{ padding: sectionPad(block), background: isDark ? '#0a0a10' : 'var(--s1)', overflow: 'hidden' }}>
           <style>{`@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}`}</style>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {block.title && <SectionHead title={block.title} t={t} dark={isDark} as={headingAs} />}
+            {block.title && <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} block={block} />}
             {hasLogos ? (
               useMarquee ? (
                 <div style={{ position: 'relative' }}>
@@ -1468,7 +1505,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
       return (
         <section style={getBlockStyles(block, t).section} className="px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} />
+            <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} block={block} />
             <div style={{
               display: 'grid',
               gridTemplateColumns: layout === 'list' ? '1fr' : `repeat(auto-fit, minmax(${cols === 4 ? 220 : cols === 3 ? 260 : 320}px, 1fr))`,
@@ -1539,7 +1576,7 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
       return (
         <section style={getBlockStyles(block, t).section} className="px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto">
-            <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} />
+            <SectionHead title={block.title} subtitle={block.subtitle} t={t} dark={isDark} as={headingAs} block={block} />
             <div style={{ overflowX: 'auto', borderRadius: 16, border: `1px solid ${isDark ? 'rgba(255,255,255,.08)' : 'var(--b1)'}`, background: isDark ? 'rgba(255,255,255,.02)' : 'var(--s1)' }}>
               <table style={{ width: '100%', minWidth: 600, borderCollapse: 'collapse', fontSize: 14 }}>
                 <thead>

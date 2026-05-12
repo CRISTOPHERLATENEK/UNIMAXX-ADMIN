@@ -275,6 +275,19 @@ export interface PageBlock {
   ctaBtnBg?: string;
   ctaBtnText?: string;
   socialProof?: string;
+  // ── Tipografia por bloco ──────────────────────────────────────────────────
+  titleAlign?: 'left' | 'center' | 'right';
+  titleSizePreset?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  subtitleSizePreset?: 'sm' | 'md' | 'lg';
+  // ── Largura do container ──────────────────────────────────────────────────
+  containerWidth?: 'narrow' | 'normal' | 'wide' | 'full';
+  // ── Estilo do botão CTA ───────────────────────────────────────────────────
+  ctaStyle?: 'filled' | 'outlined' | 'ghost' | 'gradient';
+  ctaRadius?: 'normal' | 'rounded' | 'pill';
+  // ── Colunas do grid (features, benefits, team) ────────────────────────────
+  gridColumns?: 1 | 2 | 3 | 4;
+  // ── Estilo visual dos cards ───────────────────────────────────────────────
+  cardStyle?: 'default' | 'glass' | 'outlined' | 'flat' | 'gradient';
   // ── Integrations block ────────────────────────────────────────────────────
   logoItems?: { name: string; imageUrl: string }[];
   // ── Testimonial block ─────────────────────────────────────────────────────
