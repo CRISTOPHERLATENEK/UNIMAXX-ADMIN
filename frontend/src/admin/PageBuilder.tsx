@@ -2060,9 +2060,14 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
     const featLayouts: { v: string; label: string; desc: string; preview: string }[] = [
       { v: 'split_dark', label: 'Split Dark', desc: 'Título à esq., cards colunados à dir. — fundo escuro', preview: '◧' },
       { v: 'dark_cards', label: 'Dark Cards', desc: 'Cards escuros com ícone grande no topo', preview: '▦' },
+      { v: 'bento', label: 'Bento Grid', desc: 'Card hero grande + grid compacto — fundo escuro', preview: '⊞' },
+      { v: 'dark_numbered', label: 'Numerado Escuro', desc: 'Número gigante em gradiente, fundo escuro', preview: '①' },
+      { v: 'grid', label: 'Grid Ícones', desc: 'Grade centralizada com ícone + título + desc', preview: '⊟' },
       { v: 'highlight_list', label: 'Lista Numerada', desc: 'Número em destaque + texto, 2 colunas', preview: '⑆' },
       { v: 'checklist', label: 'Checklist', desc: 'Check com pílula arredondada', preview: '✓' },
+      { v: 'minimal_pills', label: 'Pílulas Mínimas', desc: 'Tags arredondadas, minimalista', preview: '○' },
       { v: 'cards_hover', label: 'Cards Hover', desc: 'Cards com animação no hover', preview: '▣' },
+      { v: 'half_split', label: 'Half Split', desc: 'Metade claro / metade escuro com itens em cada lado', preview: '⬒' },
     ];
     const currentLayout = block.featuresLayout || 'split_dark';
     const accent = block.featuresAccent || '#f97316';
