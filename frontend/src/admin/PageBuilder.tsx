@@ -3540,10 +3540,32 @@ function Inspector({ block, onChange, onRemove, onMoveUp, onMoveDown, onDuplicat
 
 // ── Design Editor ────────────────────────────────────────────────────────────
 
+const TITLE_SIZE_PRESETS: { v: string; label: string; px: string }[] = [
+  { v: 'sm',  label: 'P',   px: 'clamp(1.1rem,2vw,1.5rem)' },
+  { v: 'md',  label: 'M',   px: 'clamp(1.4rem,2.5vw,2rem)' },
+  { v: 'lg',  label: 'G',   px: 'clamp(1.75rem,3.5vw,2.75rem)' },
+  { v: 'xl',  label: 'GG',  px: 'clamp(2rem,4vw,3.5rem)' },
+  { v: '2xl', label: 'Max', px: 'clamp(2.5rem,5vw,4.5rem)' },
+];
+const SUBTITLE_SIZE_PRESETS: { v: string; label: string; px: string }[] = [
+  { v: 'sm', label: 'P', px: '0.9rem' },
+  { v: 'md', label: 'M', px: '1.05rem' },
+  { v: 'lg', label: 'G', px: '1.25rem' },
+];
+const CONTAINER_WIDTH_OPTS = [
+  { v: 'narrow', label: 'Estreito', w: '640px' },
+  { v: 'normal', label: 'Normal', w: '1100px' },
+  { v: 'wide',   label: 'Largo',  w: '1400px' },
+  { v: 'full',   label: 'Full',   w: '100%' },
+];
+const HAS_CTA = ['hero','cta','image_text','benefits','demo_form'];
+const HAS_GRID = ['features','benefits','team','integrations','stats'];
+
 function BlockDesignEditor({ block, onChange }: { block: PageBlock; onChange: (b: PageBlock) => void }) {
   const set = (k: string, v: any) => onChange({ ...block, [k]: v });
+  const [openPanel, setOpenPanel] = React.useState<string | null>('cores');
+  const toggle = (p: string) => setOpenPanel(openPanel === p ? null : p);
 
-  // Campos de cor específicos por tipo de bloco
   const colorFields: { label: string; key: keyof PageBlock; default: string }[] = (() => {
     switch (block.type) {
       case 'hero':
@@ -3622,28 +3644,172 @@ function BlockDesignEditor({ block, onChange }: { block: PageBlock; onChange: (b
           { label: 'Título', key: 'titleColor', default: '#111827' },
         ];
       default:
-        return [
-          { label: 'Fundo', key: 'bgColor', default: '#ffffff' },
-        ];
+        return [{ label: 'Fundo', key: 'bgColor', default: '#ffffff' }];
     }
   })();
 
+  const DesignPanel = ({ id, emoji, label, children }: { id: string; emoji: string; label: string; children: React.ReactNode }) => {
+    const open = openPanel === id;
+    return (
+      <div className="rounded-xl overflow-hidden border" style={{ borderColor: open ? '#f97316' : 'rgba(0,0,0,.08)' }}>
+        <button onClick={() => toggle(id)} className="w-full flex items-center justify-between px-3 py-2.5 transition"
+          style={{ background: open ? '#fff7ed' : '#f9f9fb' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-base">{emoji}</span>
+            <span className="text-[12px] font-bold" style={{ color: open ? '#f97316' : '#1d1d1f' }}>{label}</span>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={open ? '#f97316' : '#8e8e93'} strokeWidth="2.5"
+            style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        {open && <div className="px-3 pb-3 pt-2 space-y-3 bg-white border-t" style={{ borderColor: 'rgba(249,115,22,.15)' }}>{children}</div>}
+      </div>
+    );
+  };
+
+  const align = block.titleAlign || 'center';
+  const titleSz = block.titleSizePreset || 'lg';
+  const subSz = block.subtitleSizePreset || 'md';
+  const cWidth = block.containerWidth || 'normal';
+  const ctaStyle = block.ctaStyle || 'filled';
+  const ctaRadius = block.ctaRadius || 'rounded';
+  const gridCols = block.gridColumns;
+
   return (
-    <div className="space-y-6">
-      {colorFields.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Cores</h4>
-          {colorFields.map(f => (
-            <ColorField
-              key={f.key as string}
-              label={f.label}
-              value={(block[f.key] as string) || f.default}
-              onChange={v => set(f.key as string, v)}
-            />
+    <div className="space-y-2">
+
+      {/* ── CORES ── */}
+      <DesignPanel id="cores" emoji="🎨" label="Cores">
+        {colorFields.map(f => (
+          <ColorField key={f.key as string} label={f.label}
+            value={(block[f.key] as string) || f.default}
+            onChange={v => set(f.key as string, v)} />
+        ))}
+      </DesignPanel>
+
+      {/* ── TIPOGRAFIA ── */}
+      <DesignPanel id="typo" emoji="✍️" label="Tipografia">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#98989d' }}>Alinhamento</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {(['left','center','right'] as const).map(a => (
+              <button key={a} onClick={() => set('titleAlign', a)}
+                className="h-9 rounded-lg border-2 flex items-center justify-center gap-1 text-[11px] font-bold transition"
+                style={{ borderColor: align === a ? '#f97316' : 'rgba(0,0,0,.08)', background: align === a ? '#fff7ed' : '#f9f9fb', color: align === a ? '#f97316' : '#6e6e73' }}>
+                {a === 'left' ? '⬅ Esq' : a === 'center' ? '⬛ Centro' : 'Dir ➡'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#98989d' }}>Tamanho do título</p>
+          <div className="grid grid-cols-5 gap-1">
+            {TITLE_SIZE_PRESETS.map(p => (
+              <button key={p.v} onClick={() => set('titleSizePreset', p.v)}
+                className="h-9 rounded-lg border-2 flex items-center justify-center text-[11px] font-black transition"
+                style={{ borderColor: titleSz === p.v ? '#f97316' : 'rgba(0,0,0,.08)', background: titleSz === p.v ? '#fff7ed' : '#f9f9fb', color: titleSz === p.v ? '#f97316' : '#6e6e73', fontSize: p.v === 'sm' ? 9 : p.v === 'md' ? 10 : p.v === 'lg' ? 11 : p.v === 'xl' ? 12 : 13 }}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#98989d' }}>Tamanho do subtítulo</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {SUBTITLE_SIZE_PRESETS.map(p => (
+              <button key={p.v} onClick={() => set('subtitleSizePreset', p.v)}
+                className="h-9 rounded-lg border-2 flex items-center justify-center text-[11px] font-bold transition"
+                style={{ borderColor: subSz === p.v ? '#f97316' : 'rgba(0,0,0,.08)', background: subSz === p.v ? '#fff7ed' : '#f9f9fb', color: subSz === p.v ? '#f97316' : '#6e6e73' }}>
+                {p.label === 'P' ? 'Pequeno' : p.label === 'M' ? 'Médio' : 'Grande'}
+              </button>
+            ))}
+          </div>
+        </div>
+      </DesignPanel>
+
+      {/* ── CONTAINER ── */}
+      <DesignPanel id="container" emoji="📦" label="Largura do Container">
+        <div className="grid grid-cols-2 gap-1.5">
+          {CONTAINER_WIDTH_OPTS.map(o => (
+            <button key={o.v} onClick={() => set('containerWidth', o.v)}
+              className="h-12 rounded-lg border-2 flex flex-col items-center justify-center gap-0.5 transition"
+              style={{ borderColor: cWidth === o.v ? '#f97316' : 'rgba(0,0,0,.08)', background: cWidth === o.v ? '#fff7ed' : '#f9f9fb' }}>
+              <div style={{ width: o.v === 'narrow' ? 24 : o.v === 'normal' ? 36 : o.v === 'wide' ? 48 : 56, height: 4, borderRadius: 2, background: cWidth === o.v ? '#f97316' : '#c7c7cc' }} />
+              <span className="text-[10px] font-bold" style={{ color: cWidth === o.v ? '#f97316' : '#6e6e73' }}>{o.label}</span>
+              <span className="text-[9px]" style={{ color: '#98989d' }}>{o.w}</span>
+            </button>
           ))}
         </div>
+      </DesignPanel>
+
+      {/* ── BOTÃO CTA (condicional) ── */}
+      {HAS_CTA.includes(block.type) && (
+        <DesignPanel id="cta_btn" emoji="🔘" label="Botão CTA">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#98989d' }}>Estilo</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {([
+                { v: 'filled',   label: 'Sólido',    preview: { bg: '#f97316', border: '#f97316', color: '#fff' } },
+                { v: 'outlined', label: 'Contorno',  preview: { bg: 'transparent', border: '#f97316', color: '#f97316' } },
+                { v: 'ghost',    label: 'Fantasma',  preview: { bg: 'rgba(249,115,22,.1)', border: 'transparent', color: '#f97316' } },
+                { v: 'gradient', label: 'Gradiente', preview: { bg: 'linear-gradient(90deg,#f97316,#ea580c)', border: 'transparent', color: '#fff' } },
+              ] as const).map(s => (
+                <button key={s.v} onClick={() => set('ctaStyle', s.v)}
+                  className="h-10 rounded-lg border-2 flex items-center justify-center gap-2 transition text-[11px] font-bold"
+                  style={{ borderColor: ctaStyle === s.v ? '#f97316' : 'rgba(0,0,0,.08)', background: ctaStyle === s.v ? '#fff7ed' : '#f9f9fb', color: ctaStyle === s.v ? '#f97316' : '#6e6e73' }}>
+                  <span style={{ width: 20, height: 14, borderRadius: 4, background: s.preview.bg, border: `1.5px solid ${s.preview.border}`, display: 'inline-block', flexShrink: 0 }} />
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#98989d' }}>Forma</p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {([
+                { v: 'normal',  label: 'Quadrado', r: 6 },
+                { v: 'rounded', label: 'Arredondado', r: 12 },
+                { v: 'pill',    label: 'Pílula', r: 999 },
+              ] as const).map(s => (
+                <button key={s.v} onClick={() => set('ctaRadius', s.v)}
+                  className="h-10 rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition"
+                  style={{ borderColor: ctaRadius === s.v ? '#f97316' : 'rgba(0,0,0,.08)', background: ctaRadius === s.v ? '#fff7ed' : '#f9f9fb' }}>
+                  <div style={{ width: 28, height: 10, borderRadius: s.r, background: ctaRadius === s.v ? '#f97316' : '#c7c7cc' }} />
+                  <span className="text-[9px] font-bold" style={{ color: ctaRadius === s.v ? '#f97316' : '#6e6e73' }}>{s.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </DesignPanel>
       )}
-      <SpacingRadiusControls block={block} onChange={onChange} />
+
+      {/* ── COLUNAS (condicional) ── */}
+      {HAS_GRID.includes(block.type) && (
+        <DesignPanel id="grid" emoji="⊞" label="Colunas do Grid">
+          <div className="grid grid-cols-4 gap-1.5">
+            {([1, 2, 3, 4] as const).map(n => (
+              <button key={n} onClick={() => set('gridColumns', gridCols === n ? undefined : n)}
+                className="h-12 rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition"
+                style={{ borderColor: gridCols === n ? '#f97316' : 'rgba(0,0,0,.08)', background: gridCols === n ? '#fff7ed' : '#f9f9fb' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: `repeat(${n},1fr)`, gap: 2, width: 28 }}>
+                  {Array.from({ length: n }).map((_, i) => (
+                    <div key={i} style={{ height: 10, borderRadius: 2, background: gridCols === n ? '#f97316' : '#c7c7cc' }} />
+                  ))}
+                </div>
+                <span className="text-[10px] font-bold" style={{ color: gridCols === n ? '#f97316' : '#6e6e73' }}>{n} col{n > 1 ? 's' : ''}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px]" style={{ color: '#98989d' }}>Sem seleção = automático (responsivo)</p>
+        </DesignPanel>
+      )}
+
+      {/* ── ESPAÇAMENTO ── */}
+      <DesignPanel id="spacing" emoji="📐" label="Espaçamento e Cantos">
+        <SpacingRadiusControls block={block} onChange={onChange} />
+      </DesignPanel>
+
     </div>
   );
 }
