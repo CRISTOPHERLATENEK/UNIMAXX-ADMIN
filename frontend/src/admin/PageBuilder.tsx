@@ -134,7 +134,7 @@ function makeBlock(type: BlockType): PageBlock {
   if (type === 'testimonial') return { ...b, quote: '', author: '', role: '', colorTheme: 'dark' };
   if (type === 'faq') return { ...b, title: 'Perguntas Frequentes', faq: [], colorTheme: 'light' };
   if (type === 'video') return { ...b, title: '', videoUrl: '', colorTheme: 'dark' };
-  if (type === 'cta') return { ...b, title: '', description: '', ctaLabel: 'Falar com Especialista', ctaLink: '/cliente', colorTheme: 'brand', ctaLayout: 'centered', badge: '', socialProof: '', ctaBgColor: '#f97316', ctaBtnBg: '#ffffff', ctaBtnText: '#f97316' };
+  if (type === 'cta') return { ...b, title: '', description: '', ctaLabel: 'Falar com Especialista', ctaLink: '/cliente', colorTheme: 'brand', ctaLayout: 'pill', badge: '', socialProof: '', ctaBgColor: '#f97316', ctaBtnBg: '#ffffff', ctaBtnText: '#f97316' };
   if (type === 'text') return { ...b, title: '', description: '', colorTheme: 'light' };
   if (type === 'richtext') return { ...b, html: '', colorTheme: 'light' };
   if (type === 'image') return { ...b, imageUrl: '', imageAlt: '', colorTheme: 'light' };
@@ -2331,12 +2331,12 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
   if (block.type === 'cta') {
     const ctaLayouts = [
-      { v: 'centered', emoji: '⬛', label: 'Gradiente', desc: 'Card colorido, centralizado, com dots' },
-      { v: 'split',    emoji: '◫',  label: 'Dividido',  desc: 'Texto à esq., botões à dir.' },
-      { v: 'glow',     emoji: '✦',  label: 'Glow',      desc: 'Fundo escuro + orbe de luz vibrante' },
-      { v: 'minimal',  emoji: '—',  label: 'Mínimo',    desc: 'Borda lateral, sem decoração' },
+      { v: 'pill',      emoji: '💊', label: 'Pílula',    desc: 'Fundo vibrante + card escuro flutuante' },
+      { v: 'banner',    emoji: '📣', label: 'Banner',    desc: 'Faixa full-width, 3 colunas, botões arredondados' },
+      { v: 'spotlight', emoji: '✦',  label: 'Spotlight', desc: 'Fundo escuro + cone de luz dramático' },
+      { v: 'glass',     emoji: '🫧', label: 'Glass',     desc: 'Card glassmorphism sobre gradiente mesh' },
     ];
-    const curLayout = block.ctaLayout || 'centered';
+    const curLayout = block.ctaLayout || 'pill';
     return (
       <div className="space-y-3">
         <AppearanceControls />
