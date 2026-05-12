@@ -2420,6 +2420,7 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
         <SectionDivider label="Cores do card" />
         <ColorField label="Cor de destaque / gradiente" value={block.ctaBgColor || '#f97316'} onChange={v => set('ctaBgColor', v)} />
+        {curLayout === 'pill' && <ColorField label="Cor do card (pílula)" value={(block as any).ctaCardBg || 'rgba(15,17,30,.82)'} onChange={v => set('ctaCardBg', v)} />}
         <ColorField label="Título" value={block.titleColor || '#ffffff'} onChange={v => set('titleColor', v)} />
         <ColorField label="Descrição" value={block.subtitleColor || 'rgba(255,255,255,0.8)'} onChange={v => set('subtitleColor', v)} />
         <ColorField label="Botão — fundo" value={block.ctaBtnBg || '#ffffff'} onChange={v => set('ctaBtnBg', v)} />
