@@ -53,7 +53,6 @@ const menuGroups: MenuGroup[] = [
   {
     label: 'EMPRESA',
     items: [
-      { path: '/admin/segmentos', label: 'Segmentos', icon: Tag },
       { path: '/admin/estatisticas', label: 'Estatísticas', icon: BarChart2 },
     ],
   },

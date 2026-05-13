@@ -55,7 +55,6 @@ const InstitucionalManager = lazy(() => import('@/admin/InstitucionalManager').t
 const LeadsManager         = lazy(() => import('@/admin/LeadsManager').then(m => ({ default: m.LeadsManager })));
 const LegalManager         = lazy(() => import('@/admin/LegalManager').then(m => ({ default: m.LegalManager })));
 const NewsletterManager    = lazy(() => import('@/admin/NewsletterManager').then(m => ({ default: m.NewsletterManager })));
-const SegmentsManager      = lazy(() => import('@/admin/SegmentsManager').then(m => ({ default: m.SegmentsManager })));
 const StatsManager         = lazy(() => import('@/admin/StatsManager').then(m => ({ default: m.StatsManager })));
 const BannersManager       = lazy(() => import('@/admin/BannersManager').then(m => ({ default: m.BannersManager })));
 const AdminSettings        = lazy(() => import('@/admin/Settings').then(m => ({ default: m.Settings })));
@@ -286,7 +285,6 @@ function AppRoutes() {
           <Route path="home" element={<HomeEditor />} />
           <Route path="conteudo" element={<ContentManager />} />
           <Route path="solucoes" element={<UnifiedSolutionsManager />} />
-          <Route path="segmentos" element={<SegmentsManager />} />
           <Route path="estatisticas" element={<StatsManager />} />
           <Route path="banners" element={<BannersManager />} />
           <Route path="configuracoes" element={<AdminSettings />} />
