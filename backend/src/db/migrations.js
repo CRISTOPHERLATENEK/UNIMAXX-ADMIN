@@ -434,6 +434,10 @@ function addSecurityColumns() {
     'ALTER TABLE solution_pages ADD COLUMN deleted_at DATETIME',
     'ALTER TABLE client_logos ADD COLUMN deleted_at DATETIME',
     'ALTER TABLE generic_pages ADD COLUMN deleted_at DATETIME',
+    'ALTER TABLE generic_pages ADD COLUMN show_in_nav INTEGER DEFAULT 0',
+    'ALTER TABLE generic_pages ADD COLUMN nav_label TEXT',
+    'ALTER TABLE generic_pages ADD COLUMN nav_group TEXT DEFAULT \'standalone\'',
+    'ALTER TABLE generic_pages ADD COLUMN nav_order INTEGER DEFAULT 99',
   ].forEach(sql => db.run(sql, [], () => {}));
 
   // Audit log table

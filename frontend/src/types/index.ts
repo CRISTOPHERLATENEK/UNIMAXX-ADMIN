@@ -97,6 +97,15 @@ export interface Partner {
 
 export type SiteContent = Record<string, string>;
 
+export interface NavPage {
+  id: number;
+  slug: string;
+  title: string;
+  nav_label?: string;
+  nav_group?: string;
+  nav_order?: number;
+}
+
 export interface SiteData {
   content: SiteContent;
   solutions: Solution[];
@@ -107,6 +116,7 @@ export interface SiteData {
   client_logos: ClientLogo[];
   testimonials: Testimonial[];
   partners: Partner[];
+  nav_pages?: NavPage[];
 }
 
 export interface User {

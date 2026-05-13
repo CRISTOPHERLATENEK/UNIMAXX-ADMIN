@@ -111,7 +111,11 @@ const genericPageSchema = z.object({
   meta_description: optionalString(320),
   is_active: boolField(1),
   blocks_json: z.array(z.intersection(blockSchema, z.object({ block_style: z.string().optional().default('fluid') }))).max(200, 'Máximo de 200 blocos').default([]),
-});
+  show_in_nav: z.union([z.boolean(), z.number()]).optional().default(0),
+  nav_label: optionalString(160),
+  nav_group: optionalString(80),
+  nav_order: z.number().int().min(0).max(999).optional().default(99),
+}).passthrough();
 
 const segmentSchema = z.object({
   segment_id: optionalString(120),

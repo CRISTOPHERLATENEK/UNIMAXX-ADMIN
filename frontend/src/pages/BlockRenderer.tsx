@@ -1833,6 +1833,28 @@ function renderBlockInner({ block, t, textCol, subCol, videoOpen, setVideoOpen, 
       );
     }
 
+    // ════════════════════════════════════════════════════════════════════════
+    // ALERT_BANNER — faixa de aviso colorida
+    // ════════════════════════════════════════════════════════════════════════
+    case 'alert_banner': {
+      const alertColors: Record<string, { bg: string; border: string; text: string; icon: string }> = {
+        info:    { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', icon: 'ℹ️' },
+        success: { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d', icon: '✅' },
+        warning: { bg: '#fffbeb', border: '#fde68a', text: '#b45309', icon: '⚠️' },
+        error:   { bg: '#fef2f2', border: '#fecaca', text: '#b91c1c', icon: '🚨' },
+      };
+      const ac = alertColors[block.alertType || 'info'];
+      return (
+        <div style={{ background: ac.bg, borderTop: `3px solid ${ac.border}`, borderBottom: `1px solid ${ac.border}`, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 16 }}>{ac.icon}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: ac.text, lineHeight: 1.5 }}>{block.alertText || 'Aviso importante'}</span>
+          {block.ctaLink && block.ctaLabel && (
+            <a href={block.ctaLink} style={{ fontSize: 13, fontWeight: 700, color: ac.text, textDecoration: 'underline', whiteSpace: 'nowrap' }}>{block.ctaLabel}</a>
+          )}
+        </div>
+      );
+    }
+
     default:
       return null;
   }
