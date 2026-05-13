@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type React from 'react';
 
-import { Search, X, ArrowRight, LayoutDashboard, FileText, Briefcase, Tags, BarChart3, Image, Zap, HelpCircle, Settings, Building2, MessageSquare, Handshake, Layout, Globe } from 'lucide-react';
+import { Search, X, ArrowRight, LayoutDashboard, FileText, Briefcase, BarChart3, Image, Zap, HelpCircle, Settings, Building2, MessageSquare, Handshake, Layout, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const PAGES = [
@@ -9,7 +9,6 @@ const PAGES = [
   { label: 'Editor de Layout', path: '/admin/layout',             icon: Layout,          tags: ['layout','ordem','seções'] },
   { label: 'Conteúdo Geral',   path: '/admin/conteudo',           icon: FileText,        tags: ['textos','conteúdo','institucional'] },
   { label: 'Soluções',         path: '/admin/solucoes',           icon: Briefcase,       tags: ['produtos','serviços'] },
-  { label: 'Segmentos',        path: '/admin/segmentos',          icon: Tags,            tags: ['mercados','setores'] },
   { label: 'Estatísticas',     path: '/admin/estatisticas',       icon: BarChart3,       tags: ['números','stats'] },
   { label: 'Banners',          path: '/admin/banners',            icon: Image,           tags: ['imagens','carrossel','slides'] },
   { label: 'Links Rápidos',    path: '/admin/links-rapidos',      icon: Zap,             tags: ['links','atalhos'] },

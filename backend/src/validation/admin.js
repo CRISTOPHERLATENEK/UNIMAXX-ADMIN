@@ -117,17 +117,6 @@ const genericPageSchema = z.object({
   nav_order: z.number().int().min(0).max(999).optional().default(99),
 }).passthrough();
 
-const segmentSchema = z.object({
-  segment_id: optionalString(120),
-  name: requiredString(120, 'Nome'),
-  icon: optionalString(80).default('Shirt'),
-  image: optionalUrlLike(2048),
-  description: optionalString(5000),
-  order_num: intField(0, 0, 100000),
-  active: boolField(1),
-  show_home: boolField(0),
-});
-
 const statSchema = z.object({
   value: requiredString(120, 'Valor'),
   label: requiredString(160, 'Rótulo'),
@@ -232,7 +221,6 @@ module.exports = {
   partnerSchema,
   passwordSchema,
   profileSchema,
-  segmentSchema,
   solutionSchema,
   statSchema,
   statUpdateSchema,

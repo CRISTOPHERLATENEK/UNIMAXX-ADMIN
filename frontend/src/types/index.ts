@@ -21,18 +21,6 @@ export interface Solution {
   card_title_weight?: string;   // peso do título
 }
 
-export interface Segment {
-  id: string;
-  segment_id: string;
-  name: string;
-  description: string;
-  icon: string;
-  image?: string;
-  order_num: number;
-  active: number;
-  show_home?: number;
-}
-
 export interface NumberStat {
   id: string;
   stat_id: string;
@@ -109,7 +97,6 @@ export interface NavPage {
 export interface SiteData {
   content: SiteContent;
   solutions: Solution[];
-  segments: Segment[];
   stats: NumberStat[];
   banners: Banner[];
   settings: Record<string, string>;

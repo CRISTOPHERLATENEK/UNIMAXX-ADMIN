@@ -25,7 +25,7 @@ export function Contact() {
   const mapsUrl = settings.maps_embed_url || '';
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-  const [formData, setFormData] = useState({ name: '', phone: '', email: '', segment: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
@@ -36,8 +36,6 @@ export function Contact() {
     { icon: MapPin, label: 'Endereço',    value: content['contact.address'] || '' },
     { icon: Clock,  label: 'Atendimento', value: content['contact.hours']   || '' },
   ].filter(i => i.value);
-
-  const segmentOptions = ['Moda e Acessórios', 'Alimentação', 'Farmácia', 'Postos de Combustível', 'Supermercado', 'Outros'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +52,7 @@ export function Contact() {
         throw new Error(d.error || 'Erro ao enviar');
       }
       setSubmitted(true);
-      setFormData({ name: '', phone: '', email: '', segment: '', message: '' });
+      setFormData({ name: '', phone: '', email: '', message: '' });
     } catch (err: any) {
       setError(err.message || 'Erro ao enviar. Tente novamente.');
     } finally {
@@ -194,17 +192,6 @@ export function Contact() {
                     onChange={e => setFormData(p => ({...p, email: e.target.value}))}
                     onFocus={e => { e.target.style.borderColor = pc; e.target.style.boxShadow = `0 0 0 3px ${pc}18`; }}
                     onBlur={e => { e.target.style.borderColor = 'var(--b1)'; e.target.style.boxShadow = 'none'; }} />
-                </div>
-
-                <div>
-                  <label style={{ fontFamily: "var(--font-body,'DM Sans')", fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Segmento</label>
-                  <select style={{ ...inp(), appearance: 'none' }} value={formData.segment}
-                    onChange={e => setFormData(p => ({...p, segment: e.target.value}))}
-                    onFocus={e => { (e.target as HTMLElement).style.borderColor = pc; (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${pc}18`; }}
-                    onBlur={e => { (e.target as HTMLElement).style.borderColor = 'var(--b1)'; (e.target as HTMLElement).style.boxShadow = 'none'; }}>
-                    <option value="">Selecione seu segmento</option>
-                    {segmentOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
                 </div>
 
                 <div>

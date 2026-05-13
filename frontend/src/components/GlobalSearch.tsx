@@ -9,7 +9,6 @@ const ITEMS = [
   { label: 'Banners / Carrossel', path: '/admin/banners',          group: 'Conteúdo'     },
   { label: 'Links Rápidos',       path: '/admin/links-rapidos',    group: 'Conteúdo'     },
   { label: 'Soluções & Páginas',  path: '/admin/solucoes',         group: 'Soluções'     },
-  { label: 'Segmentos',           path: '/admin/segmentos',        group: 'Empresa'      },
   { label: 'Estatísticas',        path: '/admin/estatisticas',     group: 'Empresa'      },
   { label: 'Logos de Clientes',   path: '/admin/logos-clientes',   group: 'Prova Social' },
   { label: 'Depoimentos',         path: '/admin/depoimentos',      group: 'Prova Social' },

@@ -19,13 +19,12 @@ router.get('/public-data', cache(30), async (req, res) => {
   try {
     const [
       content_rows, settings_rows, solutions_rows,
-      segments, stats, banners,
+      stats, banners,
       client_logos, testimonials, partners, nav_pages,
     ] = await Promise.all([
       queryAll('SELECT * FROM site_content'),
       queryAll('SELECT * FROM site_settings'),
       queryAll('SELECT * FROM solutions WHERE active=1 AND deleted_at IS NULL ORDER BY order_num'),
-      queryAll('SELECT * FROM segments WHERE active=1 AND deleted_at IS NULL ORDER BY order_num'),
       queryAll('SELECT * FROM stats WHERE deleted_at IS NULL ORDER BY order_num'),
       queryAll(`SELECT * FROM banners WHERE active=1 AND deleted_at IS NULL AND title IS NOT NULL AND title != '' AND (starts_at IS NULL OR starts_at <= datetime('now')) AND (ends_at IS NULL OR ends_at >= datetime('now')) ORDER BY page, order_num`),
       queryAll('SELECT * FROM client_logos WHERE active=1 AND deleted_at IS NULL ORDER BY order_num'),
@@ -40,7 +39,7 @@ router.get('/public-data', cache(30), async (req, res) => {
     settings_rows.forEach(r => { settings[r.key] = r.value; });
     const solutions = solutions_rows.map(r => ({ ...r, features: parseArr(r.features) }));
 
-    res.json({ content, settings, solutions, segments, stats, banners, client_logos, testimonials, partners, nav_pages });
+    res.json({ content, settings, solutions, stats, banners, client_logos, testimonials, partners, nav_pages });
   } catch (err) {
     console.error('public-data error:', err);
     res.status(500).json({ error: 'Erro ao buscar dados' });
@@ -89,14 +88,6 @@ router.get('/solutions', cache(60), (req, res) => {
   db.all('SELECT * FROM solutions WHERE active=1 AND deleted_at IS NULL ORDER BY order_num', [], (err, rows) => {
     if (err) return res.status(500).json({ error: 'Erro' });
     res.json((rows || []).map(r => ({ ...r, features: parseArr(r.features) })));
-  });
-});
-
-// ── Segmentos ─────────────────────────────────────────────────────────────
-router.get('/segments', cache(60), (req, res) => {
-  db.all('SELECT * FROM segments WHERE active=1 AND deleted_at IS NULL ORDER BY order_num', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: 'Erro' });
-    res.json(rows || []);
   });
 });
 
@@ -213,7 +204,7 @@ router.get('/sitemap.xml', (req, res) => {
     [],
     (err, rows) => {
       const host = process.env.SITE_URL || 'https://seusite.com.br';
-      const staticUrls = ['/', '/solucoes', '/segmentos', '/cliente', '/suporte'];
+      const staticUrls = ['/', '/solucoes', '/cliente', '/suporte'];
       const urls = [
         ...staticUrls.map(u => `<url><loc>${host}${u}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`),
         ...(rows || []).map(r => `<url><loc>${host}/p/${r.slug}</loc><lastmod>${(r.updated_at || '').slice(0,10)}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`)

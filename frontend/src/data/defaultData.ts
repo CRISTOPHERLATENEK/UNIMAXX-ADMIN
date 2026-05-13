@@ -4,7 +4,6 @@ export const defaultData: SiteData = {
   content: {
     'header.logo': 'Unimaxx',
     'header.nav.solutions': 'Soluções',
-    'header.nav.segments': 'Segmentos',
     'header.nav.institutional': 'Institucional',
     'header.nav.support': 'Suporte',
     'header.nav.contact': 'Fale Conosco',
@@ -55,12 +54,6 @@ export const defaultData: SiteData = {
     'stats.subtitle': '',
     'stats.description': '',
 
-    'segments.title': 'Atendemos',
-    'segments.subtitle': 'todos os segmentos',
-    'segments.subtitle2': 'do varejo',
-    'segments.description': 'Soluções especializadas para cada tipo de negócio.',
-    'segments.viewAll': 'Ver Todos os Segmentos',
-
     'differentials.title': 'Por que Unimaxx?',
     'differentials.subtitle': 'Nossos',
     'differentials.subtitle2': 'diferenciais',
@@ -79,7 +72,6 @@ export const defaultData: SiteData = {
     'contact.form.name': 'Nome',
     'contact.form.phone': 'Telefone',
     'contact.form.email': 'E-mail',
-    'contact.form.segment': 'Segmento',
     'contact.form.message': 'Mensagem',
     'contact.form.submit': 'Solicitar Contato',
 
@@ -103,7 +95,6 @@ export const defaultData: SiteData = {
     },
   ],
 
-  segments: [],
   stats: [],
   banners: [],
   settings: {},

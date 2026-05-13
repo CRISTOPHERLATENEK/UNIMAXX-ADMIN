@@ -35,7 +35,7 @@ function Cliente() {
         body: JSON.stringify({
           name: form.name, phone: form.phone, email: form.email,
           company: form.company, subject: form.subject,
-          message: form.message, segment: form.subject,
+          message: form.message,
         }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Erro ao enviar'); }

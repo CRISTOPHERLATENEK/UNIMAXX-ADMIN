@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import type { SiteData, Solution, Segment, NumberStat, SiteContent, Banner, ClientLogo, Testimonial, Partner } from '@/types';
+import type { SiteData, Solution, NumberStat, SiteContent, Banner, ClientLogo, Testimonial, Partner } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -12,8 +12,6 @@ interface DataContextType {
   updateSettings: (updates: Record<string, string>) => Promise<void>;
   updateSolution: (solution: Solution) => Promise<void>;
   deleteSolution: (id: string) => Promise<void>;
-  updateSegment: (segment: Segment) => Promise<void>;
-  deleteSegment: (id: string) => Promise<void>;
   addStat: (stat: NumberStat) => Promise<void>;
   updateStat: (stat: NumberStat) => Promise<void>;
   deleteStat: (id: string) => Promise<void>;
@@ -39,7 +37,6 @@ const CACHE_TTL = 10 * 60 * 1000; // 10 minutos (fresh)
 const defaultData: SiteData = {
   content: {},
   solutions: [],
-  segments: [],
   stats: [],
   banners: [],
   settings: {},
@@ -123,7 +120,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const newData = {
           content: publicData.content ?? {},
           solutions: publicData.solutions ?? [],
-          segments: publicData.segments ?? [],
           stats: publicData.stats ?? [],
           banners: publicData.banners ?? [],
           settings: publicData.settings ?? {},
@@ -166,43 +162,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     };
-  };
-
-  // ===============================
-  // SEGMENTS (CORRIGIDO AQUI)
-  // ===============================
-
-  const updateSegment = async (segment: Segment) => {
-    const isNew = !data.segments.some(
-      (s) => s.segment_id === segment.segment_id
-    );
-
-    const url = isNew
-      ? `${API_URL}/admin/segments`
-      : `${API_URL}/admin/segments/${segment.segment_id}`;
-
-    const method = isNew ? 'POST' : 'PUT';
-
-    const res = await fetch(url, {
-      method,
-      headers: getAuthHeaders(),
-      body: JSON.stringify(segment)
-    });
-
-    if (!res.ok) throw new Error('Erro ao salvar segmento');
-
-    await refreshData();
-  };
-
-  const deleteSegment = async (id: string) => {
-    const res = await fetch(`${API_URL}/admin/segments/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-
-    if (!res.ok) throw new Error('Erro ao excluir segmento');
-
-    await refreshData();
   };
 
   // ===============================
@@ -408,8 +367,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       updateSettings,
       updateSolution,
       deleteSolution,
-      updateSegment,
-      deleteSegment,
       addStat,
       updateStat,
       deleteStat,

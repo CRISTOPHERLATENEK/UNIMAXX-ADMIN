@@ -18,7 +18,6 @@ import { Hero } from '@/sections/Hero';
 import { QuickLinks } from '@/sections/QuickLinks';
 import { Solutions } from '@/sections/Solutions';
 import { Numbers } from '@/sections/Numbers';
-import { Segments } from '@/sections/Segments';
 import { Differentials } from '@/sections/Differentials';
 import { ClientLogos } from '@/sections/ClientLogos';
 import { Testimonials } from '@/sections/Testimonials';
@@ -87,7 +86,6 @@ const SECTION_COMPONENTS: Record<string, React.ComponentType> = {
   quicklinks: QuickLinks,
   solutions: Solutions,
   numbers: Numbers,
-  segments: Segments,
   differentials: Differentials,
   testimonials: Testimonials,
   partners: Partners,

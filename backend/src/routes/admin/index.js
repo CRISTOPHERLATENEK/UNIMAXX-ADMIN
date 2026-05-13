@@ -8,7 +8,6 @@ router.use('/',                require('./content'));
 router.use('/solutions',       require('./solutions'));
 router.use('/solution-pages',  require('./solution-pages'));
 router.use('/generic-pages',   require('./generic-pages'));
-router.use('/segments',        require('./segments'));
 router.use('/stats',           require('./stats'));
 router.use('/banners',         require('./banners'));
 router.use('/upload',          require('./upload'));

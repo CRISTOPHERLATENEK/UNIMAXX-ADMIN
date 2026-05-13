@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import {
   GripVertical, Eye, EyeOff, Save, RotateCcw,
   Layout, Image, Link2, Briefcase, BarChart3,
-  Tags, Star, Handshake, MessageSquare, Mail,
+  Star, Handshake, MessageSquare, Mail,
   ChevronUp, ChevronDown, Building2, Zap, Type,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
@@ -17,7 +17,6 @@ export const ALL_SECTIONS = [
   { id: 'quicklinks',   label: 'Links Rápidos',           icon: Zap,          description: 'Acesso rápido a páginas internas',     required: false },
   { id: 'solutions',    label: 'Soluções',                icon: Briefcase,    description: 'Cards com as soluções da empresa',     required: false },
   { id: 'numbers',      label: 'Números / Estatísticas',  icon: BarChart3,    description: 'Métricas e indicadores com animação',  required: false },
-  { id: 'segments',     label: 'Segmentos Atendidos',     icon: Tags,         description: 'Grid de segmentos do varejo',          required: false },
   { id: 'differentials',label: 'Diferenciais',            icon: Star,         description: 'Por que escolher a Unimaxx',           required: false },
   { id: 'testimonials', label: 'Depoimentos',             icon: MessageSquare,description: 'Avaliações e depoimentos de clientes', required: false },
   { id: 'partners',     label: 'Parceiros & Integrações', icon: Handshake,    description: 'Grid de logos de parceiros',           required: false },

@@ -1,4 +1,4 @@
-import { Image as ImageIcon, Layers3, Link2, Phone, Sparkles, LayoutTemplate } from 'lucide-react';
+import { Image as ImageIcon, Layers3, Link2, Phone, Sparkles } from 'lucide-react';
 import type React from 'react';
 import type { ImgSpec } from '@/components/ImageUploadField';
 
@@ -89,20 +89,6 @@ export const HOME_SECTION_CONFIGS = {
       { key: 'stats.title', label: 'Título', placeholder: 'Nossos Números' },
       { key: 'stats.subtitle', label: 'Subtítulo', placeholder: 'Resultados que comprovam nossa presença' },
       { key: 'stats.description', label: 'Descrição', type: 'textarea', rows: 3, placeholder: 'Texto curto para contextualizar os números.' },
-    ],
-  } satisfies HomeSectionDef,
-  segments: {
-    id: 'segments',
-    icon: LayoutTemplate,
-    title: 'Segmentos',
-    description: 'Texto da seção que apresenta os segmentos atendidos.',
-    previewUrl: '/#segmentos',
-    fields: [
-      { key: 'segments.title', label: 'Título da seção', placeholder: 'Segmentos Atendidos' },
-      { key: 'segments.subtitle', label: 'Linha 1', placeholder: 'Soluções para cada' },
-      { key: 'segments.subtitle2', label: 'Linha 2 em destaque', placeholder: 'setor do varejo' },
-      { key: 'segments.description', label: 'Descrição', type: 'textarea', rows: 3, placeholder: 'Mostre a amplitude dos setores atendidos.' },
-      { key: 'segments.viewAll', label: 'Texto do botão', placeholder: 'Ver Todos os Segmentos' },
     ],
   } satisfies HomeSectionDef,
   differentials: {
