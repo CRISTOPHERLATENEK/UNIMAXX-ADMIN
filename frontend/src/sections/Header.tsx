@@ -128,7 +128,7 @@ export function Header() {
     ...standaloneNavPages.map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}` })),
   ].map((item) => ({
     ...item,
-    ...(item.dropdown && item.dropdown.length === 0 ? { dropdown: undefined, to: "/" } : {}),
+    ...((item as any).dropdown?.length === 0 ? { dropdown: undefined, to: "/" } : {}),
   }));
 
   const isActive = (path: string) => location.pathname === path;

@@ -33,7 +33,7 @@ function StatCard({ label, value, icon, color, sub }: {
   return (
     <div style={{ background: '#fff', borderRadius: 20, border: '1px solid rgba(0,0,0,.06)', padding: '20px 24px', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
       <div style={{ width: 48, height: 48, borderRadius: 14, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        {React.cloneElement(icon as React.ReactElement, { size: 22, color })}
+        {React.cloneElement(icon as React.ReactElement<{ size?: number; color?: string }>, { size: 22, color })}
       </div>
       <div>
         <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 0 4px' }}>{label}</p>
