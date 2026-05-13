@@ -463,6 +463,16 @@ function ConfigPanel({ form, set, isNew }: {
             <Switch checked={!!form.show_in_nav} onCheckedChange={(v) => set('show_in_nav', v)} />
           </div>
 
+          {/* Aviso: página inativa não aparece no nav */}
+          {form.show_in_nav && !form.is_active && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#fef9c3', border: '1px solid #fde047', borderRadius: 10, marginBottom: 8 }}>
+              <span style={{ fontSize: 15 }}>⚠️</span>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#854d0e', margin: 0, lineHeight: 1.4 }}>
+                <strong>Página inativa</strong> — ative a página acima para ela aparecer no menu.
+              </p>
+            </div>
+          )}
+
           {form.show_in_nav && (
             <div className="space-y-3">
               {/* Label */}

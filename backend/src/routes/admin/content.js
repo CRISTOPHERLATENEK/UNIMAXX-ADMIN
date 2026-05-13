@@ -66,7 +66,7 @@ router.get('/all-data', async (req, res) => {
     const [
       settings_rows, content_rows, solutions_rows,
       segments, stats, banners,
-      client_logos, testimonials, partners,
+      client_logos, testimonials, partners, nav_pages,
     ] = await Promise.all([
       queryAll('SELECT * FROM site_settings'),
       queryAll('SELECT * FROM site_content'),
@@ -77,6 +77,7 @@ router.get('/all-data', async (req, res) => {
       queryAll('SELECT * FROM client_logos WHERE deleted_at IS NULL ORDER BY order_num'),
       queryAll('SELECT * FROM testimonials WHERE deleted_at IS NULL ORDER BY order_num'),
       queryAll('SELECT * FROM partners WHERE deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT id, slug, title, nav_label, nav_group, nav_order FROM generic_pages WHERE is_active=1 AND show_in_nav=1 AND deleted_at IS NULL ORDER BY nav_order ASC, id ASC'),
     ]);
 
     const settings = {};
@@ -90,7 +91,7 @@ router.get('/all-data', async (req, res) => {
       catch { return { ...r, features: [] }; }
     });
 
-    res.json({ settings, content, solutions, segments, stats, banners, client_logos, testimonials, partners });
+    res.json({ settings, content, solutions, segments, stats, banners, client_logos, testimonials, partners, nav_pages });
   } catch (err) {
     console.error('all-data error:', err);
     res.status(500).json({ error: 'Erro ao buscar dados' });
