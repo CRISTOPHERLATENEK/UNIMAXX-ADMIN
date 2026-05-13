@@ -31,7 +31,6 @@ import { parseLayout } from '@/admin/PageLayoutManager';
 // ── Páginas públicas secundárias (lazy — carregadas só quando acessadas) ──
 const Solucoes         = lazy(() => import('./pages/Solucoes'));
 const SolucaoDetalhe   = lazy(() => import('./pages/SolucaoDetalhe'));
-const Segmentos        = lazy(() => import('./pages/Segmentos'));
 const Sobre            = lazy(() => import('./pages/Sobre'));
 const Carreiras        = lazy(() => import('./pages/Carreiras'));
 const Blog             = lazy(() => import('./pages/Blog'));
@@ -268,7 +267,6 @@ function AppRoutes() {
         <Route path="/solucao-page/:slug" element={showMaintenance ? <MaintenancePage /> : <SolutionPageDetail />} />
         <Route path="/p/:slug" element={showMaintenance ? <MaintenancePage /> : <GenericPageView />} />
         <Route path="/preview/:token" element={<PreviewView />} />
-        <Route path="/segmentos" element={showMaintenance ? <MaintenancePage /> : <Segmentos />} />
         <Route path="/sobre" element={showMaintenance ? <MaintenancePage /> : <Sobre />} />
         <Route path="/carreiras" element={showMaintenance ? <MaintenancePage /> : <Carreiras />} />
         <Route path="/imprensa" element={showMaintenance ? <MaintenancePage /> : <Imprensa />} />

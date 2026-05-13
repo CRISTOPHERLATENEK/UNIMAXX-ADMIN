@@ -68,7 +68,6 @@ export function Header() {
 
   // ── Nav items (mesma lógica original) ──
   const activeSolutions = (data.solutions || []).filter((s: any) => s.active === 1);
-  const segmentosInSolucoes = settings.nav_segmentos_in_solucoes === '1';
   const solutionsDropdown = [
     { id: "all-solutions", label: "Todas as Soluções", to: "/solucoes" },
     ...activeSolutions.map((s: any) => ({
@@ -76,8 +75,6 @@ export function Header() {
       label: s.title,
       to: s.nav_link?.trim() || `/solucao-page/${s.solution_id}`,
     })),
-    // Segmentos dentro de Soluções (opcional)
-    ...(segmentosInSolucoes ? [{ id: "segmentos-link", label: "Segmentos", to: "/segmentos" }] : []),
   ];
 
   const navPages = data.nav_pages || [];
@@ -107,7 +104,6 @@ export function Header() {
 
   const rawNavItems = [
     { _key: 'solucoes',     label: content["header.nav.solutions"] || "Soluções", dropdown: solutionsDropdown },
-    { _key: 'segmentos',    label: "Segmentos", to: "/segmentos" },
     {
       _key: 'institucional',
       label: content["header.nav.institutional"] || "Institucional",
