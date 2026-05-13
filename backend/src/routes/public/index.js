@@ -1,5 +1,9 @@
 const router = require('express').Router();
 const { db, parseArr } = require('../../db/database');
+const rateLimit = require('express-rate-limit');
+
+const contactLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Muitas tentativas. Aguarde 15 minutos.' }, standardHeaders: true, legacyHeaders: false });
+const trackLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, message: { error: 'Rate limit' }, standardHeaders: true, legacyHeaders: false });
 
 const cache = (s) => (_, res, next) => {
   res.set('Cache-Control', `public, max-age=${s}, stale-while-revalidate=60`);
@@ -155,7 +159,7 @@ router.use((req, res, next) => {
 // ── Páginas Genéricas ─────────────────────────────────────────────────────
 router.get('/pages/:slug', (req, res) => {
   db.get(
-    'SELECT id, slug, title, meta_title, meta_description, is_active, blocks_json, created_at, updated_at FROM generic_pages WHERE slug=? AND is_active=1 AND deleted_at IS NULL',
+    `SELECT id, slug, title, meta_title, meta_description, is_active, blocks_json, created_at, updated_at FROM generic_pages WHERE slug=? AND is_active=1 AND deleted_at IS NULL AND (published_at IS NULL OR published_at <= datetime('now')) AND (expires_at IS NULL OR expires_at >= datetime('now'))`,
     [req.params.slug],
     (err, row) => {
       if (err) return res.status(500).json({ error: 'Erro' });
@@ -186,6 +190,7 @@ router.get('/sitemap.xml', (req, res) => {
 // ── Leads & Contato ───────────────────────────────────────────────────────
 router.use(require('./leads'));
 
+router.use('/contact', contactLimiter);
 router.post('/contact', (req, res) => {
   const { name, phone, email = '', segment = '', message = '' } = req.body || {};
   if (!name?.trim() || !phone?.trim()) {
@@ -204,6 +209,7 @@ router.post('/contact', (req, res) => {
 router.use('/newsletter', require('./newsletter'));
 
 // ── Analytics: registrar pageview ─────────────────────────────────────────────
+router.use('/track', trackLimiter);
 router.post('/track', (req, res) => {
   const { page = '/', referrer = '', session_id = '' } = req.body || {};
   const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim();

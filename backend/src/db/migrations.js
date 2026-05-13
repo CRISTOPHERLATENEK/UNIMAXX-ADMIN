@@ -396,6 +396,15 @@ function addAnalyticsTables() {
 
 addAnalyticsTables();
 
+function addSchedulingColumns() {
+  [
+    'ALTER TABLE generic_pages ADD COLUMN published_at TEXT',
+    'ALTER TABLE generic_pages ADD COLUMN expires_at TEXT',
+  ].forEach(sql => db.run(sql, [], () => {}));
+}
+
+addSchedulingColumns();
+
 function addSecurityColumns() {
   // Brute force protection columns
   [

@@ -68,6 +68,9 @@ import { GenericPagesManager } from '@/admin/GenericPagesManager';
 // SolutionPagesManager removido — gerenciamento de páginas de solução feito pelo UnifiedSolutionsManager
 import { HomeManager } from '@/admin/HomeManager';
 import { HomeEditor } from '@/admin/HomeEditor';
+import AnalyticsDashboard from '@/admin/AnalyticsDashboard';
+import { RedirectsManager } from '@/admin/RedirectsManager';
+import MediaLibrary from '@/admin/MediaLibrary';
 
 const SECTION_COMPONENTS: Record<string, React.ComponentType> = {
   hero: Hero,
@@ -290,6 +293,9 @@ function AppRoutes() {
           <Route path="leads" element={<LeadsManager />} />
           <Route path="newsletter" element={<NewsletterManager />} />
           <Route path="legal" element={<LegalManager />} />
+          <Route path="analytics" element={<AnalyticsDashboard />} />
+          <Route path="redirects" element={<RedirectsManager />} />
+          <Route path="midia" element={<MediaLibrary open={true} onClose={() => {}} />} />
         </Route>
 
         <Route path="*" element={isAdminRoute ? <NotFound /> : publicFallback} />

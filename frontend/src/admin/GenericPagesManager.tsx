@@ -5,6 +5,7 @@ import {
   ArrowLeft, Search, FileText, AlertCircle, Globe,
   Image as ImageIcon, Link2, ShieldOff, Code2, Eye,
   Copy, ChevronUp, ChevronDown, CheckSquare, Square,
+  Clock, Download, Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +48,9 @@ interface GenericPage {
   nav_label?: string;
   nav_group?: string;
   nav_order?: number;
+  // Scheduling
+  published_at?: string;
+  expires_at?: string;
 }
 
 const EMPTY: GenericPage = {
@@ -452,6 +456,21 @@ function ConfigPanel({ form, set, isNew }: {
           <Switch checked={form.is_active} onCheckedChange={(v) => set('is_active', v)} />
         </div>
 
+        {/* ── Scheduling ── */}
+        <div style={{ borderTop: '1px solid rgba(0,0,0,.06)', paddingTop: 16 }}>
+          <p style={{ fontSize: 12, fontWeight: 800, color: '#64748b', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '.05em' }}>📅 Agendamento</p>
+          <div className="space-y-3">
+            <div>
+              <FL hint="Publicar automaticamente nesta data/hora">Publicar em</FL>
+              <Input type="datetime-local" value={form.published_at || ''} onChange={e => set('published_at', e.target.value)} className="h-10" />
+            </div>
+            <div>
+              <FL hint="Despublicar automaticamente nesta data/hora (opcional)">Expirar em</FL>
+              <Input type="datetime-local" value={form.expires_at || ''} onChange={e => set('expires_at', e.target.value)} className="h-10" />
+            </div>
+          </div>
+        </div>
+
         {/* ── Nav settings ── */}
         <div style={{ borderTop: '1px solid rgba(0,0,0,.06)', paddingTop: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -603,6 +622,14 @@ function ConfigPanel({ form, set, isNew }: {
   );
 }
 
+interface PageVersion {
+  id: number;
+  page_id: number;
+  title: string;
+  saved_by: string;
+  created_at: string;
+}
+
 // ── Editor ─────────────────────────────────────────────────────────────────────
 function Editor({ initial, isNew, onSave, onBack }: {
   initial: GenericPage; isNew: boolean;
@@ -613,7 +640,35 @@ function Editor({ initial, isNew, onSave, onBack }: {
   const [tab, setTab] = useState('construtor');
   const [saving, setSaving] = useState(false);
   const [creatingPreview, setCreatingPreview] = useState(false);
+  const [showVersions, setShowVersions] = useState(false);
+  const [versions, setVersions] = useState<PageVersion[]>([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
   const { toast } = useToast();
+
+  const loadVersions = async () => {
+    if (!form.id) return;
+    setLoadingVersions(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/generic-pages/${form.id}/versions`, { headers: authH() });
+      const data = await res.json();
+      setVersions(data || []);
+    } catch { /* ignore */ }
+    finally { setLoadingVersions(false); }
+  };
+
+  const handleRestoreVersion = async (vid: number) => {
+    if (!form.id) return;
+    try {
+      const res = await fetch(`${API_URL}/admin/generic-pages/${form.id}/versions/${vid}`, { headers: authH() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Erro');
+      set('blocks_json', data.blocks_json);
+      setShowVersions(false);
+      toast({ title: '✅ Versão restaurada! Salve para confirmar.' });
+    } catch (e: any) {
+      toast({ title: e?.message || 'Erro ao restaurar versão', variant: 'destructive' });
+    }
+  };
 
   const set = <K extends keyof GenericPage>(k: K, v: GenericPage[K]) =>
     setForm(p => ({ ...p, [k]: v }));
@@ -733,6 +788,15 @@ function Editor({ initial, isNew, onSave, onBack }: {
               Preview
             </button>
           )}
+          {!isNew && form.id && (
+            <button onClick={() => { setShowVersions(v => !v); if (!showVersions) loadVersions(); }}
+              title="Histórico de versões"
+              style={{ width: 34, height: 34, borderRadius: 10, background: showVersions ? '#eff6ff' : '#f1f5f9', border: 'none', color: showVersions ? '#2563eb' : '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .15s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#e2e8f0'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = showVersions ? '#eff6ff' : '#f1f5f9'; }}>
+              <Clock size={14} />
+            </button>
+          )}
           <button onClick={handleSave} disabled={saving}
             style={{ height: 34, padding: '0 18px', borderRadius: 10, background: saving ? '#fbd38d' : '#f97316', border: 'none', color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, boxShadow: '0 2px 8px rgba(249,115,22,.3)', transition: 'all .15s' }}>
             {saving
@@ -772,6 +836,50 @@ function Editor({ initial, isNew, onSave, onBack }: {
           </div>
         </div>
       )}
+
+      {/* Version History Drawer */}
+      {showVersions && (
+        <>
+          <div onClick={() => setShowVersions(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.2)', zIndex: 40 }} />
+          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 320, background: '#fff', zIndex: 50, boxShadow: '-4px 0 24px rgba(0,0,0,.12)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '18px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Clock size={16} style={{ color: '#64748b' }} />
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', margin: 0 }}>Histórico de versões</h3>
+              </div>
+              <button onClick={() => setShowVersions(false)} style={{ width: 28, height: 28, borderRadius: 8, background: '#f1f5f9', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 16 }}>✕</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+              {loadingVersions ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '32px 0' }}>
+                  <RefreshCw size={20} style={{ color: '#f97316', animation: 'spin 1s linear infinite' }} />
+                </div>
+              ) : versions.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8' }}>
+                  <Clock size={28} style={{ margin: '0 auto 8px' }} />
+                  <p style={{ fontSize: 13, fontWeight: 600 }}>Nenhuma versão ainda</p>
+                  <p style={{ fontSize: 11, marginTop: 4 }}>Versões são salvas ao editar</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {versions.map(v => (
+                    <div key={v.id} style={{ padding: '12px 14px', borderRadius: 12, border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', margin: '0 0 3px' }}>{v.title}</p>
+                      <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 8px' }}>
+                        {new Date(v.created_at).toLocaleString('pt-BR')} · {v.saved_by}
+                      </p>
+                      <button onClick={() => handleRestoreVersion(v.id)}
+                        style={{ height: 28, padding: '0 12px', borderRadius: 7, background: '#fff7ed', border: '1px solid #fed7aa', color: '#f97316', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>
+                        Restaurar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -785,6 +893,8 @@ export function GenericPagesManager() {
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [showTemplates, setShowTemplates] = useState(false);
+  const [sortBy, setSortBy] = useState<'title' | 'created' | 'status'>('created');
+  const importRef = React.useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { refreshData } = useData();
 
@@ -812,10 +922,38 @@ export function GenericPagesManager() {
         theme: parseObj(p.theme, { ...DEFAULT_THEME }),
         nav_group: p.nav_group || 'standalone',
         nav_order: p.nav_order ?? 99,
+        published_at: p.published_at || undefined,
+        expires_at: p.expires_at || undefined,
       })));
     } catch {
       toast({ title: 'Erro ao carregar páginas', variant: 'destructive' });
     } finally { setLoading(false); }
+  };
+
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(pages, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `paginas-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+  };
+
+  const handleImport = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const imported = JSON.parse(e.target?.result as string) as GenericPage[];
+        let count = 0;
+        for (const p of imported) {
+          const body = { ...p, id: undefined, slug: p.slug + '-imp', is_active: false, blocks_json: p.blocks_json || [], show_in_nav: 0, nav_group: p.nav_group || 'standalone', nav_order: p.nav_order ?? 99 };
+          const res = await fetch(`${API_URL}/admin/generic-pages`, { method: 'POST', headers: authH(), body: JSON.stringify(body) });
+          if (res.ok) count++;
+        }
+        toast({ title: `✅ ${count} página(s) importada(s)!` });
+        fetchAll();
+      } catch { toast({ title: 'Erro ao importar JSON', variant: 'destructive' }); }
+    };
+    reader.readAsText(file);
   };
 
   const handleSave = async (data: GenericPage) => {
@@ -837,6 +975,8 @@ export function GenericPagesManager() {
       nav_label: data.nav_label || null,
       nav_group: data.nav_group || 'standalone',
       nav_order: data.nav_order ?? 99,
+      published_at: data.published_at || null,
+      expires_at: data.expires_at || null,
     };
     const url = data.id
       ? `${API_URL}/admin/generic-pages/${data.id}`
@@ -927,6 +1067,12 @@ export function GenericPagesManager() {
     p.slug.toLowerCase().includes(search.toLowerCase())
   );
 
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === 'title') return a.title.localeCompare(b.title, 'pt-BR');
+    if (sortBy === 'status') return Number(b.is_active) - Number(a.is_active);
+    return (b.id || 0) - (a.id || 0); // created (default)
+  });
+
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       {/* ── Header ── */}
@@ -940,17 +1086,37 @@ export function GenericPagesManager() {
               {pages.length > 0 ? `${pages.length} página${pages.length > 1 ? 's' : ''} criada${pages.length > 1 ? 's' : ''}` : 'Crie e gerencie páginas com o Page Builder'}
             </p>
           </div>
-          <button onClick={() => setShowTemplates(true)}
-            style={{ height: 40, padding: '0 18px', borderRadius: 12, background: '#f97316', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, boxShadow: '0 4px 12px rgba(249,115,22,.25)', whiteSpace: 'nowrap' }}>
-            <Plus size={16} /> Nova Página
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button onClick={handleExport} title="Exportar páginas como JSON"
+              style={{ width: 40, height: 40, borderRadius: 12, background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Download size={16} />
+            </button>
+            <button onClick={() => importRef.current?.click()} title="Importar páginas de JSON"
+              style={{ width: 40, height: 40, borderRadius: 12, background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Upload size={16} />
+            </button>
+            <input ref={importRef} type="file" accept="application/json" style={{ display: 'none' }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleImport(f); e.target.value = ''; }} />
+            <button onClick={() => setShowTemplates(true)}
+              style={{ height: 40, padding: '0 18px', borderRadius: 12, background: '#f97316', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, boxShadow: '0 4px 12px rgba(249,115,22,.25)', whiteSpace: 'nowrap' }}>
+              <Plus size={16} /> Nova Página
+            </button>
+          </div>
         </div>
 
-        {/* Search */}
-        <div style={{ maxWidth: 960, margin: '16px auto 0', position: 'relative' }}>
-          <Search size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar páginas por título ou slug…"
-            style={{ width: '100%', height: 40, borderRadius: 12, border: '1px solid #e2e8f0', background: '#f8fafc', padding: '0 14px 0 38px', fontSize: 13, outline: 'none', fontFamily: 'inherit', color: '#0f172a', boxSizing: 'border-box' }} />
+        {/* Search + Sort */}
+        <div style={{ maxWidth: 960, margin: '16px auto 0', display: 'flex', gap: 10 }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <Search size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar páginas por título ou slug…"
+              style={{ width: '100%', height: 40, borderRadius: 12, border: '1px solid #e2e8f0', background: '#f8fafc', padding: '0 14px 0 38px', fontSize: 13, outline: 'none', fontFamily: 'inherit', color: '#0f172a', boxSizing: 'border-box' }} />
+          </div>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value as 'title' | 'created' | 'status')}
+            style={{ height: 40, borderRadius: 12, border: '1px solid #e2e8f0', background: '#f8fafc', padding: '0 12px', fontSize: 13, color: '#0f172a' }}>
+            <option value="created">Mais recentes</option>
+            <option value="title">Nome A–Z</option>
+            <option value="status">Status</option>
+          </select>
         </div>
       </div>
 
@@ -964,7 +1130,7 @@ export function GenericPagesManager() {
           )}
 
           {/* Empty state */}
-          {!loading && filtered.length === 0 && (
+          {!loading && sorted.length === 0 && (
             <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', padding: '64px 40px', textAlign: 'center' }}>
               <div style={{ width: 72, height: 72, borderRadius: 20, background: 'linear-gradient(135deg,#fff7ed,#fed7aa)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 4px 16px rgba(249,115,22,.12)' }}>
                 <Globe size={32} style={{ color: '#f97316' }} />
@@ -987,9 +1153,9 @@ export function GenericPagesManager() {
           )}
 
           {/* Page cards */}
-          {!loading && filtered.length > 0 && (
+          {!loading && sorted.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {filtered.map((page) => {
+              {sorted.map((page) => {
                 const seoScore2 = [page.og_image, page.meta_title, page.meta_description].filter(Boolean).length;
                 const seoColor2 = seoScore2 === 3 ? '#22c55e' : seoScore2 === 2 ? '#f59e0b' : '#ef4444';
                 const blockCount = page.blocks_json?.length || 0;

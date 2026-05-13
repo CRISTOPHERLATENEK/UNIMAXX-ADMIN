@@ -300,6 +300,14 @@ export function Dashboard() {
         </div>
       </div>
 
+      {/* Link para analytics completo */}
+      <div className="flex justify-end">
+        <button onClick={() => navigate('/admin/analytics')}
+          className="flex items-center gap-1.5 text-[12px] font-bold text-orange-500 hover:text-orange-600 transition">
+          <ArrowUpRight className="w-3.5 h-3.5" /> Ver Analytics Completo
+        </button>
+      </div>
+
       {/* Aviso de dados zerados */}
       {!analyticsLoading && (!analytics || analytics.summary.viewsAll === 0) && (
         <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center">

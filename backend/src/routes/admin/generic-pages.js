@@ -4,7 +4,7 @@ const { validateBody, validateParams } = require('../../middleware/validate');
 const { genericPageSchema, numericIdParamSchema } = require('../../validation/admin');
 const { logAudit } = require('../../utils/audit');
 
-const FIELDS = ['slug', 'title', 'meta_title', 'meta_description', 'is_active', 'blocks_json', 'show_in_nav', 'nav_label', 'nav_group', 'nav_order'];
+const FIELDS = ['slug', 'title', 'meta_title', 'meta_description', 'is_active', 'blocks_json', 'show_in_nav', 'nav_label', 'nav_group', 'nav_order', 'published_at', 'expires_at'];
 
 function parseRow(row) {
   return {
@@ -27,6 +27,8 @@ function buildValues(b) {
     b.nav_label || null,
     b.nav_group || 'standalone',
     b.nav_order ?? 99,
+    b.published_at || null,
+    b.expires_at || null,
   ];
 }
 
@@ -61,6 +63,18 @@ router.post('/', validateBody(genericPageSchema), (req, res) => {
 
 router.put('/:id', validateParams(numericIdParamSchema), validateBody(genericPageSchema), (req, res) => {
   const payload = req.validatedBody;
+  // Save current version before overwriting
+  db.get('SELECT title, blocks_json FROM generic_pages WHERE id=?', [req.validatedParams.id], (verErr, current) => {
+    if (!verErr && current) {
+      db.run('INSERT INTO page_versions (page_id, title, blocks_json, saved_by) VALUES (?, ?, ?, ?)',
+        [req.validatedParams.id, current.title, current.blocks_json, req.user?.email || 'admin'],
+        () => {}
+      );
+      // Keep only last 10 versions
+      db.run('DELETE FROM page_versions WHERE page_id=? AND id NOT IN (SELECT id FROM page_versions WHERE page_id=? ORDER BY created_at DESC LIMIT 10)',
+        [req.validatedParams.id, req.validatedParams.id]);
+    }
+  });
   const setClause = FIELDS.map(f => `${f} = ?`).join(', ') + ', updated_at = CURRENT_TIMESTAMP';
   db.run(`UPDATE generic_pages SET ${setClause} WHERE id = ?`, [...buildValues(payload), req.validatedParams.id], async function (err) {
     if (err) {
@@ -97,6 +111,37 @@ router.post('/:id/duplicate', validateParams(numericIdParamSchema), (req, res) =
         res.json({ message: 'Duplicado', id: this.lastID, slug: newSlug });
       }
     );
+  });
+});
+
+// Ensure versions table exists
+db.run(`CREATE TABLE IF NOT EXISTS page_versions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  page_id INTEGER NOT NULL,
+  blocks_json TEXT,
+  title TEXT,
+  saved_by TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
+// GET /admin/generic-pages/:id/versions — list last 10 versions
+router.get('/:id/versions', validateParams(numericIdParamSchema), (req, res) => {
+  db.all(
+    'SELECT id, page_id, title, saved_by, created_at FROM page_versions WHERE page_id=? ORDER BY created_at DESC LIMIT 10',
+    [req.validatedParams.id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'Erro' });
+      res.json(rows || []);
+    }
+  );
+});
+
+// GET /admin/generic-pages/:id/versions/:vid — get specific version blocks
+router.get('/:id/versions/:vid', validateParams(numericIdParamSchema), (req, res) => {
+  db.get('SELECT * FROM page_versions WHERE id=? AND page_id=?', [req.params.vid, req.validatedParams.id], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Erro' });
+    if (!row) return res.status(404).json({ error: 'Versão não encontrada' });
+    res.json({ ...row, blocks_json: parseArr(row.blocks_json) });
   });
 });
 
