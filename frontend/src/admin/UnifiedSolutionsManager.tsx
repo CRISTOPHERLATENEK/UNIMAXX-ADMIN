@@ -677,7 +677,7 @@ function Editor({ initial, isNew, onSave, onBack, onDirtyChange }: {
             )}
           </div>
           {/* PageBuilder esticado para preencher todo o espaço restante */}
-          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
             <PageBuilder
               blocks={form.pg_blocks}
               onChange={blocks => set('pg_blocks', blocks)}

@@ -130,6 +130,18 @@ router.get('/solution-pages/:slug', (req, res) => {
   querySolutionPageBySlug(req.params.slug, res);
 });
 
+// ── Nav Pages — páginas com show_in_nav=1 (para o header do site) ────────
+router.get('/nav-pages', cache(60), (req, res) => {
+  db.all(
+    'SELECT id, slug, title, nav_label, nav_group, nav_order FROM generic_pages WHERE is_active=1 AND show_in_nav=1 AND deleted_at IS NULL ORDER BY nav_order ASC, id ASC',
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'Erro' });
+      res.json(rows || []);
+    }
+  );
+});
+
 // ── Páginas Genéricas ─────────────────────────────────────────────────────
 router.get('/pages/:slug', (req, res) => {
   db.get(

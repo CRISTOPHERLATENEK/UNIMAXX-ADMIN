@@ -4,12 +4,13 @@ const { validateBody, validateParams } = require('../../middleware/validate');
 const { genericPageSchema, numericIdParamSchema } = require('../../validation/admin');
 const { logAudit } = require('../../utils/audit');
 
-const FIELDS = ['slug', 'title', 'meta_title', 'meta_description', 'is_active', 'blocks_json'];
+const FIELDS = ['slug', 'title', 'meta_title', 'meta_description', 'is_active', 'blocks_json', 'show_in_nav', 'nav_label', 'nav_group', 'nav_order'];
 
 function parseRow(row) {
   return {
     ...row,
     is_active: !!row.is_active,
+    show_in_nav: !!row.show_in_nav,
     blocks_json: parseArr(row.blocks_json),
   };
 }
@@ -22,6 +23,10 @@ function buildValues(b) {
     b.meta_description || '',
     b.is_active ? 1 : 0,
     toJson(b.blocks_json || []),
+    b.show_in_nav ? 1 : 0,
+    b.nav_label || null,
+    b.nav_group || 'standalone',
+    b.nav_order ?? 99,
   ];
 }
 

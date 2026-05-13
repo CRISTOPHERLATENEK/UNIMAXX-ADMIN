@@ -46,6 +46,7 @@ const defaultData: SiteData = {
   client_logos: [],
   testimonials: [],
   partners: [],
+  nav_pages: [],
 };
 
 function loadCache(): SiteData | null {
@@ -126,6 +127,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         fetchWithTimeout(`${API_URL}/client-logos`),
         fetchWithTimeout(`${API_URL}/testimonials`),
         fetchWithTimeout(`${API_URL}/partners`),
+        fetchWithTimeout(`${API_URL}/nav-pages`),
       ]);
 
       const safeJson = async (res: any, fallback: any) => {
@@ -144,8 +146,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const client_logos = await safeJson(responses[6], []);
       const testimonials = await safeJson(responses[7], []);
       const partners = await safeJson(responses[8], []);
+      const nav_pages = await safeJson(responses[9], []);
 
-      const newData = { content, solutions, segments, stats, banners, settings, client_logos, testimonials, partners };
+      const newData = { content, solutions, segments, stats, banners, settings, client_logos, testimonials, partners, nav_pages };
       setData(newData);
       saveCache(newData);
 

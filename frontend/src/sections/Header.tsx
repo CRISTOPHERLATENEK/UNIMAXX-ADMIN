@@ -77,6 +77,11 @@ export function Header() {
     })),
   ];
 
+  const navPages = data.nav_pages || [];
+  const institutionalNavPages = navPages.filter(p => p.nav_group === 'institucional').map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}` }));
+  const suporteNavPages = navPages.filter(p => p.nav_group === 'suporte').map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}` }));
+  const standaloneNavPages = navPages.filter(p => !p.nav_group || p.nav_group === 'standalone');
+
   const navItems = [
     { label: content["header.nav.solutions"] || "Soluções", dropdown: solutionsDropdown },
     { label: "Segmentos", to: "/segmentos" },
@@ -87,6 +92,7 @@ export function Header() {
         { label: "Carreiras", to: "/carreiras", show: content["carreiras.enabled"] !== "0" },
         { label: "Imprensa", to: "/imprensa", show: content["imprensa.enabled"] !== "0" },
         { label: "Blog", to: "/blog", show: content["blog.enabled"] !== "0" },
+        ...institutionalNavPages.map(p => ({ ...p, show: true })),
       ].filter((i) => i.show),
     },
     {
@@ -94,8 +100,10 @@ export function Header() {
       dropdown: [
         { label: "Central de Ajuda", to: "/suporte" },
         { label: "Fale Conosco", to: "/cliente" },
+        ...suporteNavPages.map(p => ({ ...p, show: true })),
       ],
     },
+    ...standaloneNavPages.map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}` })),
   ].map((item) => ({
     ...item,
     ...(item.dropdown && item.dropdown.length === 0 ? { dropdown: undefined, to: "/" } : {}),

@@ -39,6 +39,11 @@ interface GenericPage {
   theme?: PageTheme;
   is_active: boolean;
   blocks_json: PageBlock[];
+  // Nav
+  show_in_nav?: boolean;
+  nav_label?: string;
+  nav_group?: string;
+  nav_order?: number;
 }
 
 const EMPTY: GenericPage = {
@@ -47,6 +52,7 @@ const EMPTY: GenericPage = {
   robots_noindex: false, structured_data: '',
   theme: { ...DEFAULT_THEME },
   is_active: true, blocks_json: [],
+  show_in_nav: false, nav_label: '', nav_group: 'standalone', nav_order: 99,
 };
 
 function FL({ children, hint }: { children: React.ReactNode; hint?: string }) {
@@ -393,6 +399,44 @@ function ConfigPanel({ form, set, isNew }: {
           </div>
           <Switch checked={form.is_active} onCheckedChange={(v) => set('is_active', v)} />
         </div>
+
+        {/* ── Nav settings ── */}
+        <div style={{ borderTop: '1px solid rgba(0,0,0,.06)', paddingTop: 16 }}>
+          <p style={{ fontSize: 12, fontWeight: 800, color: '#64748b', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '.05em' }}>Navegação</p>
+          <div className="flex items-center justify-between p-4 rounded-xl mb-3" style={{ background: '#f5f5f7' }}>
+            <div>
+              <p className="text-[13px] font-semibold text-[#1d1d1f]">Exibir no menu</p>
+              <p className="text-[11px]" style={{ color: '#98989d' }}>Aparece no header do site</p>
+            </div>
+            <Switch checked={!!form.show_in_nav} onCheckedChange={(v) => set('show_in_nav', v)} />
+          </div>
+          {form.show_in_nav && (
+            <div className="space-y-3">
+              <div>
+                <FL hint="Texto exibido no menu (deixe vazio para usar o título)">Label do menu</FL>
+                <Input value={form.nav_label || ''} onChange={(e) => set('nav_label', e.target.value)}
+                  placeholder={form.title || 'Ex: Sobre nós'} className="h-10" />
+              </div>
+              <div>
+                <FL hint="Em qual grupo do header esta página aparece">Grupo do menu</FL>
+                <select value={form.nav_group || 'standalone'}
+                  onChange={(e) => set('nav_group', e.target.value)}
+                  className="w-full h-10 rounded-xl border px-3 text-[13px] bg-white"
+                  style={{ borderColor: 'rgba(0,0,0,.1)' }}>
+                  <option value="standalone">Nível superior (independente)</option>
+                  <option value="institucional">Dropdown — Institucional</option>
+                  <option value="suporte">Dropdown — Suporte</option>
+                </select>
+              </div>
+              <div>
+                <FL hint="Menor número = aparece primeiro">Ordem</FL>
+                <Input type="number" value={form.nav_order ?? 99}
+                  onChange={(e) => set('nav_order', Number(e.target.value))}
+                  className="h-10" min={0} max={999} />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -441,107 +485,103 @@ function Editor({ initial, isNew, onSave, onBack }: {
   const SEO_COLOR = ['#ef4444', '#f97316', '#f59e0b', '#22c55e', '#22c55e', '#2563eb'][seoScore];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '100vh' }}>
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b bg-white flex-shrink-0"
-        style={{ borderColor: 'rgba(0,0,0,.07)', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div className="flex items-center gap-3">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#f8fafc' }}>
+
+      {/* ── Top bar ─────────────────────────────────────────────────────────── */}
+      <div style={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', background: '#fff', borderBottom: '1px solid #f1f5f9', flexShrink: 0, zIndex: 20 }}>
+        {/* Left */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={onBack}
-            className="w-8 h-8 rounded-xl flex items-center justify-center transition"
-            style={{ background: '#f5f5f7', color: '#6e6e73' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#e5e5ea'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#f5f5f7'; }}>
-            <ArrowLeft style={{ width: 15, height: 15 }} />
+            style={{ width: 34, height: 34, borderRadius: 10, background: '#f1f5f9', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .15s' }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#e2e8f0')}
+            onMouseLeave={e => (e.currentTarget.style.background = '#f1f5f9')}>
+            <ArrowLeft size={15} />
           </button>
+          <div style={{ width: 1, height: 24, background: '#f1f5f9' }} />
           <div>
-            <h2 className="font-bold text-[#1d1d1f] text-[15px]" style={{ fontFamily: "'Outfit',sans-serif" }}>
+            <h2 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', margin: 0, fontFamily: "'Outfit',sans-serif", lineHeight: 1.2 }}>
               {isNew ? 'Nova Página' : form.title || 'Editar Página'}
             </h2>
-            <p className="text-[11px]" style={{ color: '#98989d' }}>/{form.slug || 'slug-aqui'}</p>
+            <p style={{ fontSize: 11, color: '#94a3b8', margin: 0, fontWeight: 500 }}>
+              /p/{form.slug || 'slug-aqui'}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* SEO Score badge */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, background: SEO_COLOR + '15', border: `1px solid ${SEO_COLOR}30` }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: SEO_COLOR }} />
+
+        {/* Center — Tabs */}
+        <div style={{ display: 'flex', gap: 2, background: '#f1f5f9', padding: '3px', borderRadius: 12 }}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              style={{
+                padding: '6px 16px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                background: tab === t.id ? '#fff' : 'transparent',
+                color: tab === t.id ? '#0f172a' : '#64748b',
+                boxShadow: tab === t.id ? '0 1px 4px rgba(0,0,0,.08)' : 'none',
+                transition: 'all .15s', display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+              {t.label}
+              {t.id === 'seo' && (
+                <span style={{ width: 16, height: 16, borderRadius: '50%', background: SEO_COLOR, color: '#fff', fontSize: 9, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {seoScore}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Right */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, background: SEO_COLOR + '18', border: `1px solid ${SEO_COLOR}30` }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: SEO_COLOR, display: 'inline-block' }} />
             <span style={{ fontSize: 11, fontWeight: 800, color: SEO_COLOR }}>SEO: {SEO_LABEL}</span>
           </div>
           {!isNew && form.slug && (
             <a href={`/p/${form.slug}`} target="_blank" rel="noreferrer"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium transition"
-              style={{ color: '#6e6e73', background: '#f5f5f7' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#e5e5ea'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#f5f5f7'; }}>
-              <ExternalLink style={{ width: 13, height: 13 }} /> Preview
+              style={{ height: 34, padding: '0 12px', borderRadius: 10, background: '#f1f5f9', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none', transition: 'background .15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#e2e8f0')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#f1f5f9')}>
+              <ExternalLink size={13} /> Ver página
             </a>
           )}
-          <Button onClick={handleSave} disabled={saving} size="sm"
-            className="gap-1.5 font-bold px-5 rounded-xl h-9"
-            style={{ background: '#f97316', color: '#fff', border: 'none' }}>
+          <button onClick={handleSave} disabled={saving}
+            style={{ height: 34, padding: '0 18px', borderRadius: 10, background: saving ? '#fbd38d' : '#f97316', border: 'none', color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, boxShadow: '0 2px 8px rgba(249,115,22,.3)', transition: 'all .15s' }}>
             {saving
-              ? <><RefreshCw style={{ width: 14, height: 14 }} className="animate-spin" /> Salvando…</>
-              : <><Save style={{ width: 14, height: 14 }} /> Salvar</>}
-          </Button>
+              ? <><RefreshCw size={13} style={{ animation: 'spin 1s linear infinite' }} /> Salvando…</>
+              : <><Save size={13} /> Salvar</>}
+          </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b bg-white flex-shrink-0 px-5 gap-1"
-        style={{ borderColor: 'rgba(0,0,0,.07)' }}>
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className="px-3.5 py-3 text-[13px] font-medium whitespace-nowrap transition border-b-2 flex items-center gap-2"
-            style={{
-              borderBottomColor: tab === t.id ? '#f97316' : 'transparent',
-              color: tab === t.id ? '#f97316' : '#6e6e73',
-            }}>
-            {t.label}
-            {t.id === 'seo' && (
-              <span style={{ width: 16, height: 16, borderRadius: '50%', background: SEO_COLOR, color: '#fff', fontSize: 9, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {seoScore}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* ── Body ────────────────────────────────────────────────────────────── */}
+      {/* Construtor — PageBuilder toma 100% do espaço restante */}
+      {tab === 'construtor' && (
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <PageBuilder
+            blocks={form.blocks_json}
+            onChange={blocks => set('blocks_json', blocks)}
+            theme={form.theme}
+            onThemeChange={t => set('theme', t)}
+          />
+        </div>
+      )}
 
-      <div className="flex-1 overflow-y-auto" style={{ background: '#fafafa' }}>
-        <div className="max-w-2xl mx-auto p-5 pb-16 space-y-4">
-
-          {tab === 'construtor' && (
-            <div className="rounded-2xl border overflow-hidden bg-white" style={{ borderColor: 'rgba(0,0,0,.07)' }}>
-              <div className="px-4 py-3 border-b" style={{ borderColor: 'rgba(0,0,0,.06)', background: 'rgba(0,0,0,.01)' }}>
-                <p className="font-bold text-sm text-[#1d1d1f]">Construtor de página</p>
-                <p className="text-[11px]" style={{ color: '#98989d' }}>
-                  Adicione e ordene blocos para montar o conteúdo da página.
-                  {form.blocks_json.length > 0 && ` · ${form.blocks_json.filter(b => b.visible).length}/${form.blocks_json.length} visíveis`}
-                </p>
-              </div>
-              <div className="p-4">
-                <PageBuilder
-                  blocks={form.blocks_json}
-                  onChange={blocks => set('blocks_json', blocks)}
-                  theme={form.theme}
-                  onThemeChange={t => set('theme', t)}
-                />
-              </div>
+      {/* SEO / Config — painel centrado com scroll */}
+      {tab !== 'construtor' && (
+        <div style={{ flex: 1, overflowY: 'auto', background: '#f8fafc' }}>
+          <div style={{ maxWidth: 680, margin: '0 auto', padding: '28px 20px 80px' }}>
+            {tab === 'seo' && <SeoPanel form={form} set={set} />}
+            {tab === 'config' && <ConfigPanel form={form} set={set} isNew={isNew} />}
+            <div style={{ marginTop: 24 }}>
+              <button onClick={handleSave} disabled={saving}
+                style={{ width: '100%', height: 48, borderRadius: 16, background: saving ? '#fbd38d' : '#f97316', border: 'none', color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 16px rgba(249,115,22,.25)' }}>
+                {saving
+                  ? <><RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} /> Salvando…</>
+                  : <><Save size={16} /> Salvar Página</>}
+              </button>
             </div>
-          )}
-
-          {tab === 'seo' && <SeoPanel form={form} set={set} />}
-
-          {tab === 'config' && <ConfigPanel form={form} set={set} isNew={isNew} />}
-
-          <div className="pt-2">
-            <Button onClick={handleSave} disabled={saving} className="w-full h-12 font-bold text-[15px] rounded-2xl gap-2"
-              style={{ background: '#f97316', color: '#fff', border: 'none' }}>
-              {saving
-                ? <><RefreshCw className="w-5 h-5 animate-spin" /> Salvando…</>
-                : <><Save className="w-5 h-5" /> Salvar Página</>}
-            </Button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -573,9 +613,12 @@ export function GenericPagesManager() {
       setPages(data.map((p: any) => ({
         ...p,
         is_active: !!p.is_active,
+        show_in_nav: !!p.show_in_nav,
         robots_noindex: !!p.robots_noindex,
         blocks_json: parseArr(p.blocks_json),
         theme: parseObj(p.theme, { ...DEFAULT_THEME }),
+        nav_group: p.nav_group || 'standalone',
+        nav_order: p.nav_order ?? 99,
       })));
     } catch {
       toast({ title: 'Erro ao carregar páginas', variant: 'destructive' });
@@ -597,6 +640,10 @@ export function GenericPagesManager() {
       theme: data.theme ? JSON.stringify(data.theme) : null,
       is_active: data.is_active,
       blocks_json: data.blocks_json,
+      show_in_nav: data.show_in_nav ? 1 : 0,
+      nav_label: data.nav_label || null,
+      nav_group: data.nav_group || 'standalone',
+      nav_order: data.nav_order ?? 99,
     };
     const url = data.id
       ? `${API_URL}/admin/generic-pages/${data.id}`
@@ -631,123 +678,131 @@ export function GenericPagesManager() {
   );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1d1d1f]" style={{ fontFamily: "'Outfit',sans-serif" }}>
-            Páginas do Site
-          </h1>
-          <p className="text-[13px] mt-0.5" style={{ color: '#6e6e73' }}>
-            Crie e edite páginas customizadas usando o Page Builder
-          </p>
+    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      {/* ── Header ── */}
+      <div style={{ background: '#fff', borderBottom: '1px solid #f1f5f9', padding: '28px 32px 20px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: 0, fontFamily: "'Outfit',sans-serif" }}>
+              Páginas do Site
+            </h1>
+            <p style={{ fontSize: 13, color: '#64748b', margin: '4px 0 0', fontWeight: 500 }}>
+              {pages.length > 0 ? `${pages.length} página${pages.length > 1 ? 's' : ''} criada${pages.length > 1 ? 's' : ''}` : 'Crie e gerencie páginas com o Page Builder'}
+            </p>
+          </div>
+          <button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }}
+            style={{ height: 40, padding: '0 18px', borderRadius: 12, background: '#f97316', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, boxShadow: '0 4px 12px rgba(249,115,22,.25)', whiteSpace: 'nowrap' }}>
+            <Plus size={16} /> Nova Página
+          </button>
         </div>
-        <Button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }}
-          className="gap-2 font-bold rounded-xl px-5"
-          style={{ background: '#f97316', color: '#fff', border: 'none' }}>
-          <Plus style={{ width: 16, height: 16 }} /> Nova Página
-        </Button>
+
+        {/* Search */}
+        <div style={{ maxWidth: 960, margin: '16px auto 0', position: 'relative' }}>
+          <Search size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar páginas por título ou slug…"
+            style={{ width: '100%', height: 40, borderRadius: 12, border: '1px solid #e2e8f0', background: '#f8fafc', padding: '0 14px 0 38px', fontSize: 13, outline: 'none', fontFamily: 'inherit', color: '#0f172a', boxSizing: 'border-box' }} />
+        </div>
       </div>
 
-      <div className="relative mb-5">
-        <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: '#98989d' }} />
-        <Input value={search} onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar páginas..." className="pl-10 h-10" />
-      </div>
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 0 64px' }}>
 
-      <div className="flex items-start gap-3 p-4 rounded-2xl mb-5"
-        style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-        <AlertCircle style={{ width: 16, height: 16, color: '#2563eb', flexShrink: 0, marginTop: 1 }} />
-        <p className="text-[12px] leading-relaxed" style={{ color: '#1d4ed8' }}>
-          Páginas criadas aqui ficam acessíveis em <strong>seusite.com/p/[slug]</strong>.
-          Monte o conteúdo com o <strong>Page Builder</strong> e ative quando estiver pronta.
-        </p>
-      </div>
+          {/* Loading */}
+          {loading && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 0' }}>
+              <RefreshCw size={28} style={{ color: '#f97316', animation: 'spin 1s linear infinite' }} />
+            </div>
+          )}
 
-      {loading && (
-        <div className="flex items-center justify-center py-16">
-          <RefreshCw className="w-8 h-8 animate-spin" style={{ color: '#f97316' }} />
-        </div>
-      )}
-
-      {!loading && filtered.length === 0 && (
-        <div className="bg-white rounded-2xl border" style={{ borderColor: 'rgba(0,0,0,.08)' }}>
-          <AdminEmptyState
-            icon={<Globe size={28} />}
-            title={search ? 'Nenhuma página encontrada' : 'Nenhuma página criada ainda'}
-            description={search
-              ? `Sua busca por "${search}" não retornou resultados.`
-              : 'Páginas extras (Sobre, FAQ, Termos, etc) ficam aqui. Use blocos visuais para montar cada uma.'}
-            action={!search && (
-              <Button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }} variant="outline" className="gap-2">
-                <Plus style={{ width: 15, height: 15 }} /> Criar primeira página
-              </Button>
-            )}
-          />
-        </div>
-      )}
-
-      {!loading && filtered.length > 0 && (
-        <div className="space-y-3">
-          {filtered.map((page) => {
-            const seoOk = page.og_image && page.meta_title && page.meta_description;
-            return (
-              <div key={page.id}
-                className="bg-white rounded-2xl border overflow-hidden transition-all duration-200 hover:shadow-md"
-                style={{ borderColor: 'rgba(0,0,0,.07)' }}>
-                <div className="flex items-center gap-4 p-4">
-                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: '#f97316' + '12' }}>
-                    <FileText style={{ width: 20, height: 20, color: '#f97316' }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <h3 className="font-bold text-[#1d1d1f] text-[15px]" style={{ fontFamily: "'Outfit',sans-serif" }}>
-                        {page.title}
-                      </h3>
-                      <Badge className={`text-[10px] border-0 px-2 py-0.5 ${page.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {page.is_active ? 'Ativo' : 'Inativo'}
-                      </Badge>
-                      <Badge className="text-[10px] border-0 px-2 py-0.5 bg-blue-50 text-blue-600">
-                        {page.blocks_json.length} blocos
-                      </Badge>
-                      <Badge className={`text-[10px] border-0 px-2 py-0.5 ${seoOk ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
-                        SEO {seoOk ? '✓' : '!'}
-                      </Badge>
-                    </div>
-                    <p className="text-[12px]" style={{ color: '#98989d' }}>/{page.slug}</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {page.is_active && (
-                      <a href={`/p/${page.slug}`} target="_blank" rel="noreferrer"
-                        className="w-8 h-8 rounded-xl flex items-center justify-center transition"
-                        style={{ color: '#98989d', background: '#f5f5f7' }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#e5e5ea'; }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#f5f5f7'; }}>
-                        <ExternalLink style={{ width: 14, height: 14 }} />
-                      </a>
-                    )}
-                    <button
-                      onClick={() => { setEditing(page); setIsNew(false); }}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold transition"
-                      style={{ background: '#f9731610', color: '#f97316' }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#f9731620'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#f9731610'; }}>
-                      <Pencil style={{ width: 13, height: 13 }} /> Editar
-                    </button>
-                    <button onClick={() => handleDelete(page)}
-                      className="w-8 h-8 rounded-xl flex items-center justify-center transition"
-                      style={{ color: '#c7c7cc', background: '#f5f5f7' }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#ef4444'; (e.currentTarget as HTMLElement).style.background = '#fef2f2'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#c7c7cc'; (e.currentTarget as HTMLElement).style.background = '#f5f5f7'; }}>
-                      <Trash2 style={{ width: 14, height: 14 }} />
-                    </button>
-                  </div>
-                </div>
+          {/* Empty state */}
+          {!loading && filtered.length === 0 && (
+            <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', padding: '64px 40px', textAlign: 'center' }}>
+              <div style={{ width: 72, height: 72, borderRadius: 20, background: 'linear-gradient(135deg,#fff7ed,#fed7aa)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 4px 16px rgba(249,115,22,.12)' }}>
+                <Globe size={32} style={{ color: '#f97316' }} />
               </div>
-            );
-          })}
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>
+                {search ? 'Nenhuma página encontrada' : 'Nenhuma página criada ainda'}
+              </h3>
+              <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 24px', maxWidth: 360, marginInline: 'auto', lineHeight: 1.6 }}>
+                {search
+                  ? `Nenhuma página com "${search}". Tente outro termo.`
+                  : 'Crie páginas como Sobre, FAQ, Termos e Política usando o Page Builder visual.'}
+              </p>
+              {!search && (
+                <button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }}
+                  style={{ height: 44, padding: '0 24px', borderRadius: 12, background: '#f97316', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 16px rgba(249,115,22,.25)' }}>
+                  <Plus size={16} /> Criar primeira página
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Page cards */}
+          {!loading && filtered.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {filtered.map((page) => {
+                const seoScore2 = [page.og_image, page.meta_title, page.meta_description].filter(Boolean).length;
+                const seoColor2 = seoScore2 === 3 ? '#22c55e' : seoScore2 === 2 ? '#f59e0b' : '#ef4444';
+                const blockCount = page.blocks_json?.length || 0;
+                return (
+                  <div key={page.id}
+                    style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', overflow: 'hidden', transition: 'box-shadow .2s, border-color .2s', display: 'flex', alignItems: 'stretch' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.borderColor = '#e2e8f0'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.borderColor = '#f1f5f9'; }}>
+                    {/* Status stripe */}
+                    <div style={{ width: 4, flexShrink: 0, background: page.is_active ? '#22c55e' : '#e2e8f0' }} />
+                    {/* Content */}
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', minWidth: 0 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: '#fff7ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <FileText size={20} style={{ color: '#f97316' }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
+                          <h3 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', margin: 0, fontFamily: "'Outfit',sans-serif" }}>{page.title}</h3>
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: page.is_active ? '#dcfce7' : '#f1f5f9', color: page.is_active ? '#15803d' : '#64748b' }}>
+                            {page.is_active ? '● Ativo' : '○ Inativo'}
+                          </span>
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: '#eff6ff', color: '#2563eb' }}>
+                            {blockCount} bloco{blockCount !== 1 ? 's' : ''}
+                          </span>
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: seoColor2 + '18', color: seoColor2 }}>
+                            SEO {seoScore2}/3
+                          </span>
+                        </div>
+                        <p style={{ fontSize: 12, color: '#94a3b8', margin: 0, fontWeight: 500 }}>/p/{page.slug}</p>
+                      </div>
+                      {/* Actions */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                        {page.is_active && page.slug && (
+                          <a href={`/p/${page.slug}`} target="_blank" rel="noreferrer"
+                            style={{ width: 34, height: 34, borderRadius: 9, background: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', textDecoration: 'none', transition: 'all .15s' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#f1f5f9'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#f8fafc'; }}
+                            title="Ver página">
+                            <ExternalLink size={14} />
+                          </a>
+                        )}
+                        <button onClick={() => { setEditing(page); setIsNew(false); }}
+                          style={{ height: 34, padding: '0 14px', borderRadius: 9, background: '#fff7ed', border: '1px solid #fed7aa', color: '#f97316', cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5, transition: 'all .15s' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#ffedd5'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff7ed'; }}>
+                          <Pencil size={12} /> Editar
+                        </button>
+                        <button onClick={() => handleDelete(page)}
+                          style={{ width: 34, height: 34, borderRadius: 9, background: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', cursor: 'pointer', transition: 'all .15s' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#fef2f2'; (e.currentTarget as HTMLElement).style.color = '#ef4444'; (e.currentTarget as HTMLElement).style.borderColor = '#fecaca'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#f8fafc'; (e.currentTarget as HTMLElement).style.color = '#cbd5e1'; (e.currentTarget as HTMLElement).style.borderColor = '#f1f5f9'; }}
+                          title="Excluir">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

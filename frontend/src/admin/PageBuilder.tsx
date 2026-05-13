@@ -17,7 +17,7 @@ import {
   Play, CreditCard, MousePointer2, Smartphone, Settings,
   Code, Palette, Box, Copy, Trash2, MoveUp, MoveDown,
   ChevronRight, MoreHorizontal, Monitor, Tablet, Smartphone as MobileIcon,
-  Undo2, Redo2, Bookmark, BookOpen, Star
+  Undo2, Redo2, Bookmark, BookOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,6 +65,7 @@ const BLOCK_CATALOG = [
   { type: 'integrations' as BlockType, label: 'Grid de Logos', description: 'Badges de sistemas integrados', emoji: '🔌', color: 'bg-zinc-500', icon: Settings },
   { type: 'image_text' as BlockType, label: 'Coluna Misto', description: 'Imagem ao lado de texto', emoji: '🖼️', color: 'bg-teal-500', icon: ImageIcon },
   { type: 'divider' as BlockType, label: 'Linha Separadora', description: 'Espaço ou linha entre blocos', emoji: '➖', color: 'bg-gray-400', icon: MinusIcon },
+  { type: 'alert_banner' as BlockType, label: 'Aviso / Alerta', description: 'Faixa de notificação colorida', emoji: '⚠️', color: 'bg-amber-500', icon: Box },
   // ── Novos blocos premium ─────────────────────────────────────────────────
   { type: 'pricing' as BlockType, label: 'Pricing — Planos', description: 'Tabela de planos com toggle Mensal/Anual', emoji: '💰', color: 'bg-emerald-600', icon: Box },
   { type: 'demo_form' as BlockType, label: 'Form de Captura', description: 'Formulário inline pra agendar demo / falar com vendedor', emoji: '📋', color: 'bg-blue-600', icon: MousePointer2 },
@@ -141,6 +142,7 @@ function makeBlock(type: BlockType): PageBlock {
   if (type === 'integrations') return { ...b, title: 'Integrações', items: [], colorTheme: 'light' };
   if (type === 'image_text') return { ...b, title: '', description: '', imageUrl: '', imageAlt: '', imagePosition: 'right', colorTheme: 'dark', blockSpacing: 'normal', blockRadius: 'large' };
   if (type === 'divider') return { ...b, dividerStyle: 'line', colorTheme: 'light' };
+  if (type === 'alert_banner') return { ...b, alertType: 'info', alertText: '🚀 Novidade: veja o que há de novo no Unimaxx!', colorTheme: 'light' };
 
   // ── PRICING — 3 planos default já preenchidos pra o usuário não começar do zero
   if (type === 'pricing') return {
@@ -3168,10 +3170,114 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
     );
   }
 
+  // ── ALERT_BANNER ─────────────────────────────────────────────────────────────
+  if (block.type === 'alert_banner') {
+    const ALERT_TYPES: { value: PageBlock['alertType']; label: string; color: string }[] = [
+      { value: 'info', label: 'Info', color: '#3b82f6' },
+      { value: 'success', label: 'Sucesso', color: '#10b981' },
+      { value: 'warning', label: 'Atenção', color: '#f59e0b' },
+      { value: 'error', label: 'Erro', color: '#ef4444' },
+    ];
+    return (
+      <div className="space-y-3">
+        <AppearanceControls />
+        <div>
+          <FL>Tipo de alerta</FL>
+          <div className="grid grid-cols-2 gap-2">
+            {ALERT_TYPES.map(at => (
+              <button key={at.value} onClick={() => set('alertType', at.value)}
+                className="h-9 rounded-xl text-[12px] font-semibold border-2 transition"
+                style={{ borderColor: block.alertType === at.value ? at.color : 'rgba(0,0,0,.08)', background: block.alertType === at.value ? at.color + '18' : '#f5f5f7', color: block.alertType === at.value ? at.color : '#333' }}>
+                {at.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <FL>Texto do aviso</FL>
+          <Input value={block.alertText || ''} onChange={e => set('alertText', e.target.value)} placeholder="🚀 Novidade: veja o que há de novo!" className="h-9" />
+        </div>
+        <div>
+          <FL>Link (opcional)</FL>
+          <Input value={block.ctaLink || ''} onChange={e => set('ctaLink', e.target.value)} placeholder="/novidades" className="h-9" />
+        </div>
+        <div>
+          <FL>Label do link (opcional)</FL>
+          <Input value={block.ctaLabel || ''} onChange={e => set('ctaLabel', e.target.value)} placeholder="Saiba mais →" className="h-9" />
+        </div>
+      </div>
+    );
+  }
+
   return <p className="text-[12px] text-[#98989d]">Sem editor para este tipo.</p>;
 }
 
-// ── Block card ────────────────────────────────────────────────────────────────
+// ── SortableBlockItem — draggable row in the left sidebar ────────────────────
+
+function SortableBlockItem({ block, index, selectedId, onSelect, onToggleVisible }: {
+  block: PageBlock;
+  index: number;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  onToggleVisible: (id: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 999 : undefined,
+  };
+  const isSelected = selectedId === block.id;
+  const catalog = BLOCK_CATALOG.find(c => c.type === block.type);
+  const label = catalog?.label || block.type;
+  const emoji = catalog?.emoji || '📦';
+  const subtitle = block.title || block.alertText || block.formTitle || '';
+  const accentColor = BLOCK_COLORS[block.type] || '#94a3b8';
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <div onClick={() => onSelect(block.id)}
+        style={{
+          borderRadius: '10px', cursor: 'pointer', border: '1px solid',
+          background: isSelected ? '#eff6ff' : '#fff',
+          borderColor: isSelected ? '#3b82f6' : '#f1f5f9',
+          transition: 'all 0.15s',
+          display: 'flex', alignItems: 'stretch', overflow: 'hidden',
+          boxShadow: isSelected ? '0 0 0 2px #bfdbfe' : 'none',
+        }}>
+        {/* Faixa colorida lateral */}
+        <div style={{ width: 4, flexShrink: 0, background: accentColor, opacity: isSelected ? 1 : 0.55, borderRadius: '10px 0 0 10px' }} />
+        {/* Conteúdo */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px 7px 10px', minWidth: 0 }}>
+          {/* Drag handle */}
+          <div {...attributes} {...listeners} onClick={e => e.stopPropagation()}
+            style={{ cursor: isDragging ? 'grabbing' : 'grab', color: '#c8d2e0', flexShrink: 0, display: 'flex', alignItems: 'center', lineHeight: 0 }}>
+            <GripVertical size={13} />
+          </div>
+          {/* Número */}
+          <span style={{ fontSize: 9, fontWeight: 800, color: isSelected ? '#93c5fd' : '#c8d2e0', flexShrink: 0, minWidth: 14, textAlign: 'right', letterSpacing: '0.02em' }}>{index + 1}</span>
+          {/* Emoji */}
+          <div style={{ width: 26, height: 26, borderRadius: '6px', background: isSelected ? '#dbeafe' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>
+            {emoji}
+          </div>
+          {/* Texto */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 11.5, fontWeight: 700, color: isSelected ? '#2563eb' : '#334155', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.3 }}>{label}</p>
+            {subtitle && (
+              <p style={{ fontSize: 10, color: '#94a3b8', margin: '1px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 500, lineHeight: 1.3 }}>{subtitle}</p>
+            )}
+          </div>
+          {/* Visibilidade */}
+          <button onClick={(e) => { e.stopPropagation(); onToggleVisible(block.id); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '3px', flexShrink: 0, lineHeight: 0 }}>
+            {block.visible ? <Eye size={12} color="#94a3b8" /> : <EyeOff size={12} color="#c8d2e0" />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Main PageBuilder Component ──────────────────────────────────────────────────
 
@@ -3196,6 +3302,8 @@ export function PageBuilder({
   const [showPatterns, setShowPatterns] = useState(false);
   const [showSnippets, setShowSnippets] = useState(false);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [inspectorTab, setInspectorTab] = useState<'content' | 'design'>('content');
+  const [isDirty, setIsDirty] = useState(false);
 
   // ── Undo / Redo ─────────────────────────────────────────────────────────────
   const historyRef = useRef<PageBlock[][]>([blocks]);
@@ -3209,8 +3317,18 @@ export function PageBuilder({
     setCanRedo(historyIdxRef.current < historyRef.current.length - 1);
   }, []);
 
+  // Reset dirty when parent saves (rawBlocks prop changes)
+  const prevRawRef = useRef(rawBlocks);
+  useEffect(() => {
+    if (prevRawRef.current !== rawBlocks) {
+      prevRawRef.current = rawBlocks;
+      setIsDirty(false);
+    }
+  }, [rawBlocks]);
+
   // Wrap every mutation through handleChange so history is tracked
   const handleChange = useCallback((newBlocks: PageBlock[]) => {
+    setIsDirty(true);
     if (!isTimeTravelRef.current) {
       const trimmed = historyRef.current.slice(0, historyIdxRef.current + 1);
       trimmed.push(newBlocks);
@@ -3319,6 +3437,18 @@ export function PageBuilder({
     handleChange(newBlocks);
   };
 
+  const blockSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+  );
+
+  const handleBlocksDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const from = blocks.findIndex(b => b.id === active.id);
+    const to = blocks.findIndex(b => b.id === over.id);
+    if (from !== -1 && to !== -1) handleChange(arrayMove(blocks, from, to));
+  };
+
   const selectedBlock = blocks.find(b => b.id === selectedId);
 
   return (
@@ -3331,6 +3461,12 @@ export function PageBuilder({
               <Layers size={18} />
             </div>
             <h2 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', margin: 0 }}>Estrutura</h2>
+            {isDirty && (
+              <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#f97316', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 99, padding: '2px 7px' }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#f97316', display: 'inline-block' }} />
+                Não salvo
+              </span>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={() => setShowPicker(true)}
@@ -3370,30 +3506,25 @@ export function PageBuilder({
               <p style={{ fontSize: 13 }}>Sua página está vazia</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {blocks.map((block, index) => (
-                <div key={block.id ?? index} onClick={() => setSelectedId(block.id)}
-                  style={{
-                    padding: '10px 12px', borderRadius: '10px', cursor: 'pointer', border: '1px solid',
-                    background: selectedId === block.id ? '#f0f7ff' : '#fff',
-                    borderColor: selectedId === block.id ? '#3b82f6' : '#f1f5f9',
-                    transition: 'all 0.2s'
-                  }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <GripVertical size={14} color="#cbd5e1" />
-                    <div style={{ width: 28, height: 28, borderRadius: '6px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
-                      {BLOCK_CATALOG.find(c => c.type === block.type)?.emoji || '📦'}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: selectedId === block.id ? '#2563eb' : '#334155', margin: 0 }}>{BLOCK_CATALOG.find(c => c.type === block.type)?.label || block.type}</p>
-                    </div>
-                    <button onClick={(e) => { e.stopPropagation(); updateBlock(block.id, { ...block, visible: !block.visible }); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                      {block.visible ? <Eye size={14} color="#64748b" /> : <EyeOff size={14} color="#cbd5e1" />}
-                    </button>
-                  </div>
+            <DndContext sensors={blockSensors} collisionDetection={closestCenter} onDragEnd={handleBlocksDragEnd}>
+              <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  {blocks.map((block, idx) => (
+                    <SortableBlockItem
+                      key={block.id}
+                      block={block}
+                      index={idx}
+                      selectedId={selectedId}
+                      onSelect={setSelectedId}
+                      onToggleVisible={(id) => {
+                        const b = blocks.find(x => x.id === id);
+                        if (b) updateBlock(id, { ...b, visible: !b.visible });
+                      }}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
           )}
         </div>
       </div>
@@ -3438,37 +3569,96 @@ export function PageBuilder({
           </div>
         </div>
 
-        <div style={{ flex: 1, padding: '40px 20px', overflowY: 'auto', overflowX: 'hidden' }}>
-          <div style={{
-            width: previewMode === 'desktop' ? '100%' : previewMode === 'tablet' ? '768px' : '375px',
-            maxWidth: '100%',
-            margin: '0 auto',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            background: '#fff',
-            minHeight: 400,
-            borderRadius: previewMode === 'desktop' ? '0' : '24px',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.1)',
-            overflow: 'hidden',
-            border: previewMode === 'desktop' ? 'none' : '8px solid #1e293b'
-          }}>
-            {blocks.map((block, index) => (
-              <div key={block.id ?? index} onClick={() => setSelectedId(block.id)}
-                style={{ position: 'relative', cursor: 'pointer', outline: selectedId === block.id ? '2px solid #2563eb' : 'none', outlineOffset: '-2px' }}>
-                <div style={{ opacity: block.visible === false ? 0.3 : 1 }}>
-                  <BlockRenderer block={block} t={DEFAULT_T} />
+        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', background: previewMode === 'desktop' ? '#fff' : '#dde2eb', padding: previewMode === 'desktop' ? '0' : '32px 20px 48px' }}>
+
+          {/* ── Bloco de conteúdo (blocks) — extraído para reutilizar nos dois branches ── */}
+          {(() => {
+            const blocksList = (
+              <>
+                {blocks.map((block, index) => {
+                  const isActive = selectedId === block.id;
+                  const catalog = BLOCK_CATALOG.find(c => c.type === block.type);
+                  return (
+                    <div key={block.id ?? index} onClick={() => setSelectedId(block.id)}
+                      style={{ position: 'relative', cursor: 'pointer', outline: isActive ? '2px solid #3b82f6' : 'none', outlineOffset: '-2px' }}>
+                      <div style={{ opacity: block.visible === false ? 0.25 : 1, pointerEvents: block.visible === false ? 'none' : undefined }}>
+                        <BlockRenderer block={block} t={DEFAULT_T} />
+                      </div>
+                      {isActive && (
+                        <div style={{ position: 'absolute', top: 8, right: 8, pointerEvents: 'none', zIndex: 10 }}>
+                          <span style={{ background: '#3b82f6', color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, boxShadow: '0 2px 8px rgba(59,130,246,.4)', letterSpacing: '0.04em' }}>
+                            {catalog?.emoji} {catalog?.label || block.type}
+                          </span>
+                        </div>
+                      )}
+                      {block.visible === false && (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'repeating-linear-gradient(45deg,rgba(0,0,0,.03) 0px,rgba(0,0,0,.03) 4px,transparent 4px,transparent 12px)', pointerEvents: 'none' }}>
+                          <span style={{ background: 'rgba(15,23,42,.75)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 5, letterSpacing: '0.05em', backdropFilter: 'blur(4px)' }}>
+                            <EyeOff size={11} /> OCULTO
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {blocks.length === 0 && (
+                  <div style={{ height: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', textAlign: 'center', padding: 40 }}>
+                    <div style={{ width: 64, height: 64, borderRadius: 20, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                      <Plus size={32} color="#cbd5e1" />
+                    </div>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1e293b', margin: '0 0 8px' }}>Comece sua página</h3>
+                    <p style={{ fontSize: 14, maxWidth: 280, margin: 0 }}>Adicione blocos do catálogo para construir sua landing page profissional.</p>
+                  </div>
+                )}
+              </>
+            );
+
+            if (previewMode === 'desktop') {
+              return (
+                <div style={{ width: '100%', background: '#fff', minHeight: 400 }}>
+                  {blocksList}
                 </div>
-              </div>
-            ))}
-            {blocks.length === 0 && (
-              <div style={{ height: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', textAlign: 'center', padding: 40 }}>
-                <div style={{ width: 64, height: 64, borderRadius: 20, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                  <Plus size={32} color="#cbd5e1" />
+              );
+            }
+
+            // Mobile / Tablet — device frame
+            const isMobile = previewMode === 'mobile';
+            return (
+              <div style={{
+                width: isMobile ? '393px' : '820px',
+                maxWidth: '100%',
+                margin: '0 auto',
+                background: '#1a2236',
+                borderRadius: isMobile ? '52px' : '28px',
+                padding: isMobile ? '16px 10px 22px' : '14px 10px',
+                boxShadow: '0 40px 100px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.1)',
+                transition: 'all 0.3s ease',
+              }}>
+                {/* Status bar — mobile only */}
+                {isMobile && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', marginBottom: 8, color: '#fff', fontSize: 11, fontWeight: 700, fontFamily: 'system-ui' }}>
+                    <span>9:41</span>
+                    <div style={{ width: 90, height: 20, background: '#0f172a', borderRadius: 99, border: '1.5px solid rgba(255,255,255,.12)' }} />
+                    <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                      <svg width="13" height="10" viewBox="0 0 13 10" fill="#fff"><rect x="0" y="5" width="2" height="5" rx="1"/><rect x="3.5" y="3" width="2" height="7" rx="1"/><rect x="7" y="1" width="2" height="9" rx="1"/><rect x="10.5" y="0" width="2" height="10" rx="1"/></svg>
+                      <svg width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="#fff" strokeWidth="1.2"><path d="M7 2C5.1 2 3.4 2.7 2.1 3.9L0.5 2.3C2.2.9 4.5 0 7 0s4.8.9 6.5 2.3L11.9 3.9C10.6 2.7 8.9 2 7 2z"/><path d="M7 5c-1.1 0-2.1.4-2.8 1.1L3 4.9C4.1 3.7 5.5 3 7 3s2.9.7 4 1.9L9.8 6.1C9.1 5.4 8.1 5 7 5z"/><circle cx="7" cy="8.5" r="1.5" fill="#fff" stroke="none"/></svg>
+                      <svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".5" y=".5" width="18" height="10" rx="2.5" stroke="#fff" strokeOpacity=".35"/><rect x="1.5" y="1.5" width="14" height="8" rx="1.5" fill="#fff"/><path d="M20 3.5v4a2 2 0 000-4z" fill="#fff" fillOpacity=".4"/></svg>
+                    </div>
+                  </div>
+                )}
+                {/* Screen */}
+                <div style={{ borderRadius: isMobile ? '42px' : '18px', overflow: 'hidden', background: '#fff', minHeight: 400 }}>
+                  {blocksList}
                 </div>
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1e293b', margin: '0 0 8px' }}>Comece sua página</h3>
-                <p style={{ fontSize: 14, maxWidth: 280, margin: 0 }}>Adicione blocos do catálogo para construir sua landing page profissional.</p>
+                {/* Home bar — mobile */}
+                {isMobile && (
+                  <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12 }}>
+                    <div style={{ width: 100, height: 5, borderRadius: 99, background: 'rgba(255,255,255,.3)' }} />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -3497,6 +3687,8 @@ export function PageBuilder({
             onClose={() => setSelectedId(null)}
             total={blocks.length}
             index={blocks.findIndex(b => b.id === selectedId)}
+            activeTab={inspectorTab}
+            onTabChange={setInspectorTab}
           />
         ) : (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 40, textAlign: 'center', color: '#94a3b8' }}>
@@ -3517,7 +3709,7 @@ export function PageBuilder({
 
 // ── Inspector Component ─────────────────────────────────────────────────────────
 
-function Inspector({ block, onChange, onRemove, onMoveUp, onMoveDown, onDuplicate, onSaveSnippet, onClose, total, index }: any) {
+function Inspector({ block, onChange, onRemove, onMoveUp, onMoveDown, onDuplicate, onSaveSnippet, onClose, total, index, activeTab, onTabChange }: any) {
   const def = BLOCK_CATALOG.find(c => c.type === block.type);
   const [snippetLabel, setSnippetLabel] = useState('');
   const [showSaveSnippet, setShowSaveSnippet] = useState(false);
@@ -3577,7 +3769,7 @@ function Inspector({ block, onChange, onRemove, onMoveUp, onMoveDown, onDuplicat
         )}
       </div>
 
-      <Tabs defaultValue="content" className="flex-1 flex flex-col overflow-hidden">
+      <Tabs value={activeTab || 'content'} onValueChange={onTabChange} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-5 pt-4">
           <TabsList className="w-full grid grid-cols-2 bg-slate-100 p-1 rounded-xl">
             <TabsTrigger value="content" className="rounded-lg text-xs font-bold data-[state=active]:bg-white data-[state=active]:text-blue-600">CONTEÚDO</TabsTrigger>
