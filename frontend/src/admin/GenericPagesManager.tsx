@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { PageBuilder } from './PageBuilder';
 import type { PageBlock, PageTheme } from './PageBuilder';
 import { DEFAULT_THEME } from './PageBuilder';
+import PageTemplates from './PageTemplates';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { AdminEmptyState } from '@/components/admin/primitives';
@@ -611,10 +612,30 @@ function Editor({ initial, isNew, onSave, onBack }: {
   const [form, setForm] = useState<GenericPage>(initial);
   const [tab, setTab] = useState('construtor');
   const [saving, setSaving] = useState(false);
+  const [creatingPreview, setCreatingPreview] = useState(false);
   const { toast } = useToast();
 
   const set = <K extends keyof GenericPage>(k: K, v: GenericPage[K]) =>
     setForm(p => ({ ...p, [k]: v }));
+
+  const handleCreatePreview = async () => {
+    if (!form.id) return;
+    setCreatingPreview(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/preview-tokens`, {
+        method: 'POST',
+        headers: authH(),
+        body: JSON.stringify({ page_type: 'generic_page', page_id: form.id, label: form.title, expires_hours: 24 }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Erro ao criar preview');
+      window.open(data.preview_url, '_blank');
+    } catch (e: any) {
+      toast({ title: e?.message || 'Erro ao criar preview', variant: 'destructive' });
+    } finally {
+      setCreatingPreview(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!form.title.trim()) { toast({ title: 'Título é obrigatório', variant: 'destructive' }); return; }
@@ -703,6 +724,15 @@ function Editor({ initial, isNew, onSave, onBack }: {
               <ExternalLink size={13} /> Ver página
             </a>
           )}
+          {!isNew && form.id && (
+            <button onClick={handleCreatePreview} disabled={creatingPreview}
+              style={{ height: 34, padding: '0 12px', borderRadius: 10, background: '#f1f5f9', border: 'none', color: '#64748b', cursor: creatingPreview ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, transition: 'background .15s' }}
+              onMouseEnter={e => { if (!creatingPreview) (e.currentTarget as HTMLElement).style.background = '#e2e8f0'; }}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#f1f5f9'}>
+              {creatingPreview ? <RefreshCw size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Eye size={13} />}
+              Preview
+            </button>
+          )}
           <button onClick={handleSave} disabled={saving}
             style={{ height: 34, padding: '0 18px', borderRadius: 10, background: saving ? '#fbd38d' : '#f97316', border: 'none', color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, boxShadow: '0 2px 8px rgba(249,115,22,.3)', transition: 'all .15s' }}>
             {saving
@@ -754,6 +784,7 @@ export function GenericPagesManager() {
   const [isNew, setIsNew] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [showTemplates, setShowTemplates] = useState(false);
   const { toast } = useToast();
   const { refreshData } = useData();
 
@@ -909,7 +940,7 @@ export function GenericPagesManager() {
               {pages.length > 0 ? `${pages.length} página${pages.length > 1 ? 's' : ''} criada${pages.length > 1 ? 's' : ''}` : 'Crie e gerencie páginas com o Page Builder'}
             </p>
           </div>
-          <button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }}
+          <button onClick={() => setShowTemplates(true)}
             style={{ height: 40, padding: '0 18px', borderRadius: 12, background: '#f97316', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, boxShadow: '0 4px 12px rgba(249,115,22,.25)', whiteSpace: 'nowrap' }}>
             <Plus size={16} /> Nova Página
           </button>
@@ -947,7 +978,7 @@ export function GenericPagesManager() {
                   : 'Crie páginas como Sobre, FAQ, Termos e Política usando o Page Builder visual.'}
               </p>
               {!search && (
-                <button onClick={() => { setEditing({ ...EMPTY }); setIsNew(true); }}
+                <button onClick={() => setShowTemplates(true)}
                   style={{ height: 44, padding: '0 24px', borderRadius: 12, background: '#f97316', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 16px rgba(249,115,22,.25)' }}>
                   <Plus size={16} /> Criar primeira página
                 </button>
@@ -1040,6 +1071,17 @@ export function GenericPagesManager() {
             </div>
           )}
         </div>
+
+      {/* Page Templates Modal */}
+      <PageTemplates
+        open={showTemplates}
+        onClose={() => setShowTemplates(false)}
+        onSelect={(blocks) => {
+          setEditing({ ...EMPTY, blocks_json: blocks });
+          setIsNew(true);
+          setShowTemplates(false);
+        }}
+      />
 
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (

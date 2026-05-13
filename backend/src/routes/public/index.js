@@ -142,6 +142,16 @@ router.get('/nav-pages', cache(60), (req, res) => {
   );
 });
 
+// ── Redirect middleware ───────────────────────────────────────────────────
+router.use((req, res, next) => {
+  const reqPath = req.path;
+  db.get('SELECT to_path, status_code FROM redirects WHERE from_path=? AND active=1', [reqPath], (err, row) => {
+    if (err || !row) return next();
+    db.run('UPDATE redirects SET hits=hits+1 WHERE from_path=?', [reqPath]);
+    res.redirect(row.status_code || 301, row.to_path);
+  });
+});
+
 // ── Páginas Genéricas ─────────────────────────────────────────────────────
 router.get('/pages/:slug', (req, res) => {
   db.get(

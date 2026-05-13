@@ -18,5 +18,6 @@ router.use('/newsletter',      require('./newsletter'));
 router.use('/analytics',       require('./analytics'));
 router.use('/preview-tokens',  require('./preview-tokens'));
 router.use('/trash',           require('./trash'));
+router.use('/redirects',       require('./redirects'));
 
 module.exports = router;
