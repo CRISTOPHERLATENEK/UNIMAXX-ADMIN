@@ -111,46 +111,32 @@ export function DataProvider({ children }: { children: ReactNode }) {
       // ==============================
       // SE NÃO ESTIVER LOGADO → PÚBLICO
       // ==============================
-      const fetchWithTimeout = (url: string, ms = 6000): Promise<Response> => {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), ms);
-        return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(t));
-      };
-
-      const responses = await Promise.allSettled([
-        fetchWithTimeout(`${API_URL}/content`),
-        fetchWithTimeout(`${API_URL}/solutions`),
-        fetchWithTimeout(`${API_URL}/segments`),
-        fetchWithTimeout(`${API_URL}/stats`),
-        fetchWithTimeout(`${API_URL}/banners/all`),
-        fetchWithTimeout(`${API_URL}/settings`),
-        fetchWithTimeout(`${API_URL}/client-logos`),
-        fetchWithTimeout(`${API_URL}/testimonials`),
-        fetchWithTimeout(`${API_URL}/partners`),
-        fetchWithTimeout(`${API_URL}/nav-pages`),
-      ]);
-
-      const safeJson = async (res: any, fallback: any) => {
-        if (res.status === 'fulfilled' && res.value.ok) {
-          return await res.value.json();
-        }
-        return fallback;
-      };
-
-      const content = await safeJson(responses[0], {});
-      const solutions = await safeJson(responses[1], []);
-      const segments = await safeJson(responses[2], []);
-      const stats = await safeJson(responses[3], []);
-      const banners = await safeJson(responses[4], []);
-      const settings = await safeJson(responses[5], {});
-      const client_logos = await safeJson(responses[6], []);
-      const testimonials = await safeJson(responses[7], []);
-      const partners = await safeJson(responses[8], []);
-      const nav_pages = await safeJson(responses[9], []);
-
-      const newData = { content, solutions, segments, stats, banners, settings, client_logos, testimonials, partners, nav_pages };
-      setData(newData);
-      saveCache(newData);
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 8000);
+      try {
+        const res = await fetch(`${API_URL}/public-data`, { signal: ctrl.signal });
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error('Erro ao carregar dados públicos');
+        const publicData = await res.json();
+        const newData = {
+          content: publicData.content ?? {},
+          solutions: publicData.solutions ?? [],
+          segments: publicData.segments ?? [],
+          stats: publicData.stats ?? [],
+          banners: publicData.banners ?? [],
+          settings: publicData.settings ?? {},
+          client_logos: publicData.client_logos ?? [],
+          testimonials: publicData.testimonials ?? [],
+          partners: publicData.partners ?? [],
+          nav_pages: publicData.nav_pages ?? [],
+        };
+        setData(newData);
+        saveCache(newData);
+      } catch (err: any) {
+        clearTimeout(timeout);
+        if (err?.name === 'AbortError') throw new Error('Timeout: backend não respondeu em 8 segundos');
+        throw err;
+      }
 
     } catch (err: any) {
       const msg = err?.name === 'AbortError' || err?.message?.includes('fetch')

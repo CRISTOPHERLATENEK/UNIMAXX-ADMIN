@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useTracker } from '@/hooks/useTracker';
 import { useScrollAnimations } from '@/hooks/useScrollAnimations';
 import type React from 'react';
@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { DataProvider, useData } from '@/context/DataContext';
 import { Toaster } from '@/components/ui/sonner';
 
+// ── Seções da home (carregadas imediatamente — críticas para LCP) ─────────
 import { Header } from '@/sections/Header';
 import { Hero } from '@/sections/Hero';
 import { QuickLinks } from '@/sections/QuickLinks';
@@ -25,52 +26,61 @@ import { Partners } from '@/sections/Partners';
 import { Contact } from '@/sections/Contact';
 import { Footer } from '@/sections/Footer';
 import { HomeHighlight } from '@/sections/HomeHighlight';
-
-import Solucoes from './pages/Solucoes';
-import SolucaoDetalhe from './pages/SolucaoDetalhe';
-import Segmentos from './pages/Segmentos';
-import Sobre from './pages/Sobre';
-import Carreiras from './pages/Carreiras';
-import Blog from './pages/Blog';
-import Imprensa from './pages/Imprensa';
-import HelpCenter from './pages/HelpCenter';
-import Cliente from './pages/Cliente';
-import Privacidade from './pages/Privacidade';
-import Termos from './pages/Termos';
-import NotFound from './pages/NotFound';
-
-import { Login } from '@/admin/Login';
-import { AdminLayout } from '@/admin/AdminLayout';
-import { Dashboard } from '@/admin/Dashboard';
-import { ContentManager } from '@/admin/ContentManager';
-import UnifiedSolutionsManager from '@/admin/UnifiedSolutionsManager';
-import { InstitucionalManager } from '@/admin/InstitucionalManager';
-import { LeadsManager } from '@/admin/LeadsManager';
-import { LegalManager } from '@/admin/LegalManager';
-import { NewsletterManager } from '@/admin/NewsletterManager';
-import { SegmentsManager } from '@/admin/SegmentsManager';
-import { StatsManager } from '@/admin/StatsManager';
-import { BannersManager } from '@/admin/BannersManager';
-import { Settings } from '@/admin/Settings';
-import { QuickLinksManager } from '@/admin/QuickLinksManager';
-import { DifferentialsManager } from '@/admin/DifferentialsManager';
-import { HelpCenterManager } from '@/admin/HelpCenterManager';
-import { ClientLogosManager } from '@/admin/ClientLogosManager';
-import { TestimonialsManager } from '@/admin/TestimonialsManager';
-import { PartnersManager } from '@/admin/PartnersManager';
-import { TrashManager } from '@/admin/TrashManager';
-import { PageLayoutManager } from '@/admin/PageLayoutManager';
 import { parseLayout } from '@/admin/PageLayoutManager';
-import SolutionPageDetail from '@/pages/SolutionPageDetail';
-import GenericPageView from '@/pages/GenericPageView';
-import PreviewView from '@/pages/PreviewView';
-import { GenericPagesManager } from '@/admin/GenericPagesManager';
-// SolutionPagesManager removido — gerenciamento de páginas de solução feito pelo UnifiedSolutionsManager
-import { HomeManager } from '@/admin/HomeManager';
-import { HomeEditor } from '@/admin/HomeEditor';
-import AnalyticsDashboard from '@/admin/AnalyticsDashboard';
-import { RedirectsManager } from '@/admin/RedirectsManager';
-import MediaLibrary from '@/admin/MediaLibrary';
+
+// ── Páginas públicas secundárias (lazy — carregadas só quando acessadas) ──
+const Solucoes         = lazy(() => import('./pages/Solucoes'));
+const SolucaoDetalhe   = lazy(() => import('./pages/SolucaoDetalhe'));
+const Segmentos        = lazy(() => import('./pages/Segmentos'));
+const Sobre            = lazy(() => import('./pages/Sobre'));
+const Carreiras        = lazy(() => import('./pages/Carreiras'));
+const Blog             = lazy(() => import('./pages/Blog'));
+const Imprensa         = lazy(() => import('./pages/Imprensa'));
+const HelpCenter       = lazy(() => import('./pages/HelpCenter'));
+const Cliente          = lazy(() => import('./pages/Cliente'));
+const Privacidade      = lazy(() => import('./pages/Privacidade'));
+const Termos           = lazy(() => import('./pages/Termos'));
+const NotFound         = lazy(() => import('./pages/NotFound'));
+const SolutionPageDetail = lazy(() => import('@/pages/SolutionPageDetail'));
+const GenericPageView  = lazy(() => import('@/pages/GenericPageView'));
+const PreviewView      = lazy(() => import('@/pages/PreviewView'));
+
+// ── Admin (lazy — NUNCA carregado por visitantes públicos) ────────────────
+const Login                = lazy(() => import('@/admin/Login').then(m => ({ default: m.Login })));
+const AdminLayout          = lazy(() => import('@/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const Dashboard            = lazy(() => import('@/admin/Dashboard').then(m => ({ default: m.Dashboard })));
+const ContentManager       = lazy(() => import('@/admin/ContentManager').then(m => ({ default: m.ContentManager })));
+const UnifiedSolutionsManager = lazy(() => import('@/admin/UnifiedSolutionsManager'));
+const InstitucionalManager = lazy(() => import('@/admin/InstitucionalManager').then(m => ({ default: m.InstitucionalManager })));
+const LeadsManager         = lazy(() => import('@/admin/LeadsManager').then(m => ({ default: m.LeadsManager })));
+const LegalManager         = lazy(() => import('@/admin/LegalManager').then(m => ({ default: m.LegalManager })));
+const NewsletterManager    = lazy(() => import('@/admin/NewsletterManager').then(m => ({ default: m.NewsletterManager })));
+const SegmentsManager      = lazy(() => import('@/admin/SegmentsManager').then(m => ({ default: m.SegmentsManager })));
+const StatsManager         = lazy(() => import('@/admin/StatsManager').then(m => ({ default: m.StatsManager })));
+const BannersManager       = lazy(() => import('@/admin/BannersManager').then(m => ({ default: m.BannersManager })));
+const AdminSettings        = lazy(() => import('@/admin/Settings').then(m => ({ default: m.Settings })));
+const QuickLinksManager    = lazy(() => import('@/admin/QuickLinksManager').then(m => ({ default: m.QuickLinksManager })));
+const DifferentialsManager = lazy(() => import('@/admin/DifferentialsManager').then(m => ({ default: m.DifferentialsManager })));
+const HelpCenterManager    = lazy(() => import('@/admin/HelpCenterManager').then(m => ({ default: m.HelpCenterManager })));
+const ClientLogosManager   = lazy(() => import('@/admin/ClientLogosManager').then(m => ({ default: m.ClientLogosManager })));
+const TestimonialsManager  = lazy(() => import('@/admin/TestimonialsManager').then(m => ({ default: m.TestimonialsManager })));
+const PartnersManager      = lazy(() => import('@/admin/PartnersManager').then(m => ({ default: m.PartnersManager })));
+const TrashManager         = lazy(() => import('@/admin/TrashManager').then(m => ({ default: m.TrashManager })));
+const PageLayoutManager    = lazy(() => import('@/admin/PageLayoutManager').then(m => ({ default: m.PageLayoutManager })));
+const GenericPagesManager  = lazy(() => import('@/admin/GenericPagesManager').then(m => ({ default: m.GenericPagesManager })));
+const HomeEditor           = lazy(() => import('@/admin/HomeEditor').then(m => ({ default: m.HomeEditor })));
+const AnalyticsDashboard   = lazy(() => import('@/admin/AnalyticsDashboard'));
+const RedirectsManager     = lazy(() => import('@/admin/RedirectsManager').then(m => ({ default: m.RedirectsManager })));
+const MediaLibraryPage     = lazy(() => import('@/admin/MediaLibrary'));
+
+// Spinner usado pelo Suspense
+function PageSpinner() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid #fed7aa', borderTopColor: '#f97316', animation: 'spin 0.7s linear infinite' }} />
+    </div>
+  );
+}
 
 const SECTION_COMPONENTS: Record<string, React.ComponentType> = {
   hero: Hero,
@@ -251,6 +261,7 @@ function AppRoutes() {
 
   return (
     <div className={!isAdminRoute ? 'page-transition' : undefined}>
+      <Suspense fallback={<PageSpinner />}>
       <Routes location={location}>
         <Route path="/" element={showMaintenance ? <MaintenancePage /> : <HomePage />} />
         <Route path="/solucoes" element={showMaintenance ? <MaintenancePage /> : <Solucoes />} />
@@ -278,7 +289,7 @@ function AppRoutes() {
           <Route path="segmentos" element={<SegmentsManager />} />
           <Route path="estatisticas" element={<StatsManager />} />
           <Route path="banners" element={<BannersManager />} />
-          <Route path="configuracoes" element={<Settings />} />
+          <Route path="configuracoes" element={<AdminSettings />} />
           <Route path="links-rapidos" element={<QuickLinksManager />} />
           <Route path="diferenciais" element={<DifferentialsManager />} />
           <Route path="central-ajuda" element={<HelpCenterManager />} />
@@ -288,18 +299,18 @@ function AppRoutes() {
           <Route path="lixeira" element={<TrashManager />} />
           <Route path="layout" element={<PageLayoutManager />} />
           <Route path="paginas" element={<GenericPagesManager />} />
-          {/* paginas-solucoes removida — use /admin/solucoes (UnifiedSolutionsManager) */}
           <Route path="institucional" element={<InstitucionalManager />} />
           <Route path="leads" element={<LeadsManager />} />
           <Route path="newsletter" element={<NewsletterManager />} />
           <Route path="legal" element={<LegalManager />} />
           <Route path="analytics" element={<AnalyticsDashboard />} />
           <Route path="redirects" element={<RedirectsManager />} />
-          <Route path="midia" element={<MediaLibrary open={true} onClose={() => {}} />} />
+          <Route path="midia" element={<MediaLibraryPage open={true} onClose={() => {}} />} />
         </Route>
 
         <Route path="*" element={isAdminRoute ? <NotFound /> : publicFallback} />
       </Routes>
+      </Suspense>
       <AnalyticsInjector />
       {!showMaintenance && (
         <>

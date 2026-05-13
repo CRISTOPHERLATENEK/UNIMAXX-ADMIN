@@ -10,6 +10,43 @@ const cache = (s) => (_, res, next) => {
   next();
 };
 
+const queryAll = (sql, params = []) => new Promise((resolve, reject) =>
+  db.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows || []))
+);
+
+// ── Endpoint único: todos os dados públicos em 1 request ─────────────────
+router.get('/public-data', cache(30), async (req, res) => {
+  try {
+    const [
+      content_rows, settings_rows, solutions_rows,
+      segments, stats, banners,
+      client_logos, testimonials, partners, nav_pages,
+    ] = await Promise.all([
+      queryAll('SELECT * FROM site_content'),
+      queryAll('SELECT * FROM site_settings'),
+      queryAll('SELECT * FROM solutions WHERE active=1 AND deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT * FROM segments WHERE active=1 AND deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT * FROM stats WHERE deleted_at IS NULL ORDER BY order_num'),
+      queryAll(`SELECT * FROM banners WHERE active=1 AND deleted_at IS NULL AND title IS NOT NULL AND title != '' AND (starts_at IS NULL OR starts_at <= datetime('now')) AND (ends_at IS NULL OR ends_at >= datetime('now')) ORDER BY page, order_num`),
+      queryAll('SELECT * FROM client_logos WHERE active=1 AND deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT * FROM testimonials WHERE active=1 AND deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT * FROM partners WHERE active=1 AND deleted_at IS NULL ORDER BY order_num'),
+      queryAll('SELECT id, slug, title, nav_label, nav_group, nav_order FROM generic_pages WHERE is_active=1 AND show_in_nav=1 AND deleted_at IS NULL ORDER BY nav_order ASC, id ASC'),
+    ]);
+
+    const content = {};
+    content_rows.forEach(r => { content[r.key] = r.value; });
+    const settings = {};
+    settings_rows.forEach(r => { settings[r.key] = r.value; });
+    const solutions = solutions_rows.map(r => ({ ...r, features: parseArr(r.features) }));
+
+    res.json({ content, settings, solutions, segments, stats, banners, client_logos, testimonials, partners, nav_pages });
+  } catch (err) {
+    console.error('public-data error:', err);
+    res.status(500).json({ error: 'Erro ao buscar dados' });
+  }
+});
+
 // ── Conteúdo & Settings ───────────────────────────────────────────────────
 router.get('/content', cache(30), (req, res) => {
   db.all('SELECT * FROM site_content', [], (err, rows) => {
