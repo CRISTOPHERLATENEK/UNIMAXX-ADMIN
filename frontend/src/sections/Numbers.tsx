@@ -66,8 +66,6 @@ function LayoutLight({ stats, pc, header }: any) {
             <div key={i} style={{ padding: '32px 24px', textAlign: 'center', borderRight: i < stats.length - 1 ? '1px solid var(--b1)' : 'none', opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(16px)', transition: `opacity .5s ${i * 0.1}s, transform .5s ${i * 0.1}s` }}>
               <div style={{ fontSize: 'clamp(2.4rem,4vw,3.5rem)', fontWeight: 'var(--typo-h-weight,900)', color: pc, fontFamily: "var(--font-heading,'Outfit'),sans-serif", letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 10 }}>{s.value}</div>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: "var(--font-body,'DM Sans'),sans-serif" }}>{s.label}</div>
-              <div style={{ fontSize: 'clamp(2.4rem,4vw,3.5rem)', fontWeight: 'var(--typo-h-weight,900)', color: pc, fontFamily: "var(--font-heading,'Outfit'),sans-serif", letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 10 }}>{s.value}</div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: "var(--font-body,'DM Sans'),sans-serif" }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -77,6 +75,17 @@ function LayoutLight({ stats, pc, header }: any) {
 }
 
 // ── Layout 3: Cards com borda colorida (fundo cinza claro) ────────────────────
+function StatCardColor({ s, pc, inView, delay }: { s: any; pc: string; inView: boolean; delay: number }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{ background: 'var(--s0)', borderRadius: 20, padding: '40px 32px', borderTop: `4px solid ${hov ? pc : 'transparent'}`, boxShadow: hov ? `0 12px 40px ${pc}18` : '0 2px 12px rgba(0,0,0,.06)', transition: 'all .3s', transform: hov ? 'translateY(-4px)' : 'none', opacity: inView ? 1 : 0, transitionDelay: `${delay}s` }}>
+      <div style={{ fontSize: 'clamp(2.4rem,4vw,3.5rem)', fontWeight: 'var(--typo-h-weight,900)', color: hov ? pc : 'var(--t1)', fontFamily: "var(--font-heading,'Outfit'),sans-serif", letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 10, transition: 'color .3s' }}>{s.value}</div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: "var(--font-body,'DM Sans'),sans-serif" }}>{s.label}</div>
+    </div>
+  );
+}
+
 function LayoutCards({ stats, pc, header }: any) {
   const { ref, inView } = useInView();
   return (
@@ -84,16 +93,9 @@ function LayoutCards({ stats, pc, header }: any) {
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)' }}>
         {header}
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, 220px), 1fr))`, gap: 20 }}>
-          {stats.map((s: any, i: number) => {
-            const [hov, setHov] = useState(false);
-            return (
-              <div key={i} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-                style={{ background: 'var(--s0)', borderRadius: 20, padding: '40px 32px', borderTop: `4px solid ${hov ? pc : 'transparent'}`, boxShadow: hov ? `0 12px 40px ${pc}18` : '0 2px 12px rgba(0,0,0,.06)', transition: 'all .3s', transform: hov ? 'translateY(-4px)' : 'none', opacity: inView ? 1 : 0, transitionDelay: `${i * 0.1}s` }}>
-                <div style={{ fontSize: 'clamp(2.4rem,4vw,3.5rem)', fontWeight: 'var(--typo-h-weight,900)', color: hov ? pc : 'var(--t1)', fontFamily: "var(--font-heading,'Outfit'),sans-serif", letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 10, transition: 'color .3s' }}>{s.value}</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: "var(--font-body,'DM Sans'),sans-serif" }}>{s.label}</div>
-              </div>
-            );
-          })}
+          {stats.map((s: any, i: number) => (
+            <StatCardColor key={i} s={s} pc={pc} inView={inView} delay={i * 0.1} />
+          ))}
         </div>
       </div>
     </div>
