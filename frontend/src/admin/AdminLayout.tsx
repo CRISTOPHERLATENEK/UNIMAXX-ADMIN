@@ -8,7 +8,7 @@ import {
   HelpCircle, Building2, Scale, Inbox, Mail,
   Settings, LogOut, Menu, ChevronDown, User, X, Globe,
   ChevronRight, Search, Zap, ChevronLeft, Image, Trash2,
-  ArrowRightLeft, ImageIcon,
+  ArrowRightLeft, ImageIcon, ListOrdered,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { GlobalSearch } from '@/admin/GlobalSearch';
@@ -68,6 +68,7 @@ const menuGroups: MenuGroup[] = [
   {
     label: 'CONFIGURAÇÕES',
     items: [
+      { path: '/admin/nav-ordem', label: 'Ordem do Menu', icon: ListOrdered },
       { path: '/admin/analytics', label: 'Analytics', icon: BarChart2 },
       { path: '/admin/redirects', label: 'Redirects', icon: ArrowRightLeft },
       { path: '/admin/midia', label: 'Biblioteca de Mídia', icon: ImageIcon },

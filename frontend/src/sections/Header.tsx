@@ -93,6 +93,7 @@ export function Header() {
   const customGroupItems = customGroups
     .filter(g => !BUILTIN_KEYS.has(g.key))
     .map(g => ({
+      _key: `group_${g.key}`,
       label: g.label,
       dropdown: navPages
         .filter(p => p.nav_group === g.key)
@@ -101,10 +102,11 @@ export function Header() {
     }))
     .filter(g => g.dropdown.length > 0);
 
-  const navItems = [
-    { label: content["header.nav.solutions"] || "Soluções", dropdown: solutionsDropdown },
-    { label: "Segmentos", to: "/segmentos" },
+  const rawNavItems = [
+    { _key: 'solucoes',     label: content["header.nav.solutions"] || "Soluções", dropdown: solutionsDropdown },
+    { _key: 'segmentos',    label: "Segmentos", to: "/segmentos" },
     {
+      _key: 'institucional',
       label: content["header.nav.institutional"] || "Institucional",
       dropdown: [
         { label: "Sobre Nós", to: "/sobre", show: content["sobre.enabled"] !== "0" },
@@ -115,6 +117,7 @@ export function Header() {
       ].filter((i) => i.show),
     },
     {
+      _key: 'suporte',
       label: content["header.nav.support"] || "Suporte",
       dropdown: [
         { label: "Central de Ajuda", to: "/suporte", show: true },
@@ -125,11 +128,25 @@ export function Header() {
     // Custom groups created by admin
     ...customGroupItems,
     // Standalone pages (top-level)
-    ...standaloneNavPages.map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}` })),
+    ...standaloneNavPages.map(p => ({ _key: `page_${p.slug}`, label: p.nav_label || p.title, to: `/p/${p.slug}` })),
   ].map((item) => ({
     ...item,
     ...((item as any).dropdown?.length === 0 ? { dropdown: undefined, to: "/" } : {}),
   }));
+
+  // Aplica ordem salva em settings.nav_order
+  let navOrder: string[] = [];
+  try { navOrder = JSON.parse(settings.nav_order || '[]'); } catch { }
+  const navItems = navOrder.length > 0
+    ? [...rawNavItems].sort((a, b) => {
+        const ai = navOrder.indexOf(a._key);
+        const bi = navOrder.indexOf(b._key);
+        if (ai === -1 && bi === -1) return 0;
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      })
+    : rawNavItems;
 
   const isActive = (path: string) => location.pathname === path;
 
