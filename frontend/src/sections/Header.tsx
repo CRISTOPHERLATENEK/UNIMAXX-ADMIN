@@ -78,9 +78,28 @@ export function Header() {
   ];
 
   const navPages = data.nav_pages || [];
-  const institutionalNavPages = navPages.filter(p => p.nav_group === 'institucional').map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}` }));
-  const suporteNavPages = navPages.filter(p => p.nav_group === 'suporte').map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}` }));
+
+  // ── Built-in group pages ──────────────────────────────────────────────────
+  const institutionalNavPages = navPages.filter(p => p.nav_group === 'institucional').map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}`, show: true }));
+  const suporteNavPages = navPages.filter(p => p.nav_group === 'suporte').map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}`, show: true }));
   const standaloneNavPages = navPages.filter(p => !p.nav_group || p.nav_group === 'standalone');
+
+  // ── Dynamic custom groups (created by admin) ─────────────────────────────
+  const BUILTIN_KEYS = new Set(['institucional', 'suporte', 'standalone', '']);
+  let customGroups: { key: string; label: string; order: number }[] = [];
+  try { customGroups = JSON.parse(settings.nav_custom_groups || '[]'); } catch { }
+  customGroups = [...customGroups].sort((a, b) => a.order - b.order);
+
+  const customGroupItems = customGroups
+    .filter(g => !BUILTIN_KEYS.has(g.key))
+    .map(g => ({
+      label: g.label,
+      dropdown: navPages
+        .filter(p => p.nav_group === g.key)
+        .sort((a, b) => (a.nav_order ?? 99) - (b.nav_order ?? 99))
+        .map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}`, show: true })),
+    }))
+    .filter(g => g.dropdown.length > 0);
 
   const navItems = [
     { label: content["header.nav.solutions"] || "Soluções", dropdown: solutionsDropdown },
@@ -92,17 +111,20 @@ export function Header() {
         { label: "Carreiras", to: "/carreiras", show: content["carreiras.enabled"] !== "0" },
         { label: "Imprensa", to: "/imprensa", show: content["imprensa.enabled"] !== "0" },
         { label: "Blog", to: "/blog", show: content["blog.enabled"] !== "0" },
-        ...institutionalNavPages.map(p => ({ ...p, show: true })),
+        ...institutionalNavPages,
       ].filter((i) => i.show),
     },
     {
       label: content["header.nav.support"] || "Suporte",
       dropdown: [
-        { label: "Central de Ajuda", to: "/suporte" },
-        { label: "Fale Conosco", to: "/cliente" },
-        ...suporteNavPages.map(p => ({ ...p, show: true })),
+        { label: "Central de Ajuda", to: "/suporte", show: true },
+        { label: "Fale Conosco", to: "/cliente", show: true },
+        ...suporteNavPages,
       ],
     },
+    // Custom groups created by admin
+    ...customGroupItems,
+    // Standalone pages (top-level)
     ...standaloneNavPages.map(p => ({ label: p.nav_label || p.title, to: `/p/${p.slug}` })),
   ].map((item) => ({
     ...item,

@@ -16,6 +16,7 @@ import { DEFAULT_THEME } from './PageBuilder';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { AdminEmptyState } from '@/components/admin/primitives';
+import { useData } from '@/context/DataContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
@@ -355,12 +356,61 @@ function SeoPanel({ form, set }: { form: GenericPage; set: <K extends keyof Gene
   );
 }
 
+// ── Nav group helpers ──────────────────────────────────────────────────────────
+export interface NavGroup { key: string; label: string; order: number; }
+
+const BUILTIN_GROUPS: NavGroup[] = [
+  { key: 'institucional', label: 'Institucional', order: 1 },
+  { key: 'suporte', label: 'Suporte', order: 2 },
+];
+
+function parseNavGroups(raw: string | undefined): NavGroup[] {
+  try { if (raw) return JSON.parse(raw) as NavGroup[]; } catch { }
+  return [];
+}
+
 // ── Config Panel ───────────────────────────────────────────────────────────────
 function ConfigPanel({ form, set, isNew }: {
   form: GenericPage;
   set: <K extends keyof GenericPage>(k: K, v: GenericPage[K]) => void;
   isNew: boolean;
 }) {
+  const { data, updateSettings } = useData();
+  const { toast } = useToast();
+  const [creatingGroup, setCreatingGroup] = useState(false);
+  const [newGroupLabel, setNewGroupLabel] = useState('');
+  const [savingGroup, setSavingGroup] = useState(false);
+
+  // Merge built-in + custom groups (deduplicate by key)
+  const customGroups = parseNavGroups(data.settings?.nav_custom_groups);
+  const allGroups: NavGroup[] = [
+    ...BUILTIN_GROUPS,
+    ...customGroups.filter(g => !BUILTIN_GROUPS.some(b => b.key === g.key)),
+  ].sort((a, b) => a.order - b.order);
+
+  const handleCreateGroup = async () => {
+    if (!newGroupLabel.trim()) return;
+    const key = newGroupLabel.trim()
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+    if (!key) { toast({ title: 'Nome inválido', variant: 'destructive' }); return; }
+    if (allGroups.some(g => g.key === key)) {
+      toast({ title: 'Já existe um grupo com esse nome', variant: 'destructive' }); return;
+    }
+    const maxOrder = Math.max(0, ...allGroups.map(g => g.order));
+    const updated = [...customGroups, { key, label: newGroupLabel.trim(), order: maxOrder + 1 }];
+    setSavingGroup(true);
+    try {
+      await updateSettings({ nav_custom_groups: JSON.stringify(updated) });
+      set('nav_group', key);
+      setCreatingGroup(false);
+      setNewGroupLabel('');
+      toast({ title: `✅ Categoria "${newGroupLabel.trim()}" criada!` });
+    } catch { toast({ title: 'Erro ao salvar categoria', variant: 'destructive' }); }
+    finally { setSavingGroup(false); }
+  };
+
   const autoSlug = (title: string) => {
     if (!isNew) return;
     set('slug', title.toLowerCase()
@@ -402,7 +452,9 @@ function ConfigPanel({ form, set, isNew }: {
 
         {/* ── Nav settings ── */}
         <div style={{ borderTop: '1px solid rgba(0,0,0,.06)', paddingTop: 16 }}>
-          <p style={{ fontSize: 12, fontWeight: 800, color: '#64748b', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '.05em' }}>Navegação</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <p style={{ fontSize: 12, fontWeight: 800, color: '#64748b', margin: 0, textTransform: 'uppercase', letterSpacing: '.05em' }}>🧭 Navegação</p>
+          </div>
           <div className="flex items-center justify-between p-4 rounded-xl mb-3" style={{ background: '#f5f5f7' }}>
             <div>
               <p className="text-[13px] font-semibold text-[#1d1d1f]">Exibir no menu</p>
@@ -410,26 +462,73 @@ function ConfigPanel({ form, set, isNew }: {
             </div>
             <Switch checked={!!form.show_in_nav} onCheckedChange={(v) => set('show_in_nav', v)} />
           </div>
+
           {form.show_in_nav && (
             <div className="space-y-3">
+              {/* Label */}
               <div>
                 <FL hint="Texto exibido no menu (deixe vazio para usar o título)">Label do menu</FL>
                 <Input value={form.nav_label || ''} onChange={(e) => set('nav_label', e.target.value)}
                   placeholder={form.title || 'Ex: Sobre nós'} className="h-10" />
               </div>
+
+              {/* Grupo */}
               <div>
-                <FL hint="Em qual grupo do header esta página aparece">Grupo do menu</FL>
-                <select value={form.nav_group || 'standalone'}
-                  onChange={(e) => set('nav_group', e.target.value)}
+                <FL hint="Em qual grupo/dropdown do header esta página aparece">Categoria do menu</FL>
+
+                {/* Select with all groups */}
+                <select
+                  value={creatingGroup ? '__new__' : (form.nav_group || 'standalone')}
+                  onChange={(e) => {
+                    if (e.target.value === '__new__') {
+                      setCreatingGroup(true);
+                    } else {
+                      setCreatingGroup(false);
+                      set('nav_group', e.target.value);
+                    }
+                  }}
                   className="w-full h-10 rounded-xl border px-3 text-[13px] bg-white"
-                  style={{ borderColor: 'rgba(0,0,0,.1)' }}>
-                  <option value="standalone">Nível superior (independente)</option>
-                  <option value="institucional">Dropdown — Institucional</option>
-                  <option value="suporte">Dropdown — Suporte</option>
+                  style={{ borderColor: 'rgba(0,0,0,.1)', marginBottom: creatingGroup ? 8 : 0 }}>
+                  <option value="standalone">📌 Nível superior (item independente)</option>
+                  <optgroup label="── Categorias ──">
+                    {allGroups.map(g => (
+                      <option key={g.key} value={g.key}>🗂 {g.label}</option>
+                    ))}
+                  </optgroup>
+                  <option value="__new__">✚ Criar nova categoria…</option>
                 </select>
+
+                {/* Inline create form */}
+                {creatingGroup && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '10px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12 }}>
+                    <span style={{ fontSize: 16 }}>🗂</span>
+                    <Input
+                      autoFocus
+                      value={newGroupLabel}
+                      onChange={(e) => setNewGroupLabel(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleCreateGroup(); if (e.key === 'Escape') { setCreatingGroup(false); setNewGroupLabel(''); } }}
+                      placeholder="Nome da categoria (ex: Recursos)"
+                      className="h-9 flex-1 text-[13px]"
+                      style={{ background: '#fff' }}
+                    />
+                    <button
+                      onClick={handleCreateGroup}
+                      disabled={savingGroup || !newGroupLabel.trim()}
+                      style={{ height: 36, padding: '0 14px', borderRadius: 9, background: savingGroup ? '#fde68a' : '#f97316', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' }}>
+                      {savingGroup ? '…' : 'Criar'}
+                    </button>
+                    <button
+                      onClick={() => { setCreatingGroup(false); setNewGroupLabel(''); }}
+                      style={{ width: 36, height: 36, borderRadius: 9, background: '#f1f5f9', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {/* Ordem */}
               <div>
-                <FL hint="Menor número = aparece primeiro">Ordem</FL>
+                <FL hint="Menor número = aparece primeiro dentro do grupo">Ordem</FL>
                 <Input type="number" value={form.nav_order ?? 99}
                   onChange={(e) => set('nav_order', Number(e.target.value))}
                   className="h-10" min={0} max={999} />
@@ -802,7 +901,6 @@ export function GenericPagesManager() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
