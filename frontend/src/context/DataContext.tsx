@@ -34,7 +34,7 @@ interface DataContextType {
 }
 
 const CACHE_KEY = 'site_data_cache';
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutos (fresh)
 
 const defaultData: SiteData = {
   content: {},
@@ -49,13 +49,13 @@ const defaultData: SiteData = {
   nav_pages: [],
 };
 
-function loadCache(): SiteData | null {
+/** Lê o cache — retorna dados independente da idade (stale-while-revalidate) */
+function loadCache(): { data: SiteData; fresh: boolean } | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const { data, ts } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) return null;
-    return data as SiteData;
+    return { data: data as SiteData, fresh: Date.now() - ts < CACHE_TTL };
   } catch {
     return null;
   }
@@ -71,13 +71,15 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const cached = loadCache();
-  const [data, setData] = useState<SiteData>(cached ?? defaultData);
-  const [loading, setLoading] = useState(!cached);
+  // Se há cache (mesmo antigo) → mostra imediatamente, sem loading
+  const [data, setData] = useState<SiteData>(cached?.data ?? defaultData);
+  const [loading, setLoading] = useState(cached === null); // só mostra skeleton se não tem NADA no cache
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  // silent=true → atualiza em background sem travar a tela (stale-while-revalidate)
+  const fetchData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
 
       const token = localStorage.getItem('token');
@@ -139,23 +141,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
 
     } catch (err: any) {
-      const msg = err?.name === 'AbortError' || err?.message?.includes('fetch')
-        ? 'Backend indisponível. Verifique se o servidor está rodando.'
-        : 'Erro ao carregar dados';
-      console.warn('DataContext:', err?.message || err);
-      setError(msg);
+      // Em modo silencioso (revalidação) não mostra erro — mantém dados do cache
+      if (!silent) {
+        const msg = err?.name === 'AbortError' || err?.message?.includes('fetch')
+          ? 'Backend indisponível. Verifique se o servidor está rodando.'
+          : 'Erro ao carregar dados';
+        console.warn('DataContext:', err?.message || err);
+        setError(msg);
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
-
-
-
 
   const refreshData = async () => {
     // Invalida cache para garantir dados frescos
     try { localStorage.removeItem(CACHE_KEY); } catch { }
-    await fetchData();
+    await fetchData(false);
   };
 
   const getAuthHeaders = () => {
@@ -385,7 +387,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    fetchData();
+    const entry = loadCache();
+    if (!entry) {
+      // Primeira visita: sem cache → mostra loading normalmente
+      fetchData(false);
+    } else if (!entry.fresh) {
+      // Cache existe mas está velho → mostra imediatamente + revalida em background
+      fetchData(true);
+    }
+    // Cache fresco → não faz nada, os dados já estão no state
   }, []);
 
   return (
