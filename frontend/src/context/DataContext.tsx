@@ -167,6 +167,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
 
   const refreshData = async () => {
+    // Invalida cache para garantir dados frescos
+    try { localStorage.removeItem(CACHE_KEY); } catch { }
     await fetchData();
   };
 

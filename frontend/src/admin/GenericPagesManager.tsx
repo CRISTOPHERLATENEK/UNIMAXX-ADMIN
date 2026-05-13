@@ -693,6 +693,7 @@ export function GenericPagesManager() {
   const [isNew, setIsNew] = useState(false);
   const [search, setSearch] = useState('');
   const { toast } = useToast();
+  const { refreshData } = useData();
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -757,7 +758,8 @@ export function GenericPagesManager() {
     }
     toast({ title: `✅ "${data.title}" salvo!` });
     setEditing(null);
-    await fetchAll();
+    // Atualiza a lista local E o DataContext (Header usa nav_pages do contexto)
+    await Promise.all([fetchAll(), refreshData()]);
   };
 
   const handleDelete = async (page: GenericPage) => {
