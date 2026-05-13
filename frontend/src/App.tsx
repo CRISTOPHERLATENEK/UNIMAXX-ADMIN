@@ -72,7 +72,6 @@ const HomeEditor           = lazy(() => import('@/admin/HomeEditor').then(m => (
 const AnalyticsDashboard   = lazy(() => import('@/admin/AnalyticsDashboard'));
 const RedirectsManager     = lazy(() => import('@/admin/RedirectsManager').then(m => ({ default: m.RedirectsManager })));
 const MediaLibraryPage     = lazy(() => import('@/admin/MediaLibrary'));
-const NavOrderManager      = lazy(() => import('@/admin/NavOrderManager').then(m => ({ default: m.NavOrderManager })));
 
 // Spinner usado pelo Suspense
 function PageSpinner() {
@@ -304,7 +303,6 @@ function AppRoutes() {
           <Route path="leads" element={<LeadsManager />} />
           <Route path="newsletter" element={<NewsletterManager />} />
           <Route path="legal" element={<LegalManager />} />
-          <Route path="nav-ordem" element={<NavOrderManager />} />
           <Route path="analytics" element={<AnalyticsDashboard />} />
           <Route path="redirects" element={<RedirectsManager />} />
           <Route path="midia" element={<MediaLibraryPage open={true} onClose={() => {}} />} />

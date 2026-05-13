@@ -5,7 +5,7 @@ import {
   Instagram, Linkedin, Youtube, Facebook,
   Building2, Search, Plug, Zap, FileText,
   Mail, MessageSquare, Hash, Star, Shield,
-  ChevronDown, ChevronRight, Settings as SettingsIcon, Image, Layout, Sparkles, Type,
+  ChevronDown, ChevronRight, Settings as SettingsIcon, Image, Layout, Sparkles, Type, Navigation,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { HomeSectionModal } from '@/admin/HomeSectionModal';
 import { HOME_SECTION_CONFIGS } from '@/admin/homeSectionConfigs';
+import { NavOrderTab } from '@/admin/NavOrderManager';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -27,10 +28,11 @@ const TAB_GROUPS = [
   {
     label: 'Essencial',
     items: [
-      { id: 'aparencia', label: 'Aparência',  icon: Palette },
-      { id: 'empresa',   label: 'Empresa',    icon: Building2 },
-      { id: 'contato',   label: 'Contato',    icon: Phone },
-      { id: 'perfil',    label: 'Sua conta',  icon: User },
+      { id: 'aparencia',  label: 'Aparência',  icon: Palette },
+      { id: 'navegacao',  label: 'Navegação',  icon: Navigation },
+      { id: 'empresa',    label: 'Empresa',    icon: Building2 },
+      { id: 'contato',    label: 'Contato',    icon: Phone },
+      { id: 'perfil',     label: 'Sua conta',  icon: User },
     ],
   },
   {
@@ -2143,6 +2145,7 @@ export function Settings() {
   const pc = settings.primary_color || '#f97316';
   const showSaveBtn = !['perfil', 'seguranca'].includes(activeTab);
 
+
   return (
     <div className="min-h-full bg-[#fafafa]">
       {/* Top bar */}
@@ -2189,6 +2192,7 @@ export function Settings() {
 
         {/* Content */}
         <div className="flex-1 p-6 max-w-3xl">
+          {activeTab === 'navegacao'   && <NavOrderTab    settings={settings} setSetting={setSetting} />}
           {activeTab === 'aparencia'   && <TabAparencia   settings={settings} setSetting={setSetting} />}
           {activeTab === 'tipografia'  && <TabTipografia  settings={settings} setSetting={setSetting} />}
           {activeTab === 'empresa'     && <TabEmpresa     settings={settings} setSetting={setSetting} content={content} setContentKey={setContentKey} />}
