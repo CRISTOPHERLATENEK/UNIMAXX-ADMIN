@@ -10,7 +10,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import {
   GripVertical, ChevronDown, Link2, RotateCcw, Save,
-  Globe, Layers, BookOpen,
+  Globe, Layers, BookOpen, Eye, EyeOff,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/hooks/use-toast';
@@ -30,15 +30,22 @@ function typeIcon(type: NavEntry['type']) {
 }
 
 function typeLabel(type: NavEntry['type']) {
-  if (type === 'builtin-dropdown') return 'Menu fixo';
-  if (type === 'builtin-link')     return 'Link fixo';
+  if (type === 'builtin-dropdown') return 'Menu com dropdown';
+  if (type === 'builtin-link')     return 'Link direto';
   if (type === 'custom-group')     return 'Categoria criada';
   return 'Página';
 }
 
-function SortableRow({ entry }: { entry: NavEntry }) {
+function SortableRow({
+  entry, hidden, onToggleHidden, disabled,
+}: {
+  entry: NavEntry;
+  hidden: boolean;
+  onToggleHidden: () => void;
+  disabled?: boolean;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: entry.key });
+    useSortable({ id: entry.key, disabled });
 
   return (
     <div
@@ -46,11 +53,11 @@ function SortableRow({ entry }: { entry: NavEntry }) {
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.5 : 1,
+        opacity: hidden ? 0.45 : isDragging ? 0.5 : 1,
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '13px 16px',
-        background: isDragging ? '#fff7ed' : '#fff',
-        border: `1px solid ${isDragging ? '#fed7aa' : '#e2e8f0'}`,
+        background: isDragging ? '#fff7ed' : hidden ? '#f8fafc' : '#fff',
+        border: `1px solid ${isDragging ? '#fed7aa' : hidden ? '#e2e8f0' : '#e2e8f0'}`,
         borderRadius: 12,
         cursor: isDragging ? 'grabbing' : 'default',
         userSelect: 'none',
@@ -61,75 +68,96 @@ function SortableRow({ entry }: { entry: NavEntry }) {
       <div
         {...attributes}
         {...listeners}
-        style={{ cursor: 'grab', color: '#cbd5e1', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+        style={{ cursor: disabled ? 'not-allowed' : 'grab', color: '#cbd5e1', display: 'flex', alignItems: 'center', flexShrink: 0 }}
       >
         <GripVertical size={18} />
       </div>
 
-      {/* Icon */}
+      {/* Type icon */}
       <div style={{ width: 28, height: 28, borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         {typeIcon(entry.type)}
       </div>
 
       {/* Label */}
       <div style={{ flex: 1 }}>
-        <p style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', margin: 0 }}>{entry.label}</p>
-        <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{typeLabel(entry.type)}</p>
+        <p style={{ fontSize: 14, fontWeight: 700, color: hidden ? '#94a3b8' : '#0f172a', margin: 0, textDecoration: hidden ? 'line-through' : 'none' }}>
+          {entry.label}
+        </p>
+        <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>
+          {hidden ? 'Oculto no site' : typeLabel(entry.type)}
+        </p>
       </div>
 
-      {/* Key badge */}
-      <code style={{ fontSize: 10, background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 6, padding: '2px 7px', color: '#64748b', fontFamily: 'monospace' }}>
-        {entry.key}
-      </code>
+      {/* Visibility toggle */}
+      <button
+        onClick={onToggleHidden}
+        title={hidden ? 'Mostrar no menu' : 'Ocultar do menu'}
+        style={{
+          width: 32, height: 32, borderRadius: 8, border: '1px solid #e2e8f0',
+          background: hidden ? '#f1f5f9' : '#f8fafc',
+          color: hidden ? '#94a3b8' : '#475569',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0, transition: 'all .15s',
+        }}
+      >
+        {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+      </button>
     </div>
   );
+}
+
+function buildAllEntries(data: ReturnType<typeof useData>['data']): NavEntry[] {
+  const settings = data.settings || {};
+  const content = data.content || {};
+  const navPages = data.nav_pages || [];
+  let customGroups: { key: string; label: string; order: number }[] = [];
+  try { customGroups = JSON.parse(settings.nav_custom_groups || '[]'); } catch { }
+  const BUILTIN_KEYS = new Set(['institucional', 'suporte', 'standalone', '']);
+  return [
+    { key: 'solucoes',      label: content['header.nav.solutions']     || 'Soluções',      type: 'builtin-dropdown' },
+    { key: 'segmentos',     label: 'Segmentos',                                              type: 'builtin-link' },
+    { key: 'institucional', label: content['header.nav.institutional'] || 'Institucional',  type: 'builtin-dropdown' },
+    { key: 'suporte',       label: content['header.nav.support']       || 'Suporte',        type: 'builtin-dropdown' },
+    ...customGroups
+      .filter(g => !BUILTIN_KEYS.has(g.key))
+      .map(g => ({ key: `group_${g.key}`, label: g.label, type: 'custom-group' as const })),
+    ...navPages
+      .filter(p => !p.nav_group || p.nav_group === 'standalone')
+      .map(p => ({ key: `page_${p.slug}`, label: p.nav_label || p.title, type: 'standalone-page' as const })),
+  ];
 }
 
 export function NavOrderManager() {
   const { data, updateSettings } = useData();
   const { toast } = useToast();
   const [items, setItems] = useState<NavEntry[]>([]);
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const [segmentosInSolucoes, setSegmentosInSolucoes] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  // Constrói lista de todos os itens do nav
   useEffect(() => {
     const settings = data.settings || {};
-    const content = data.content || {};
-    const navPages = data.nav_pages || [];
+    const allEntries = buildAllEntries(data);
 
-    // Grupos customizados
-    let customGroups: { key: string; label: string; order: number }[] = [];
-    try { customGroups = JSON.parse(settings.nav_custom_groups || '[]'); } catch { }
-
-    const BUILTIN_KEYS = new Set(['institucional', 'suporte', 'standalone', '']);
-
-    const allEntries: NavEntry[] = [
-      { key: 'solucoes',     label: content['header.nav.solutions']    || 'Soluções',     type: 'builtin-dropdown' },
-      { key: 'segmentos',    label: 'Segmentos',                                           type: 'builtin-link' },
-      { key: 'institucional',label: content['header.nav.institutional']|| 'Institucional', type: 'builtin-dropdown' },
-      { key: 'suporte',      label: content['header.nav.support']      || 'Suporte',       type: 'builtin-dropdown' },
-      ...customGroups
-        .filter(g => !BUILTIN_KEYS.has(g.key))
-        .map(g => ({ key: `group_${g.key}`, label: g.label, type: 'custom-group' as const })),
-      ...navPages
-        .filter(p => !p.nav_group || p.nav_group === 'standalone')
-        .map(p => ({ key: `page_${p.slug}`, label: p.nav_label || p.title, type: 'standalone-page' as const })),
-    ];
-
-    // Aplica ordem salva
     let savedOrder: string[] = [];
     try { savedOrder = JSON.parse(settings.nav_order || '[]'); } catch { }
 
+    let savedHidden: string[] = [];
+    try { savedHidden = JSON.parse(settings.nav_hidden || '[]'); } catch { }
+
+    const inSol = settings.nav_segmentos_in_solucoes === '1';
+    setSegmentosInSolucoes(inSol);
+
+    // Apply saved order
     if (savedOrder.length > 0) {
       const ordered: NavEntry[] = [];
       savedOrder.forEach(k => {
         const found = allEntries.find(e => e.key === k);
         if (found) ordered.push(found);
       });
-      // Adiciona novos itens que não estavam no order salvo
       allEntries.forEach(e => {
         if (!ordered.find(o => o.key === e.key)) ordered.push(e);
       });
@@ -137,6 +165,8 @@ export function NavOrderManager() {
     } else {
       setItems(allEntries);
     }
+
+    setHidden(new Set(savedHidden));
     setDirty(false);
   }, [data]);
 
@@ -151,53 +181,67 @@ export function NavOrderManager() {
     setDirty(true);
   };
 
+  const toggleHidden = (key: string) => {
+    setHidden(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+    setDirty(true);
+  };
+
+  const toggleSegmentosInSolucoes = () => {
+    const next = !segmentosInSolucoes;
+    setSegmentosInSolucoes(next);
+    // Se ativado, oculta Segmentos do top-level automaticamente
+    if (next) {
+      setHidden(prev => { const s = new Set(prev); s.add('segmentos'); return s; });
+    } else {
+      setHidden(prev => { const s = new Set(prev); s.delete('segmentos'); return s; });
+    }
+    setDirty(true);
+  };
+
   const handleReset = () => {
-    const settings = data.settings || {};
-    const content = data.content || {};
-    const navPages = data.nav_pages || [];
-    let customGroups: { key: string; label: string; order: number }[] = [];
-    try { customGroups = JSON.parse(settings.nav_custom_groups || '[]'); } catch { }
-    const BUILTIN_KEYS = new Set(['institucional', 'suporte', 'standalone', '']);
-    setItems([
-      { key: 'solucoes',     label: content['header.nav.solutions']    || 'Soluções',     type: 'builtin-dropdown' },
-      { key: 'segmentos',    label: 'Segmentos',                                           type: 'builtin-link' },
-      { key: 'institucional',label: content['header.nav.institutional']|| 'Institucional', type: 'builtin-dropdown' },
-      { key: 'suporte',      label: content['header.nav.support']      || 'Suporte',       type: 'builtin-dropdown' },
-      ...customGroups
-        .filter(g => !BUILTIN_KEYS.has(g.key))
-        .map(g => ({ key: `group_${g.key}`, label: g.label, type: 'custom-group' as const })),
-      ...navPages
-        .filter(p => !p.nav_group || p.nav_group === 'standalone')
-        .map(p => ({ key: `page_${p.slug}`, label: p.nav_label || p.title, type: 'standalone-page' as const })),
-    ]);
+    setItems(buildAllEntries(data));
+    setHidden(new Set());
+    setSegmentosInSolucoes(false);
     setDirty(true);
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateSettings({ nav_order: JSON.stringify(items.map(i => i.key)) });
+      await updateSettings({
+        nav_order: JSON.stringify(items.map(i => i.key)),
+        nav_hidden: JSON.stringify([...hidden]),
+        nav_segmentos_in_solucoes: segmentosInSolucoes ? '1' : '0',
+      });
       setDirty(false);
-      toast({ title: '✅ Ordem do menu salva!' });
+      toast({ title: '✅ Menu atualizado!' });
     } catch {
-      toast({ title: 'Erro ao salvar ordem', variant: 'destructive' });
+      toast({ title: 'Erro ao salvar', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
   };
 
+  const visibleCount = items.filter(i => !hidden.has(i.key)).length;
+
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       {/* Header */}
       <div style={{ background: '#fff', borderBottom: '1px solid #f1f5f9', padding: '20px 32px' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 42, height: 42, borderRadius: 13, background: 'linear-gradient(135deg,#fff7ed,#fed7aa)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Layers size={20} style={{ color: '#f97316' }} />
             </div>
             <div>
               <h1 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-.03em' }}>Ordem do Menu</h1>
-              <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>Arraste para reordenar os itens do header</p>
+              <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>
+                {visibleCount} de {items.length} itens visíveis
+              </p>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -207,38 +251,64 @@ export function NavOrderManager() {
             </button>
             <button onClick={handleSave} disabled={saving || !dirty}
               style={{ height: 36, padding: '0 18px', borderRadius: 10, background: dirty ? '#f97316' : '#e2e8f0', border: 'none', color: dirty ? '#fff' : '#94a3b8', cursor: dirty ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, boxShadow: dirty ? '0 4px 12px rgba(249,115,22,.25)' : 'none', transition: 'all .15s' }}>
-              <Save size={13} /> {saving ? 'Salvando…' : 'Salvar Ordem'}
+              <Save size={13} /> {saving ? 'Salvando…' : 'Salvar'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* List */}
-      <div style={{ maxWidth: 680, margin: '32px auto', padding: '0 24px' }}>
+      <div style={{ maxWidth: 700, margin: '28px auto', padding: '0 24px' }}>
+
+        {/* Opção: Segmentos dentro de Soluções */}
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', margin: '0 0 3px' }}>
+              Incluir Segmentos dentro de Soluções
+            </p>
+            <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
+              Segmentos aparece como sub-item no dropdown de Soluções em vez de link separado
+            </p>
+          </div>
+          <button
+            onClick={toggleSegmentosInSolucoes}
+            style={{
+              width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
+              background: segmentosInSolucoes ? '#f97316' : '#e2e8f0',
+              position: 'relative', flexShrink: 0, transition: 'background .2s',
+            }}
+          >
+            <span style={{
+              position: 'absolute', top: 2, left: segmentosInSolucoes ? 22 : 2,
+              width: 20, height: 20, borderRadius: 10, background: '#fff',
+              boxShadow: '0 1px 4px rgba(0,0,0,.2)', transition: 'left .2s',
+            }} />
+          </button>
+        </div>
+
         {/* Info */}
-        <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-          <BookOpen size={15} style={{ color: '#f97316', marginTop: 1, flexShrink: 0 }} />
-          <p style={{ fontSize: 12, color: '#92400e', margin: 0, lineHeight: 1.6 }}>
-            Arraste os itens para definir a ordem em que aparecem no menu do site. Categorias e páginas novas aparecem automaticamente ao final até você salvar uma nova ordem.
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '11px 16px', marginBottom: 20, display: 'flex', gap: 10, alignItems: 'center' }}>
+          <BookOpen size={14} style={{ color: '#16a34a', flexShrink: 0 }} />
+          <p style={{ fontSize: 12, color: '#15803d', margin: 0, lineHeight: 1.6 }}>
+            <strong>Arraste</strong> para reordenar · Clique no <strong>olho</strong> para ocultar/mostrar um item no site
           </p>
         </div>
 
+        {/* Drag list */}
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={items.map(i => i.key)} strategy={verticalListSortingStrategy}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {items.map(entry => (
-                <SortableRow key={entry.key} entry={entry} />
+                <SortableRow
+                  key={entry.key}
+                  entry={entry}
+                  hidden={hidden.has(entry.key)}
+                  onToggleHidden={() => toggleHidden(entry.key)}
+                  disabled={hidden.has(entry.key)}
+                />
               ))}
             </div>
           </SortableContext>
         </DndContext>
-
-        {items.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px 0', color: '#94a3b8' }}>
-            <Layers size={32} style={{ margin: '0 auto 12px' }} />
-            <p style={{ fontSize: 14, fontWeight: 600 }}>Nenhum item encontrado</p>
-          </div>
-        )}
       </div>
     </div>
   );

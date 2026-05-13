@@ -68,6 +68,7 @@ export function Header() {
 
   // ── Nav items (mesma lógica original) ──
   const activeSolutions = (data.solutions || []).filter((s: any) => s.active === 1);
+  const segmentosInSolucoes = settings.nav_segmentos_in_solucoes === '1';
   const solutionsDropdown = [
     { id: "all-solutions", label: "Todas as Soluções", to: "/solucoes" },
     ...activeSolutions.map((s: any) => ({
@@ -75,6 +76,8 @@ export function Header() {
       label: s.title,
       to: s.nav_link?.trim() || `/solucao-page/${s.solution_id}`,
     })),
+    // Segmentos dentro de Soluções (opcional)
+    ...(segmentosInSolucoes ? [{ id: "segmentos-link", label: "Segmentos", to: "/segmentos" }] : []),
   ];
 
   const navPages = data.nav_pages || [];
@@ -137,7 +140,11 @@ export function Header() {
   // Aplica ordem salva em settings.nav_order
   let navOrder: string[] = [];
   try { navOrder = JSON.parse(settings.nav_order || '[]'); } catch { }
-  const navItems = navOrder.length > 0
+  let navHidden: string[] = [];
+  try { navHidden = JSON.parse(settings.nav_hidden || '[]'); } catch { }
+  const navHiddenSet = new Set(navHidden);
+
+  const navItems = (navOrder.length > 0
     ? [...rawNavItems].sort((a, b) => {
         const ai = navOrder.indexOf(a._key);
         const bi = navOrder.indexOf(b._key);
@@ -146,7 +153,8 @@ export function Header() {
         if (bi === -1) return -1;
         return ai - bi;
       })
-    : rawNavItems;
+    : rawNavItems
+  ).filter(item => !navHiddenSet.has(item._key));
 
   const isActive = (path: string) => location.pathname === path;
 
