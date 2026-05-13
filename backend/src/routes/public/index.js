@@ -155,6 +155,24 @@ router.get('/pages/:slug', (req, res) => {
   );
 });
 
+// ── Sitemap ───────────────────────────────────────────────────────────────
+router.get('/sitemap.xml', (req, res) => {
+  db.all(
+    `SELECT slug, updated_at FROM generic_pages WHERE is_active=1 AND deleted_at IS NULL`,
+    [],
+    (err, rows) => {
+      const host = process.env.SITE_URL || 'https://seusite.com.br';
+      const staticUrls = ['/', '/solucoes', '/segmentos', '/cliente', '/suporte'];
+      const urls = [
+        ...staticUrls.map(u => `<url><loc>${host}${u}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`),
+        ...(rows || []).map(r => `<url><loc>${host}/p/${r.slug}</loc><lastmod>${(r.updated_at || '').slice(0,10)}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`)
+      ];
+      res.set('Content-Type', 'application/xml');
+      res.send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.join('')}</urlset>`);
+    }
+  );
+});
+
 // ── Leads & Contato ───────────────────────────────────────────────────────
 router.use(require('./leads'));
 

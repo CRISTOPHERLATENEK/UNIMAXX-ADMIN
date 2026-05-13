@@ -4,6 +4,7 @@ import {
   Plus, Pencil, Trash2, Save, RefreshCw, ExternalLink,
   ArrowLeft, Search, FileText, AlertCircle, Globe,
   Image as ImageIcon, Link2, ShieldOff, Code2, Eye,
+  Copy, ChevronUp, ChevronDown, CheckSquare, Square,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -546,6 +547,56 @@ function ConfigPanel({ form, set, isNew }: {
             </div>
           )}
         </div>
+
+        {/* ── Nav Groups Manager ── */}
+        {customGroups.length > 0 && (
+          <div style={{ borderTop: '1px solid rgba(0,0,0,.06)', paddingTop: 16 }}>
+            <p style={{ fontSize: 12, fontWeight: 800, color: '#64748b', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '.05em' }}>🗂 Categorias personalizadas</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {customGroups.sort((a, b) => a.order - b.order).map((g, gi) => (
+                <div key={g.key} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#1d1d1f' }}>{g.label}</span>
+                  <span style={{ fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' }}>{g.key}</span>
+                  <button
+                    onClick={async () => {
+                      if (gi === 0) return;
+                      const arr = [...customGroups].sort((a, b) => a.order - b.order);
+                      const prev = arr[gi - 1];
+                      const curr = arr[gi];
+                      const updated = customGroups.map(x => x.key === curr.key ? { ...x, order: prev.order } : x.key === prev.key ? { ...x, order: curr.order } : x);
+                      try { await updateSettings({ nav_custom_groups: JSON.stringify(updated) }); toast({ title: 'Ordem atualizada' }); } catch { toast({ title: 'Erro', variant: 'destructive' }); }
+                    }}
+                    disabled={gi === 0}
+                    style={{ width: 26, height: 26, borderRadius: 6, background: 'none', border: '1px solid #e2e8f0', cursor: gi === 0 ? 'not-allowed' : 'pointer', opacity: gi === 0 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                    <ChevronUp size={12} />
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const arr = [...customGroups].sort((a, b) => a.order - b.order);
+                      if (gi === arr.length - 1) return;
+                      const next2 = arr[gi + 1];
+                      const curr = arr[gi];
+                      const updated = customGroups.map(x => x.key === curr.key ? { ...x, order: next2.order } : x.key === next2.key ? { ...x, order: curr.order } : x);
+                      try { await updateSettings({ nav_custom_groups: JSON.stringify(updated) }); toast({ title: 'Ordem atualizada' }); } catch { toast({ title: 'Erro', variant: 'destructive' }); }
+                    }}
+                    disabled={gi === customGroups.length - 1}
+                    style={{ width: 26, height: 26, borderRadius: 6, background: 'none', border: '1px solid #e2e8f0', cursor: gi === customGroups.length - 1 ? 'not-allowed' : 'pointer', opacity: gi === customGroups.length - 1 ? 0.3 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                    <ChevronDown size={12} />
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Excluir categoria "${g.label}"? As páginas nesta categoria não serão afetadas.`)) return;
+                      const updated = customGroups.filter(x => x.key !== g.key);
+                      try { await updateSettings({ nav_custom_groups: JSON.stringify(updated) }); toast({ title: `Categoria "${g.label}" excluída` }); } catch { toast({ title: 'Erro', variant: 'destructive' }); }
+                    }}
+                    style={{ width: 26, height: 26, borderRadius: 6, background: 'none', border: '1px solid #fecaca', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -702,6 +753,7 @@ export function GenericPagesManager() {
   const [editing, setEditing] = useState<GenericPage | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const { toast } = useToast();
   const { refreshData } = useData();
 
@@ -779,6 +831,62 @@ export function GenericPagesManager() {
     fetchAll();
   };
 
+  const handleToggleActive = async (page: GenericPage) => {
+    await fetch(`${API_URL}/admin/generic-pages/${page.id}`, {
+      method: 'PUT',
+      headers: authH(),
+      body: JSON.stringify({
+        ...page,
+        is_active: !page.is_active,
+        blocks_json: page.blocks_json,
+        show_in_nav: page.show_in_nav ? 1 : 0,
+        nav_group: page.nav_group || 'standalone',
+        nav_order: page.nav_order ?? 99,
+      }),
+    });
+    toast({ title: !page.is_active ? `✅ "${page.title}" ativada!` : `"${page.title}" desativada.` });
+    await Promise.all([fetchAll(), refreshData()]);
+  };
+
+  const handleDuplicate = async (page: GenericPage) => {
+    const res = await fetch(`${API_URL}/admin/generic-pages/${page.id}/duplicate`, { method: 'POST', headers: authH() });
+    if (!res.ok) { toast({ title: 'Erro ao duplicar', variant: 'destructive' }); return; }
+    toast({ title: 'Página duplicada!' });
+    fetchAll();
+  };
+
+  const handleBulkActivate = async (activate: boolean) => {
+    await Promise.all(Array.from(selectedIds).map(id => {
+      const page = pages.find(p => p.id === id);
+      if (!page) return Promise.resolve();
+      return fetch(`${API_URL}/admin/generic-pages/${id}`, {
+        method: 'PUT', headers: authH(),
+        body: JSON.stringify({ ...page, is_active: activate, blocks_json: page.blocks_json, show_in_nav: page.show_in_nav ? 1 : 0, nav_group: page.nav_group || 'standalone', nav_order: page.nav_order ?? 99 }),
+      });
+    }));
+    toast({ title: `${selectedIds.size} página(s) ${activate ? 'ativada(s)' : 'desativada(s)'}.` });
+    setSelectedIds(new Set());
+    await Promise.all([fetchAll(), refreshData()]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Excluir ${selectedIds.size} página(s)? Esta ação não pode ser desfeita.`)) return;
+    await Promise.all(Array.from(selectedIds).map(id =>
+      fetch(`${API_URL}/admin/generic-pages/${id}`, { method: 'DELETE', headers: authH() })
+    ));
+    toast({ title: `${selectedIds.size} página(s) excluída(s).` });
+    setSelectedIds(new Set());
+    fetchAll();
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   if (editing) {
     return <Editor initial={editing} isNew={isNew} onSave={handleSave} onBack={() => setEditing(null)} />;
   }
@@ -854,24 +962,36 @@ export function GenericPagesManager() {
                 const seoScore2 = [page.og_image, page.meta_title, page.meta_description].filter(Boolean).length;
                 const seoColor2 = seoScore2 === 3 ? '#22c55e' : seoScore2 === 2 ? '#f59e0b' : '#ef4444';
                 const blockCount = page.blocks_json?.length || 0;
+                const isSelected = page.id !== undefined && selectedIds.has(page.id);
                 return (
                   <div key={page.id}
-                    style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', overflow: 'hidden', transition: 'box-shadow .2s, border-color .2s', display: 'flex', alignItems: 'stretch' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.borderColor = '#e2e8f0'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.borderColor = '#f1f5f9'; }}>
+                    style={{ background: '#fff', borderRadius: 16, border: `1px solid ${isSelected ? '#fed7aa' : '#f1f5f9'}`, overflow: 'hidden', transition: 'box-shadow .2s, border-color .2s', display: 'flex', alignItems: 'stretch' }}
+                    onMouseEnter={e => { if (!isSelected) { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,.07)'; (e.currentTarget as HTMLElement).style.borderColor = '#e2e8f0'; } }}
+                    onMouseLeave={e => { if (!isSelected) { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.borderColor = '#f1f5f9'; } }}>
                     {/* Status stripe */}
                     <div style={{ width: 4, flexShrink: 0, background: page.is_active ? '#22c55e' : '#e2e8f0' }} />
                     {/* Content */}
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', minWidth: 0 }}>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', minWidth: 0 }}>
+                      {/* Checkbox */}
+                      <button
+                        onClick={() => page.id !== undefined && toggleSelect(page.id)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, lineHeight: 0, color: isSelected ? '#f97316' : '#c8d2e0' }}
+                        title={isSelected ? 'Desmarcar' : 'Selecionar'}>
+                        {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+                      </button>
                       <div style={{ width: 44, height: 44, borderRadius: 12, background: '#fff7ed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <FileText size={20} style={{ color: '#f97316' }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
                           <h3 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', margin: 0, fontFamily: "'Outfit',sans-serif" }}>{page.title}</h3>
-                          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: page.is_active ? '#dcfce7' : '#f1f5f9', color: page.is_active ? '#15803d' : '#64748b' }}>
+                          {/* Inline active toggle */}
+                          <button
+                            onClick={() => handleToggleActive(page)}
+                            style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: page.is_active ? '#dcfce7' : '#f1f5f9', color: page.is_active ? '#15803d' : '#64748b', border: 'none', cursor: 'pointer', transition: 'all .15s' }}
+                            title={page.is_active ? 'Clique para desativar' : 'Clique para ativar'}>
                             {page.is_active ? '● Ativo' : '○ Inativo'}
-                          </span>
+                          </button>
                           <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: '#eff6ff', color: '#2563eb' }}>
                             {blockCount} bloco{blockCount !== 1 ? 's' : ''}
                           </span>
@@ -892,6 +1012,13 @@ export function GenericPagesManager() {
                             <ExternalLink size={14} />
                           </a>
                         )}
+                        <button onClick={() => handleDuplicate(page)}
+                          style={{ width: 34, height: 34, borderRadius: 9, background: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', cursor: 'pointer', transition: 'all .15s' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#f1f5f9'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#f8fafc'; }}
+                          title="Duplicar página">
+                          <Copy size={14} />
+                        </button>
                         <button onClick={() => { setEditing(page); setIsNew(false); }}
                           style={{ height: 34, padding: '0 14px', borderRadius: 9, background: '#fff7ed', border: '1px solid #fed7aa', color: '#f97316', cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5, transition: 'all .15s' }}
                           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#ffedd5'; }}
@@ -913,6 +1040,32 @@ export function GenericPagesManager() {
             </div>
           )}
         </div>
+
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 100, background: '#1e293b', borderRadius: 16, padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 8px 32px rgba(0,0,0,.25)', minWidth: 400 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8', whiteSpace: 'nowrap' }}>
+            {selectedIds.size} página{selectedIds.size > 1 ? 's' : ''} selecionada{selectedIds.size > 1 ? 's' : ''}
+          </span>
+          <div style={{ flex: 1 }} />
+          <button onClick={() => handleBulkActivate(true)}
+            style={{ height: 34, padding: '0 14px', borderRadius: 9, background: '#22c55e', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+            Ativar
+          </button>
+          <button onClick={() => handleBulkActivate(false)}
+            style={{ height: 34, padding: '0 14px', borderRadius: 9, background: '#64748b', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+            Desativar
+          </button>
+          <button onClick={handleBulkDelete}
+            style={{ height: 34, padding: '0 14px', borderRadius: 9, background: '#ef4444', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Trash2 size={13} /> Excluir
+          </button>
+          <button onClick={() => setSelectedIds(new Set())}
+            style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(255,255,255,.1)', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }

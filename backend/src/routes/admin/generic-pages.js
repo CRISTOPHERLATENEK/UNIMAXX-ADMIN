@@ -81,4 +81,23 @@ router.delete('/:id', validateParams(numericIdParamSchema), (req, res) => {
   });
 });
 
+router.post('/:id/duplicate', validateParams(numericIdParamSchema), (req, res) => {
+  db.get('SELECT * FROM generic_pages WHERE id=? AND deleted_at IS NULL', [req.validatedParams.id], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Erro' });
+    if (!row) return res.status(404).json({ error: 'Página não encontrada' });
+    const newSlug = row.slug + '-copia-' + Date.now().toString(36);
+    const newTitle = row.title + ' (Cópia)';
+    db.run(
+      `INSERT INTO generic_pages (slug, title, meta_title, meta_description, is_active, blocks_json, show_in_nav, nav_label, nav_group, nav_order, updated_at)
+       VALUES (?, ?, ?, ?, 0, ?, 0, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      [newSlug, newTitle, row.meta_title || '', row.meta_description || '', row.blocks_json || '[]', row.nav_label, row.nav_group || 'standalone', row.nav_order ?? 99],
+      async function(err2) {
+        if (err2) return res.status(500).json({ error: 'Erro ao duplicar: ' + err2.message });
+        await logAudit(req, { userId: req.user?.id, action: 'duplicate_generic_page', entity: 'generic_pages', entityId: this.lastID, details: { originalId: req.validatedParams.id, newSlug } });
+        res.json({ message: 'Duplicado', id: this.lastID, slug: newSlug });
+      }
+    );
+  });
+});
+
 module.exports = router;

@@ -3214,12 +3214,13 @@ function BlockEditor({ block, onChange }: { block: PageBlock; onChange: (b: Page
 
 // ── SortableBlockItem — draggable row in the left sidebar ────────────────────
 
-function SortableBlockItem({ block, index, selectedId, onSelect, onToggleVisible }: {
+function SortableBlockItem({ block, index, selectedId, onSelect, onToggleVisible, onDuplicate }: {
   block: PageBlock;
   index: number;
   selectedId: string | null;
   onSelect: (id: string) => void;
   onToggleVisible: (id: string) => void;
+  onDuplicate: (id: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
   const style: React.CSSProperties = {
@@ -3273,6 +3274,12 @@ function SortableBlockItem({ block, index, selectedId, onSelect, onToggleVisible
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '3px', flexShrink: 0, lineHeight: 0 }}>
             {block.visible ? <Eye size={12} color="#94a3b8" /> : <EyeOff size={12} color="#c8d2e0" />}
           </button>
+          {/* Duplicar */}
+          <button onClick={(e) => { e.stopPropagation(); onDuplicate(block.id); }}
+            title="Duplicar bloco"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '3px', flexShrink: 0, lineHeight: 0 }}>
+            <Copy size={12} color="#94a3b8" />
+          </button>
         </div>
       </div>
     </div>
@@ -3325,6 +3332,18 @@ export function PageBuilder({
       setIsDirty(false);
     }
   }, [rawBlocks]);
+
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    if (isDirty) {
+      window.addEventListener('beforeunload', handler);
+    }
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
 
   // Wrap every mutation through handleChange so history is tracked
   const handleChange = useCallback((newBlocks: PageBlock[]) => {
@@ -3519,6 +3538,16 @@ export function PageBuilder({
                       onToggleVisible={(id) => {
                         const b = blocks.find(x => x.id === id);
                         if (b) updateBlock(id, { ...b, visible: !b.visible });
+                      }}
+                      onDuplicate={(id) => {
+                        const b = blocks.find(x => x.id === id);
+                        if (!b) return;
+                        const copy = { ...b, id: `${b.type}-${Date.now()}-${Math.random().toString(36).slice(2,7)}` };
+                        const index2 = blocks.findIndex(x => x.id === id);
+                        const next = [...blocks];
+                        next.splice(index2 + 1, 0, copy);
+                        handleChange(next);
+                        setSelectedId(copy.id);
                       }}
                     />
                   ))}
