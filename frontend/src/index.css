@@ -616,6 +616,11 @@
 
 /* Grid mode: responsive for mobile */
 .sol-grid-responsive { padding: 8px 0 8px; }
+
+/* Grid com poucos itens: cards maiores no desktop */
+.sol-grid-few .sol-card { width: 100%; max-width: 100%; }
+.sol-grid-few .sol-card-inner { height: 360px !important; }
+
 @media (max-width: 767px) {
   .sol-grid-responsive {
     grid-template-columns: 220px 220px !important;
@@ -623,6 +628,7 @@
     justify-content: start !important;
     padding-bottom: 12px;
   }
+  .sol-grid-few .sol-card-inner { height: 280px !important; }
 }
 @media (max-width: 480px) {
   .sol-grid-responsive { grid-template-columns: 220px !important; }

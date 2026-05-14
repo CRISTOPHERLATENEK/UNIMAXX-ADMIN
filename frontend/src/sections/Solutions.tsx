@@ -330,12 +330,14 @@ export function Solutions() {
           /* Centered grid — 1 col mobile, 2 cols sm, up to 4 cols */
           <div style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${Math.min(solutions.length, 4)}, 220px)`,
+            gridTemplateColumns: solutions.length <= 3
+              ? `repeat(${solutions.length}, minmax(220px, 360px))`
+              : `repeat(4, 220px)`,
             gap: 24,
             justifyContent: 'center',
             marginBottom: 8,
           }}
-            className="sol-grid-responsive">
+            className={`sol-grid-responsive${solutions.length <= 3 ? ' sol-grid-few' : ''}`}>
             {solutions.map((sol: any, i: number) => (
               <SolCard key={sol.solution_id} sol={sol} index={i} pc={pc} onClick={() => openModal(sol)} />
             ))}

@@ -70,7 +70,7 @@ export function Contact() {
   });
 
   return (
-    <section id="contato" style={{ padding: '7rem 0', background: 'var(--s0)' }}>
+    <section id="contato" style={{ padding: 'clamp(4rem,7vw,6rem) 0', background: 'var(--s0)' }}>
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 clamp(1rem,3vw,2rem)' }}>
 
         {/* Header */}
