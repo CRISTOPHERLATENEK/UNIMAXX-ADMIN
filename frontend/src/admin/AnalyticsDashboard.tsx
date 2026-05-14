@@ -7,20 +7,20 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const authH = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' });
 
 interface AnalyticsData {
-  today?: number;
-  last7days?: number;
-  last30days?: number;
-  growth?: number;
+  // backend wraps totals in summary object
+  summary?: {
+    today?: number;
+    yesterday?: number;
+    views7?: number;
+    views30?: number;
+    viewsAll?: number;
+    uniq7?: number;
+    uniq30?: number;
+    growthViews?: number;
+  };
   topPages?: Array<{ page: string; views: number }>;
-  sources?: Array<{ source: string; count: number }>;
-  daily?: Array<{ date: string; views: number }>;
-  // support alternative field names
-  views_today?: number;
-  views_7d?: number;
-  views_30d?: number;
-  top_pages?: Array<{ page: string; views: number }>;
-  traffic_sources?: Array<{ source: string; count: number }>;
-  daily_views?: Array<{ date: string; views: number }>;
+  sources?: Array<{ source: string; views: number }>;   // backend field is `views`
+  daily?: Array<{ day: string; views: number; visitors?: number }>; // backend field is `day`
 }
 
 function StatCard({ label, value, icon, color, sub }: {
@@ -65,13 +65,14 @@ export function AnalyticsDashboard() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const today = data?.today ?? data?.views_today ?? 0;
-  const last7 = data?.last7days ?? data?.views_7d ?? 0;
-  const last30 = data?.last30days ?? data?.views_30d ?? 0;
-  const growth = data?.growth ?? 0;
-  const topPages = data?.topPages ?? data?.top_pages ?? [];
-  const sources = data?.sources ?? data?.traffic_sources ?? [];
-  const daily = data?.daily ?? data?.daily_views ?? [];
+  const s = data?.summary ?? {};
+  const today  = s.today    ?? 0;
+  const last7  = s.views7   ?? 0;
+  const last30 = s.views30  ?? 0;
+  const growth = s.growthViews ?? 0;
+  const topPages = data?.topPages ?? [];
+  const sources  = data?.sources  ?? [];
+  const daily    = data?.daily    ?? [];
 
   const maxViews = daily.length > 0 ? Math.max(...daily.map(d => d.views), 1) : 1;
 
@@ -139,7 +140,7 @@ export function AnalyticsDashboard() {
                             onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
                             onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '0.8'} />
                           <span style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600, whiteSpace: 'nowrap', transform: 'rotate(-45deg)', transformOrigin: 'center', display: 'block' }}>
-                            {d.date?.slice(5)}
+                            {d.day?.slice(5)}
                           </span>
                         </div>
                       );
@@ -190,7 +191,7 @@ export function AnalyticsDashboard() {
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {sources.slice(0, 8).map((s, i) => {
-                      const maxS = sources[0]?.count || 1;
+                      const maxS = sources[0]?.views || 1;
                       const colors = ['#f97316', '#3b82f6', '#8b5cf6', '#22c55e', '#f59e0b', '#ec4899', '#14b8a6', '#64748b'];
                       const c = colors[i % colors.length];
                       return (
@@ -200,9 +201,9 @@ export function AnalyticsDashboard() {
                             {s.source || 'Direto'}
                           </p>
                           <div style={{ width: 80, height: 4, borderRadius: 2, background: '#f1f5f9', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', borderRadius: 2, background: c, width: `${(s.count / maxS) * 100}%` }} />
+                            <div style={{ height: '100%', borderRadius: 2, background: c, width: `${(s.views / maxS) * 100}%` }} />
                           </div>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b', minWidth: 30, textAlign: 'right' }}>{s.count.toLocaleString()}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b', minWidth: 30, textAlign: 'right' }}>{s.views.toLocaleString()}</span>
                         </div>
                       );
                     })}
